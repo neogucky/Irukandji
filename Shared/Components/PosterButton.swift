@@ -13,6 +13,11 @@ struct PosterButton<Item: Poster>: View {
     @Environment(\.viewContext)
     private var viewContext
 
+    #if os(tvOS)
+    @FocusState
+    private var isFocused: Bool
+    #endif
+
     @Namespace
     private var namespace
 
@@ -58,7 +63,9 @@ struct PosterButton<Item: Poster>: View {
         .contentShape(.contextMenuPreview, Rectangle())
         .matchedTransitionSource(id: "item", in: namespace)
         .subtleShadow()
-        .hoverEffect(.highlight)
+        #if !os(tvOS)
+            .hoverEffect(.highlight)
+        #endif
     }
 
     @ViewBuilder
@@ -75,16 +82,23 @@ struct PosterButton<Item: Poster>: View {
         Button {
             action(namespace)
         } label: {
-            // Layout required for tvOS focused offset label behavior
             #if os(tvOS)
-            posterImage(overlay: item.posterOverlay(for: displayType))
-                .posterAspectRatio(displayType, contentMode: .fit)
-                .frame(width: posterSize.width > 0 ? posterSize.width : nil)
-                .posterAccessibility(for: item)
+            VStack(alignment: .leading, spacing: 8) {
+                posterImage(overlay: item.posterOverlay(for: displayType))
+                    .posterAspectRatio(displayType, contentMode: .fit)
+                    .posterCornerRadius(displayType)
+                    .tvFocusBorder(
+                        isFocused: isFocused,
+                        shape: RoundedRectangle(
+                            cornerRadius: posterSize.width * (displayType == .landscape ? 1 / 30 : 0.0375)
+                        )
+                    )
+                    .posterAccessibility(for: item)
 
-            item.posterLabel
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityHidden(true)
+                item.posterLabel
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityHidden(true)
+            }
             #else
             buttonLabel(overlay: item.posterOverlay(for: displayType))
                 .posterAccessibility(for: item)
@@ -92,17 +106,22 @@ struct PosterButton<Item: Poster>: View {
         }
         .environment(\.posterDisplayType, displayType)
         .foregroundStyle(.primary, .secondary)
-        .buttonStyle(.borderless)
-        .buttonBorderShape(.roundedRectangle)
         #if os(tvOS)
-        .focusedValue(\.focusedPoster, AnyPoster(item))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .ignoresSafeArea()
+            .buttonStyle(ArtworkButtonStyle())
+            .focused($isFocused)
+        #else
+            .buttonStyle(.borderless)
         #endif
-        .trackingSize($posterSize)
-        .posterContextMenu(for: item) {
-            contextMenuPreview
-                .withViewContext(viewContext)
-        }
+            .buttonBorderShape(.roundedRectangle)
+        #if os(tvOS)
+            .focusedValue(\.focusedPoster, AnyPoster(item))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .ignoresSafeArea()
+        #endif
+            .trackingSize($posterSize)
+            .posterContextMenu(for: item) {
+                contextMenuPreview
+                    .withViewContext(viewContext)
+            }
     }
 }

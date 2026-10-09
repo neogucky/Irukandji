@@ -38,23 +38,23 @@ extension VideoPlayer {
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
             #if os(tvOS)
-            .focusSection()
-            .onMoveCommand { direction in
-                if viewState.presentation == .hidden, direction == .up || direction == .down {
-                    viewState.showControls()
+                .focusSection()
+                .onMoveCommand { direction in
+                    if viewState.presentation == .hidden, direction == .up || direction == .down {
+                        viewState.showControls()
+                    }
                 }
-            }
-            .onChange(of: actions.map(\.id), initial: true) { oldIDs, _ in
-                viewState.updateOverlayActionFocus(previousIDs: oldIDs)
-            }
-            .onChange(of: viewState.presentation) {
-                viewState.updateOverlayActionFocus()
-            }
-            .onChange(of: viewState.isPresentingCloseConfirmation) {
-                if !viewState.isPresentingCloseConfirmation {
+                .onChange(of: actions.map(\.id), initial: true) { oldIDs, _ in
+                    viewState.updateOverlayActionFocus(previousIDs: oldIDs)
+                }
+                .onChange(of: viewState.presentation) {
                     viewState.updateOverlayActionFocus()
                 }
-            }
+                .onChange(of: viewState.isPresentingCloseConfirmation) {
+                    if !viewState.isPresentingCloseConfirmation {
+                        viewState.updateOverlayActionFocus()
+                    }
+                }
             #endif
         }
 
@@ -101,7 +101,11 @@ extension VideoPlayer {
                 .frame(minHeight: 44)
                 .background(.white, in: Capsule())
                 .contentShape(Capsule())
+            #if os(tvOS)
+                .tvFocusBorder(isFocused: isFocused && isEnabled, shape: Capsule())
+            #else
                 .scaleEffect(isFocused && !reduceMotion ? 1.08 : 1)
+            #endif
                 .shadow(color: .black.opacity(isFocused ? 0.5 : 0.2), radius: isFocused ? 12 : 4)
                 .opacity(isEnabled ? (configuration.isPressed ? 0.65 : 1) : 0.5)
                 .animation(.easeOut(duration: 0.15), value: isFocused)

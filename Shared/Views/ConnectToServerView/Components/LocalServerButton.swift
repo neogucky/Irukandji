@@ -41,7 +41,11 @@ extension ConnectToServerView {
                 #endif
             }
             .foregroundStyle(.primary, .secondary)
-            .buttonStyle(.card)
+            #if os(tvOS)
+                .buttonStyle(.focusBorder)
+            #else
+                .buttonStyle(.card)
+            #endif
         }
     }
 }

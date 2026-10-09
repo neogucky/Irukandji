@@ -150,7 +150,11 @@ struct CapsuleButtonStyle: ButtonStyle {
             .clipShape(.capsule)
             .background { background }
             .contentShape(.capsule)
+        #if os(tvOS)
+            .tvFocusBorder(isFocused: isEnabled && isFocused, shape: Capsule())
+        #else
             .scaleEffect(isEnabled && isFocused ? 1.05 : 1)
+        #endif
             .opacity(opacity(isPressed: configuration.isPressed))
             .shadow(color: isEnabled && isFocused ? .black.opacity(0.5) : .clear, radius: 10)
             .animation(.linear(duration: 0.1), value: isFocused)

@@ -12,6 +12,11 @@ import SwiftUI
 
 struct UserButton: View {
 
+    #if os(tvOS)
+    @FocusState
+    private var isFocused: Bool
+    #endif
+
     @Default(.accentColor)
     private var accentColor
 
@@ -51,45 +56,43 @@ struct UserButton: View {
         }
         .foregroundStyle(.primary, .secondary)
         #if os(tvOS)
-        .buttonStyle(.borderless)
-        .buttonBorderShape(.circle)
+            .buttonStyle(ArtworkButtonStyle())
+            .focused($isFocused)
+            .buttonBorderShape(.circle)
         #endif
     }
 
     @ViewBuilder
     private var labelView: some View {
-        // tvOS breaks HoverEffects when using a VStack
-        #if os(tvOS)
-        imageView
-
-        titleView
-        #else
         VStack {
             imageView
 
             titleView
         }
-        #endif
     }
 
     @ViewBuilder
     private var imageView: some View {
         image
-            .hoverEffect(.highlight)
-            .overlay(alignment: .bottomTrailing) {
-                if onDelete != nil, isEditing, isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(
-                            width: UIDevice.isTV ? 75 : 40,
-                            height: UIDevice.isTV ? 75 : 40
-                        )
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(accentColor.overlayColor, accentColor)
-                        .hoverEffect(.lift)
-                }
+        #if os(tvOS)
+        .tvFocusBorder(isFocused: isFocused, shape: Circle())
+        #else
+        .hoverEffect(.highlight)
+        #endif
+        .overlay(alignment: .bottomTrailing) {
+            if onDelete != nil, isEditing, isSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(
+                        width: UIDevice.isTV ? 75 : 40,
+                        height: UIDevice.isTV ? 75 : 40
+                    )
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(accentColor.overlayColor, accentColor)
+                    .hoverEffect(.lift)
             }
+        }
     }
 
     @ViewBuilder

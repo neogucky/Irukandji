@@ -12,6 +12,11 @@ extension SelectUserView {
 
     struct EmptyUserView: View {
 
+        #if os(tvOS)
+        @FocusState
+        private var isFocused: Bool
+        #endif
+
         let action: () -> Void
 
         private let columns: CGFloat = UIDevice.isPhone ? 2 : 5
@@ -29,13 +34,15 @@ extension SelectUserView {
         private var addUserButton: some View {
             Button(action: action) {
                 #if os(tvOS)
-                imageView
-                    .hoverEffect(.highlight)
+                VStack {
+                    imageView
+                        .tvFocusBorder(isFocused: isFocused, shape: Circle())
 
-                Text(L10n.addUser)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
+                    Text(L10n.addUser)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .lineLimit(1)
+                }
                 #else
                 VStack {
                     imageView
@@ -50,7 +57,8 @@ extension SelectUserView {
             .foregroundStyle(.primary, .secondary)
             .buttonBorderShape(.circle)
             #if os(tvOS)
-            .buttonStyle(.borderless)
+                .buttonStyle(ArtworkButtonStyle())
+                .focused($isFocused)
             #endif
         }
 

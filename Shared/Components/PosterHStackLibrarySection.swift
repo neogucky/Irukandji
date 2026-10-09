@@ -20,9 +20,12 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     #if os(tvOS)
     private struct HeaderButtonStyle: ButtonStyle {
 
+        @Environment(\.isFocused)
+        private var isFocused
+
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
-                .scaleEffect(configuration.isPressed ? 0.97 : 1)
+                .tvFocusBorder(isFocused: isFocused, shape: Capsule())
                 .opacity(configuration.isPressed ? 0.8 : 1)
                 .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
         }
@@ -92,7 +95,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
             .foregroundStyle(.primary, .secondary)
             .accessibilityAction(named: Text(L10n.openLibrary), routeToLibrary)
             #if os(tvOS)
-            .buttonStyle(HeaderButtonStyle())
+                .buttonStyle(HeaderButtonStyle())
             #endif
         } else {
             headerTitle

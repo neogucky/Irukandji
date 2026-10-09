@@ -11,9 +11,15 @@ import SwiftUI
 #if os(tvOS)
 struct BasicHoverButtonStyle: ButtonStyle {
 
+    @Environment(\.isFocused)
+    private var isFocused
+    @Environment(\.isEnabled)
+    private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .hoverEffect(.lift)
+            .tvFocusBorder(isFocused: isFocused && isEnabled, shape: Capsule())
+            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.5)
     }
 }
 #else

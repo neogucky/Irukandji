@@ -57,7 +57,7 @@ struct ListRowMenu<Content: View, Subtitle: View>: View {
                 .regular.tint(isFocused ? .white : nil),
                 in: .capsule
             )
-            .scaleEffect(x: isFocused ? 1.01 : 1.0, y: isFocused ? 1.05 : 1.0, anchor: .center)
+            .tvFocusBorder(isFocused: isFocused, shape: Capsule())
             .animation(.easeInOut(duration: 0.125), value: isFocused)
             .listRowBackground(Color.clear)
     }
@@ -66,18 +66,10 @@ struct ListRowMenu<Content: View, Subtitle: View>: View {
     private var legacyBody: some View {
         labelView
             .background {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12.5)
-                        .fill(isFocused ? Color.white : Color.clear)
-
-                    if isFocused {
-                        RoundedRectangle(cornerRadius: 12.5)
-                            .fill(Color.white.opacity(0.8))
-                            .scaleEffect(x: 1, y: 1.1, anchor: .center)
-                    }
-                }
+                RoundedRectangle(cornerRadius: 12.5)
+                    .fill(isFocused ? Color.white : Color.clear)
             }
-            .scaleEffect(x: isFocused ? 1.01 : 1.0, y: isFocused ? 1.05 : 1.0, anchor: .center)
+            .tvFocusBorder(isFocused: isFocused, shape: RoundedRectangle(cornerRadius: 12.5))
             .animation(.easeInOut(duration: 0.125), value: isFocused)
             .listRowBackground(Color.clear)
     }

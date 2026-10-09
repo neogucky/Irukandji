@@ -58,7 +58,7 @@ extension EPGDateBar {
                     )
             }
             .focused($isFocused)
-            .scaleEffect(isFocused ? 1.06 : 1)
+            .tvFocusBorder(isFocused: isFocused, shape: Capsule())
             .animation(.easeInOut(duration: 0.1), value: isFocused)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
         }

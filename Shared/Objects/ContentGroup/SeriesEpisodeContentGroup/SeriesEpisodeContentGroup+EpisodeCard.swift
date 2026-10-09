@@ -96,9 +96,9 @@ extension SeriesEpisodeContentGroup {
                         }
                     }
                     .posterStyle(.landscape)
-                    #if os(tvOS)
+                #if os(tvOS)
                     .posterCornerRadius(.landscape)
-                    #endif
+                #endif
                     .subtleShadow()
             }
         }
@@ -191,8 +191,13 @@ extension SeriesEpisodeContentGroup {
                 }
             }
             .foregroundStyle(.primary, .secondary)
-            .buttonStyle(.card)
-            .focused($focusedElement, equals: .artwork)
+            #if os(tvOS)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .buttonStyle(.focusBorder)
+            #else
+                .buttonStyle(.card)
+            #endif
+                .focused($focusedElement, equals: .artwork)
 
             if let contextMenuItem {
                 button
@@ -223,14 +228,14 @@ extension SeriesEpisodeContentGroup {
                 }
                 .foregroundStyle(.primary, .secondary)
                 #if os(tvOS)
-                .buttonStyle(
-                    EpisodeContentButtonStyle(
-                        showsMaterial: focusedElement != nil,
-                        isFocused: focusedElement == .content
+                    .buttonStyle(
+                        EpisodeContentButtonStyle(
+                            showsMaterial: focusedElement != nil,
+                            isFocused: focusedElement == .content
+                        )
                     )
-                )
                 #endif
-                .focused($focusedElement, equals: .content)
+                    .focused($focusedElement, equals: .content)
             }
             .focusSection()
             .defaultFocus(
@@ -295,8 +300,7 @@ extension SeriesEpisodeContentGroup {
                         style: .continuous
                     )
                 )
-                .scaleEffect(isFocused ? 1.05 : 1)
-                .scaleEffect(configuration.isPressed ? 0.97 : 1)
+                .tvFocusBorder(isFocused: isFocused, shape: RoundedRectangle(cornerRadius: cornerRadius))
                 .brightness(isFocused ? 0.04 : 0)
                 .opacity(configuration.isPressed ? 0.85 : 1)
                 .shadow(

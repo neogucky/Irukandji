@@ -208,7 +208,11 @@ private struct UserViewLibraryGridElement: View {
         .onChange(of: useRandomImage) {
             setImageSources()
         }
+        #if os(tvOS)
+        .buttonStyle(.focusBorder)
+        #else
         .buttonStyle(.card)
+        #endif
     }
 
     @ViewBuilder

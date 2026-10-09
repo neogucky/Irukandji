@@ -24,7 +24,7 @@ struct EPGChannelButton: View {
 
     private var posterSize: CGFloat {
         min(
-            UIDevice.isTV && !isFocused ? layout.rowHeight - 8 : layout.rowHeight,
+            layout.rowHeight,
             layout.channelColumnWidth
         )
     }

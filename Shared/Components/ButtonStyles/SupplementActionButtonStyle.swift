@@ -34,7 +34,11 @@ struct SupplementActionButtonStyle: PrimitiveButtonStyle {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 7))
         }
+        #if os(tvOS)
+        .buttonStyle(FocusBorderButtonStyle(shape: RoundedRectangle(cornerRadius: 7)))
+        #else
         .buttonStyle(.card)
+        #endif
     }
 
     @available(iOS 26.0, tvOS 26.0, *)
@@ -52,7 +56,7 @@ struct SupplementActionButtonStyle: PrimitiveButtonStyle {
         }
         .buttonBorderShape(.capsule)
         #if os(tvOS)
-        .buttonStyle(.card)
+            .buttonStyle(FocusBorderButtonStyle(shape: Capsule()))
         #endif
     }
 
