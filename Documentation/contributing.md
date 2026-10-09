@@ -44,6 +44,12 @@ Swiftfin is built using the Xcode version pinned in our [CI workflow](https://gi
 
 Swiftfin can be tested using Xcode's built-in Simulator or on real hardware. See Apple's guide on [Running your app in Simulator or on a device](https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device/) for instructions on both approaches.
 
+Keep code signing enabled for Simulator builds. Xcode uses ad hoc signing for the Simulator, so a paid Apple Developer membership is not required. Setting `CODE_SIGNING_ALLOWED=NO` also skips the Simulator entitlements needed for Keychain access. Login can then fail to save its token and crash with `access token missing in keychain`.
+
+To run the Apple TV app, select the `Swiftfin tvOS` scheme and an Apple TV Simulator, then choose **Product > Run**. For command-line builds, omit `CODE_SIGNING_ALLOWED=NO`. A build made with signing disabled can be used to check compilation, but should not be installed for login testing.
+
+The Apple TV Simulator configuration uses the bundle identifier as its private Keychain access group. This keeps saved logins accessible when Xcode's simulated application identifier changes between builds. The setting applies only to the Simulator; device builds use their normal provisioning configuration.
+
 > **Note:** Some functionality behaves differently between the Simulator and real devices, including picture-in-picture, device storage, and local network access. In these scenarios, it is recommended to test code changes on real hardware to ensure correct behavior.
 
 ## Git Flow

@@ -131,6 +131,11 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
         .onSceneWillEnterForeground {
             viewModel.refreshIfPendingChanges()
         }
+        .onNotification(.didSendStopReport) { _ in
+            // The player can cover this view without triggering onAppear again.
+            // Refresh in place after the server has saved playback progress.
+            viewModel.background.refresh()
+        }
         .topBarTrailing {
             if #unavailable(iOS 26.0) {
                 if viewModel.background.is(.refreshing) {

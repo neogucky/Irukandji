@@ -146,6 +146,9 @@ struct ItemView: View {
         .onFirstAppear {
             viewModel.refresh()
         }
+        .sinceLastDisappear { _ in
+            viewModel.refreshIfPendingChanges()
+        }
         .environmentObject(focusCoordinator)
         .confirmationDialog(
             L10n.deleteItemConfirmationMessage,
@@ -165,6 +168,11 @@ struct ItemView: View {
 
             UIDevice.feedback(.success)
             router.dismiss()
+        }
+        .onNotification(.didSendStopReport) { report in
+            guard provider.prepareForPlaybackStop(report) else { return }
+            // Rebuild the header and navigation after final progress settles.
+            viewModel.refresh()
         }
         .errorMessage($deleteViewModel.error)
         #if os(tvOS)

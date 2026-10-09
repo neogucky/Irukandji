@@ -43,7 +43,63 @@ struct NextUpLibrary: BaseItemKindLibrary {
         let request = Paths.getNextUp(parameters: parameters)
         let response = try await pageState.userSession.client.send(request)
 
-        return response.value.items ?? []
+        let suggestions = response.value.items ?? []
+        guard !environment.enableRewatching else { return suggestions }
+
+        let client = pageState.userSession.client
+        let userID = pageState.userSession.user.id
+
+        return await withTaskGroup(of: (Int, BaseItemDto).self) { group in
+            for (index, suggestion) in suggestions.enumerated() where suggestion.indexNumber == nil {
+                group.addTask {
+                    let continuation = try? await Self.resolveUnnumberedEpisode(
+                        suggestion,
+                        userID: userID,
+                        client: client
+                    )
+                    return (index, continuation ?? suggestion)
+                }
+            }
+
+            var items = suggestions
+            for await (index, item) in group {
+                items[index] = item
+            }
+            return items
+        }
+    }
+
+    private static func resolveUnnumberedEpisode(
+        _ suggestion: BaseItemDto,
+        userID: String,
+        client: JellyfinClient
+    ) async throws -> BaseItemDto {
+        guard let seriesID = suggestion.seriesID else { return suggestion }
+
+        var parameters = Paths.GetItemsParameters()
+        parameters.userID = userID
+        parameters.parentID = seriesID
+        parameters.includeItemTypes = [.episode]
+        parameters.isRecursive = true
+        parameters.isPlayed = true
+        parameters.isMissing = false
+        parameters.enableUserData = true
+        parameters.limit = 1
+        parameters.sortBy = [.datePlayed]
+        parameters.sortOrder = [.descending]
+
+        let playedResponse = try await client.send(Paths.getItems(parameters: parameters))
+        guard let lastPlayedEpisode = playedResponse.value.items?.first,
+              lastPlayedEpisode.id != nil
+        else { return suggestion }
+
+        let episodes = try await EpisodeContinuation.episodes(around: lastPlayedEpisode, userID: userID, client: client)
+
+        return EpisodeContinuation.nextUpItem(
+            serverSuggestion: suggestion,
+            lastPlayedEpisode: lastPlayedEpisode,
+            adjacentEpisodes: episodes
+        )
     }
 
     func onItemUserDataChanged(

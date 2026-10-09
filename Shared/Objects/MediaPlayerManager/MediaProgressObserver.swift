@@ -27,12 +27,23 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
 
     private let timer = PokeIntervalTimer()
     private var hasSentStart = false
+    private var reportTask: Task<Void, Error>?
     private var item: MediaPlayerItem?
     private var lastPlaybackRequestStatus: MediaPlayerManager.PlaybackRequestStatus = .playing
 
     init(item: MediaPlayerItem) {
         self.item = item
         super.init()
+    }
+
+    private func enqueueReport(_ operation: @escaping @MainActor () async throws -> Void) {
+        let previous = reportTask
+        reportTask = Task {
+            // A progress request from before Stop must finish before Stop is
+            // sent, otherwise it can overwrite the final position.
+            _ = await previous?.result
+            try await operation()
+        }
     }
 
     private func sendReport() {
@@ -121,7 +132,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
 
         #endif
 
-        Task {
+        enqueueReport {
             var info = PlaybackStateInfo()
             info.audioStreamIndex = item.selectedAudioStreamIndex
             info.itemID = item.baseItem.id
@@ -133,7 +144,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
             info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
             let request = Paths.reportPlaybackStart(info)
-            try await send(request)
+            try await self.send(request)
 
             self.hasSentStart = true
         }
@@ -146,7 +157,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
 
         #endif
 
-        Task {
+        enqueueReport {
             var info = PlaybackStopInfo()
             info.itemID = item.baseItem.id
             info.liveStreamID = item.mediaSource.liveStreamID
@@ -156,18 +167,33 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
             info.sessionID = item.playSessionID
 
             let request = Paths.reportPlaybackStopped(info)
-            try await send(request)
+            try await self.send(request)
+
+            await self.settlePlaybackState(for: item.baseItem, stoppedAt: info.positionTicks)
+            Notifications[.didSendStopReport].post(info)
         }
     }
 
-    private func sendProgressReport(for item: MediaPlayerItem, seconds: Duration?, isPaused: Bool = false) {
+    func settlePlaybackState(for item: BaseItemDto, stoppedAt positionTicks: Int?) async {
+        guard PlaybackCompletion.reachedEnd(of: item, at: positionTicks), let userSession else { return }
+        do {
+            let updated = try await PlaybackCompletion.refreshedItem(stoppedAt: positionTicks) {
+                try await item.getFullItem(userSession: userSession)
+            }
+            Notifications[.itemMetadataDidChange].post(updated)
+        } catch {
+            logger.debug("Unable to read final playback state: \(error.localizedDescription)")
+        }
+    }
+
+    func sendProgressReport(for item: MediaPlayerItem, seconds: Duration?, isPaused: Bool = false) {
 
         #if DEBUG
         guard Defaults[.sendProgressReports] else { return }
 
         #endif
 
-        Task {
+        enqueueReport {
             var info = PlaybackStateInfo()
             info.audioStreamIndex = item.selectedAudioStreamIndex
             info.isPaused = isPaused
@@ -180,7 +206,7 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
             info.subtitleStreamIndex = item.selectedSubtitleStreamIndex
 
             let request = Paths.reportPlaybackProgress(info)
-            try await send(request)
+            try await self.send(request)
         }
     }
 }

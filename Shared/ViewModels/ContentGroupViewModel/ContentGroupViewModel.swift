@@ -52,9 +52,10 @@ final class ContentGroupViewModel<Provider: ContentGroupProvider>: ViewModel {
         self.provider = provider
         super.init()
 
-        Publishers.Merge(
+        Publishers.Merge3(
             Notifications[.itemUserDataDidChange].publisher.map { _ in () },
-            Notifications[.itemMetadataDidChange].publisher.map { _ in () }
+            Notifications[.itemMetadataDidChange].publisher.map { _ in () },
+            Notifications[.didSendStopReport].publisher.map { _ in () }
         )
         .sink { [weak self] _ in
             self?.lastRefreshSignalDate = Date.now

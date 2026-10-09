@@ -113,7 +113,7 @@ extension Notifications.Key {
         Key("didChangeServerConnection")
     }
 
-    static var didSendStopReport: Key<Void> {
+    static var didSendStopReport: Key<PlaybackStopInfo> {
         Key("didSendStopReport")
     }
 

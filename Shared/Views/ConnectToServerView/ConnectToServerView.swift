@@ -47,12 +47,18 @@ struct ConnectToServerView: View {
 
     @ViewBuilder
     private var connectSection: some View {
-        Section(L10n.connectToServer) {
-            TextField(L10n.url, text: $url)
+        Section {
+            TextField(L10n.serverAddress, text: $url)
                 .disableAutocorrection(true)
                 .textInputAutocapitalization(.never)
                 .keyboardType(.URL)
                 .focused($isURLFocused)
+        } header: {
+            Text(L10n.connectToServer)
+        } footer: {
+            Text(L10n.serverAddressHint)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
 
         if viewModel.state == .connecting {

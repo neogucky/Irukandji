@@ -56,46 +56,42 @@ final class ConnectToServerViewModel: ObservableObject {
     @Function(\Action.Cases.connect)
     private func connectToServer(_ url: String) async throws {
 
-        let formattedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
-            .trimmingCharacters(in: .objectReplacement)
-            .trimmingCharacters(in: ["/"])
-            .prepending("http://", if: !url.contains("://"))
+        let address = try ServerAddress(url)
+        let result = try await address.resolve { url in
+            let sessionConfiguration = URLSessionConfiguration.swiftfin.copy() as! URLSessionConfiguration
+            sessionConfiguration.timeoutIntervalForRequest = 8
+            sessionConfiguration.timeoutIntervalForResource = 12
+            sessionConfiguration.waitsForConnectivity = false
 
-        guard let parsedURL = URL(string: formattedURL)
-        else {
-            throw ErrorMessage(L10n.invalidURL)
-        }
+            let client = JellyfinClient(
+                configuration: .swiftfinConfiguration(url: url),
+                sessionConfiguration: sessionConfiguration,
+                sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
+            )
 
-        let url = parsedURL.normalizedServerConnectionURL ?? parsedURL
+            // Probe only the public API before choosing a scheme.
+            let response = try await client.send(Paths.getPublicSystemInfo)
 
-        guard url.host != nil else {
-            throw ErrorMessage(L10n.invalidURL)
-        }
+            guard let name = response.value.serverName,
+                  let id = response.value.id
+            else {
+                logger.critical("Missing server data from network call")
+                throw ErrorMessage(L10n.unknownError)
+            }
 
-        let client = JellyfinClient(
-            configuration: .swiftfinConfiguration(url: url),
-            sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
-        )
-
-        let response = try await client.send(Paths.getPublicSystemInfo)
-
-        guard let name = response.value.serverName,
-              let id = response.value.id
-        else {
-            logger.critical("Missing server data from network call")
-            throw ErrorMessage(L10n.unknownError)
+            return (name: name, id: id, responseURL: response.response.url)
         }
 
         let connectionURL = processConnectionURL(
-            initial: url,
-            response: response.response.url
+            initial: result.url,
+            response: result.value.responseURL
         )
 
         let newServerState = ServerState(
             urls: [connectionURL],
             currentURL: connectionURL,
-            name: name,
-            id: id,
+            name: result.value.name,
+            id: result.value.id,
             userIDs: []
         )
 

@@ -20,12 +20,21 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
     @Published
     private(set) var mediaPlayerItemProvider: MediaPlayerItemProvider?
     @Published
+    private(set) var nextEpisodeItemProvider: MediaPlayerItemProvider?
+    @Published
     private(set) var randomBackdropItem: BaseItemDto?
 
     @Published
     var isPresentingDeleteConfirmation = false
 
     let id: String
+    private var reportedStopPosition: Int?
+
+    func prepareForPlaybackStop(_ report: PlaybackStopInfo) -> Bool {
+        guard report.itemID == id else { return false }
+        reportedStopPosition = report.positionTicks
+        return true
+    }
 
     var displayTitle: String {
         item.displayTitle
@@ -45,17 +54,25 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
 
     func makeGroups(environment: Empty) async throws -> [any ContentGroup] {
         let userSession = try requireUserSession()
-        let fullItem = try await item.getFullItem(userSession: userSession, sendNotification: true)
+        let stopPosition = reportedStopPosition
+        reportedStopPosition = nil
+        let fullItem = try await PlaybackCompletion.refreshedItem(stoppedAt: stopPosition) {
+            try await self.item.getFullItem(userSession: userSession)
+        }
+        Notifications[.itemMetadataDidChange].post(fullItem)
         let newMediaPlayerItemProvider = try await resolveMediaPlayerItemProvider(
             for: fullItem,
             userSession: userSession
         )
+        let nextEpisode = try? await nextEpisode(for: fullItem)
         let newLocalTrailers = try? await localTrailers(for: fullItem)
         let newRandomBackdropItem = try? await randomBackdropItem(for: fullItem)
 
         item = fullItem
         localTrailers = newLocalTrailers ?? []
         mediaPlayerItemProvider = newMediaPlayerItemProvider
+        nextEpisodeItemProvider = nextEpisode?
+            .getPlaybackItemProvider(userSession: userSession)
         randomBackdropItem = newRandomBackdropItem
 
         return try await _makeGroups(
@@ -66,6 +83,11 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
 
     @ContentGroupBuilder
     private func _makeGroups(item: BaseItemDto, itemID: String) async throws -> [any ContentGroup] {
+
+        if item.type == .episode {
+            let seasons = (try? await seasons(for: item)) ?? season(for: item).map { [$0] } ?? []
+            EpisodeNavigationContentGroup(nextEpisode: nextEpisodeItemProvider?.item, seasons: seasons)
+        }
 
         if let birthday = item.birthday?.formatted(date: .long, time: .omitted) {
             LabeledContentGroup(
@@ -190,33 +212,6 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             )
 
         default: []
-        }
-
-        if item.type == .episode {
-            PosterGroup(
-                library: StaticLibrary(
-                    title: L10n.season,
-                    id: "seasons",
-                    elements: [BaseItemDto(
-                        id: item.seasonID,
-                        imageTags: item.parentPrimaryImageItemID == item.seasonID
-                            ? item.parentPrimaryImageTag.map { [ImageType.primary.rawValue: $0] }
-                            : nil,
-                        name: item.seasonName,
-                        parentBackdropImageTags: item.parentBackdropImageTags,
-                        parentBackdropItemID: item.parentBackdropItemID,
-                        parentThumbImageTag: item.parentThumbImageTag,
-                        parentThumbItemID: item.parentThumbItemID,
-                        seriesID: item.seriesID,
-                        seriesName: item.seriesName,
-                        seriesPrimaryImageTag: item.seriesPrimaryImageTag,
-                        seriesThumbImageTag: item.seriesThumbImageTag,
-                        type: .season
-                    )]
-                ),
-                posterSize: .small,
-                environment: .init(isHeaderButtonEnabled: false)
-            )
         }
 
         if let castAndCrew = item.mergedPeople, castAndCrew.isNotEmpty {
@@ -365,6 +360,52 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         }
 
         return item
+    }
+
+    private func nextEpisode(for item: BaseItemDto) async throws -> BaseItemDto? {
+        guard item.type == .episode,
+              item.userData?.isPlayed == true,
+              item.id != nil,
+              item.seriesID != nil
+        else { return nil }
+
+        let session = try requireUserSession()
+        let episodes = try await EpisodeContinuation.episodes(around: item, userID: session.user.id, client: session.client)
+        return Self.nextEpisode(after: item, in: episodes)
+    }
+
+    private func seasons(for item: BaseItemDto) async throws -> [BaseItemDto] {
+        guard let seriesID = item.seriesID else { return season(for: item).map { [$0] } ?? [] }
+        let session = try requireUserSession()
+        let series = BaseItemDto(id: seriesID, name: item.seriesName, type: .series)
+        return try await SeasonLibrary(parent: series).retrievePage(
+            environment: .default,
+            pageState: .init(pageOffset: 0, pageSize: 100, userSession: session)
+        )
+    }
+
+    private func season(for item: BaseItemDto) -> BaseItemDto? {
+        guard let seasonID = item.seasonID else { return nil }
+        return BaseItemDto(
+            id: seasonID,
+            imageTags: item.parentPrimaryImageItemID == seasonID
+                ? item.parentPrimaryImageTag.map { [ImageType.primary.rawValue: $0] }
+                : nil,
+            name: item.seasonName,
+            parentBackdropImageTags: item.parentBackdropImageTags,
+            parentBackdropItemID: item.parentBackdropItemID,
+            parentThumbImageTag: item.parentThumbImageTag,
+            parentThumbItemID: item.parentThumbItemID,
+            seriesID: item.seriesID,
+            seriesName: item.seriesName,
+            seriesPrimaryImageTag: item.seriesPrimaryImageTag,
+            seriesThumbImageTag: item.seriesThumbImageTag,
+            type: .season
+        )
+    }
+
+    static func nextEpisode(after item: BaseItemDto, in episodes: [BaseItemDto]) -> BaseItemDto? {
+        EpisodeContinuation.nextEpisode(after: item, in: episodes)
     }
 
     private func resumeItem(for item: BaseItemDto) async throws -> BaseItemDto? {

@@ -40,6 +40,6 @@ struct EpisodeLibrary: BaseItemKindLibrary {
         )
         let response = try await pageState.userSession.client.send(request)
 
-        return response.value.items ?? []
+        return EpisodeContinuation.orderedEpisodes(response.value.items ?? [])
     }
 }

@@ -1114,6 +1114,8 @@ internal enum L10n {
   internal static let newUser = L10n.tr("Localizable", "newUser", fallback: "New user")
   /// Next
   internal static let next = L10n.tr("Localizable", "next", fallback: "Next")
+  /// Next episode
+  internal static let nextEpisode = L10n.tr("Localizable", "nextEpisode", fallback: "Next episode")
   /// Next item
   internal static let nextItem = L10n.tr("Localizable", "nextItem", fallback: "Next item")
   /// Next Up
@@ -1610,6 +1612,10 @@ internal enum L10n {
   internal static let seriesSettings = L10n.tr("Localizable", "seriesSettings", fallback: "Series Settings")
   /// Server
   internal static let server = L10n.tr("Localizable", "server", fallback: "Server")
+  /// Server address
+  internal static let serverAddress = L10n.tr("Localizable", "serverAddress", fallback: "Server address")
+  /// An IP address or hostname is enough. The http:// or https:// prefix is optional.
+  internal static let serverAddressHint = L10n.tr("Localizable", "serverAddressHint", fallback: "An IP address or hostname is enough. The http:// or https:// prefix is optional.")
   /// Server logs
   internal static let serverLogs = L10n.tr("Localizable", "serverLogs", fallback: "Server logs")
   /// Servers
