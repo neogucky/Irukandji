@@ -13,16 +13,22 @@ struct CinematicContentGroupContainer<Content: View>: View {
     @Environment(\.frameForParentView)
     private var frameForParentView
 
-    private let content: Content
+    @Environment(\.mainNavigationScrollContext)
+    private var navigationScrollContext
 
-    init(@ViewBuilder content: () -> Content) {
+    private let content: Content
+    private let fillsViewport: Bool
+
+    init(fillsViewport: Bool = false, @ViewBuilder content: () -> Content) {
+        self.fillsViewport = fillsViewport
         self.content = content()
     }
 
     private var resolvedHeight: CGFloat {
         let parentHeight = frameForParentView[.scrollView, default: .zero].frame.height
 
-        return max(parentHeight - 75, 0)
+        let headerHeight = navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight
+        return max(parentHeight - headerHeight - (fillsViewport ? 0 : 75), 0)
     }
 
     var body: some View {

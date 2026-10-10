@@ -52,6 +52,11 @@ struct NavigationInjectionView: View {
                                 isRootOfPath: false
                             )
                         )
+                    #if os(tvOS)
+                        .environment(\.isMainNavigationFocused, false)
+                        .environment(\.mainNavigationScrollContext, nil)
+                        .environment(\.navigationFocusPageID, route.id)
+                    #endif
                 }
         }
         .trackingFrame(for: .navigationStack)
@@ -64,6 +69,8 @@ struct NavigationInjectionView: View {
         )
         .environmentObject(coordinator)
         #if os(tvOS)
+            .environment(\.navigationFocusStore, coordinator.focusStore)
+            .environment(\.navigationFocusPageID, "root")
             .fullScreenCover(
                 item: $coordinator.presentedSheet
             ) {
@@ -74,7 +81,7 @@ struct NavigationInjectionView: View {
                 }
                 .environment(\.tabSafeAreaInsets, .zero)
                 .environment(\.isMainNavigationFocused, false)
-                .environment(\.onMainNavigationScroll, nil)
+                .environment(\.mainNavigationScrollContext, nil)
                 .background(.regularMaterial)
             }
             .fullScreenCover(
@@ -85,7 +92,7 @@ struct NavigationInjectionView: View {
                 }
                 .environment(\.tabSafeAreaInsets, .zero)
                 .environment(\.isMainNavigationFocused, false)
-                .environment(\.onMainNavigationScroll, nil)
+                .environment(\.mainNavigationScrollContext, nil)
             }
         #else
             .sheet(

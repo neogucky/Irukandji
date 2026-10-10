@@ -31,6 +31,11 @@ struct ItemView: View {
     @State
     private var contentSize: CGSize = .zero
 
+    #if os(tvOS)
+    @FocusState
+    private var initialFocusSelection: String?
+    #endif
+
     @StateObject
     private var focusCoordinator = FocusCoordinator(initial: Component.play)
     @StateObject
@@ -47,7 +52,11 @@ struct ItemView: View {
     }
 
     private var isCompact: Bool {
+        #if os(tvOS)
+        false
+        #else
         contentSize.width < 600
+        #endif
     }
 
     private var isEnhanced: Bool {
@@ -150,6 +159,10 @@ struct ItemView: View {
             viewModel.refreshIfPendingChanges()
         }
         .environmentObject(focusCoordinator)
+        #if os(tvOS)
+        .defaultFocus($initialFocusSelection, Component.play, priority: .userInitiated)
+        .environment(\.initialFocusSelection, $initialFocusSelection)
+        #endif
         .confirmationDialog(
             L10n.deleteItemConfirmationMessage,
             isPresented: $provider.isPresentingDeleteConfirmation,

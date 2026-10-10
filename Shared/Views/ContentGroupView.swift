@@ -14,6 +14,11 @@ import SwiftUI
 
 struct ContentGroupView<Provider: ContentGroupProvider>: View {
 
+    #if os(tvOS)
+    @Environment(\.mainNavigationScrollContext)
+    private var navigationScrollContext
+    #endif
+
     private enum Focus: String {
         case content = "contentGroup-content"
     }
@@ -55,12 +60,15 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
                             contentGroupOptions = value
                         }
                 }
+                #if os(tvOS)
+                .padding(.top, navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight)
+                #endif
             }
             .trackingFrame(for: .scrollView)
             .mainNavigationScrollObserver()
             #if os(tvOS)
             .coordinatedFocus(Focus.content.rawValue)
-            .ignoresSafeArea(.container, edges: [.horizontal, .top])
+            .ignoresSafeArea(.container)
             #else
             .ignoresSafeArea(
                 edges: contentGroupOptions.contains(.ignoreSafeAreaTop) ? [.horizontal, .top] : .horizontal

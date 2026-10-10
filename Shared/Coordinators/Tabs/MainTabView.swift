@@ -19,15 +19,11 @@ struct MainTabView: View {
     @State
     private var loadedTabIDs: Set<String> = []
 
-    @State
-    private var scrollOffsets: [String: CGFloat] = [:]
+    @StateObject
+    private var scrollController = MainNavigationScrollController()
 
-    private let headerHeight: CGFloat = 80
-
-    private var hiddenHeaderHeight: CGFloat {
-        guard focusedTabID == nil else { return 0 }
-
-        return min(scrollOffsets[tabCoordinator.selectedTabID, default: 0], headerHeight)
+    private var isBrowsingRoot: Bool {
+        tabCoordinator.tabs.first(where: { $0.item.id == tabCoordinator.selectedTabID })?.coordinator.path.isEmpty == true
     }
     #endif
 
@@ -108,84 +104,93 @@ struct MainTabView: View {
             focus: $focusedTabID,
             action: selectTab
         )
-        .controlSize(.large)
+        .controlSize(.regular)
         .transaction { transaction in
             transaction.animation = nil
             transaction.disablesAnimations = true
         }
         .frame(maxWidth: .infinity)
-        .frame(height: headerHeight)
+        .frame(height: MainNavigationScrollController.headerHeight)
         .edgePadding(.horizontal)
-        .background(IrukandjiTheme.background)
+        .background {
+            if tabCoordinator.selectedTabID != tabCoordinator.tabs.first?.item.id {
+                IrukandjiTheme.background
+            }
+        }
         .focusSection()
-        .defaultFocus($focusedTabID, tabCoordinator.selectedTabID, priority: .userInitiated)
+        .defaultFocus($focusedTabID, tabCoordinator.selectedTabID, priority: .automatic)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(L10n.tabBar)
     }
 
     private var tvOSTabContent: some View {
-        VStack(spacing: 0) {
-            navigationHeader
-                .offset(y: -hiddenHeaderHeight)
-                .frame(height: headerHeight - hiddenHeaderHeight, alignment: .top)
-                .clipped()
-
-            GeometryReader { proxy in
+        GeometryReader { proxy in
+            ZStack(alignment: .top) {
                 ZStack {
                     ForEach(tabCoordinator.tabs, id: \.item.id) { tab in
                         let isActive = tab.item.id == tabCoordinator.selectedTabID
                         if isActive || loadedTabIDs.contains(tab.item.id) {
                             tabRoot(tab)
                                 .environment(\.tabSafeAreaInsets, proxy.safeAreaInsets)
-                                .environment(\.isMainNavigationFocused, focusedTabID != nil)
-                                .environment(\.onMainNavigationScroll) { offset in
-                                    guard tab.item.id == tabCoordinator.selectedTabID else { return }
-
-                                    scrollOffsets[tab.item.id] = max(0, offset)
-                                }
+                                .environment(\.isMainNavigationFocused, focusedTabID != nil && isBrowsingRoot)
+                                .environment(
+                                    \.mainNavigationScrollContext,
+                                    MainNavigationScrollContext(controller: scrollController, tabID: tab.item.id)
+                                )
                                 .opacity(isActive ? 1 : 0)
                                 .disabled(!isActive)
                                 .allowsHitTesting(isActive)
                                 .accessibilityHidden(!isActive)
                                 .zIndex(isActive ? 1 : 0)
-                                .onChange(of: tab.coordinator.path.count) { oldCount, newCount in
-                                    guard isActive, newCount > oldCount else { return }
-
-                                    // Keep focus on the current category while its new page loads.
-                                    scrollOffsets[tab.item.id] = 0
-                                    focusedTabID = tab.item.id
-                                }
                         }
                     }
                 }
+
+                // Only the header moves during scrolling; the content viewport stays fixed.
+                MainNavigationHeaderHost(state: scrollController.headerState) {
+                    navigationHeader
+                }
+                .frame(height: MainNavigationScrollController.headerHeight)
+                .opacity(isBrowsingRoot ? 1 : 0)
+                .disabled(!isBrowsingRoot)
+                .allowsHitTesting(isBrowsingRoot)
+                .accessibilityHidden(!isBrowsingRoot)
             }
             .clipped()
         }
         .ignoresSafeArea(.container)
         .onAppear {
             loadedTabIDs.insert(tabCoordinator.selectedTabID)
+            scrollController.activate(tabCoordinator.selectedTabID)
             focusedTabID = tabCoordinator.selectedTabID
         }
         .onChange(of: focusedTabID) { _, tabID in
-            guard let tabID, tabID != tabCoordinator.selectedTabID else { return }
+            guard let tabID else { return }
 
-            // Switch immediately without replacing the focused header button.
-            tabCoordinator.selectedTabID = tabID
+            if tabID != tabCoordinator.selectedTabID {
+                // Switch immediately without replacing the focused header button.
+                tabCoordinator.selectedTabID = tabID
+            }
+            // Visiting the menu supersedes a pending card restoration from Back.
+            tabCoordinator.tabs.first(where: { $0.item.id == tabID })?.coordinator.focusStore.beginNavigation()
+            scrollController.revealHeader()
         }
         .onChange(of: tabCoordinator.selectedTabID) { _, tabID in
             guard let tabID else { return }
 
             loadedTabIDs.insert(tabID)
+            scrollController.activate(tabID)
         }
-        .onExitCommand {
-            guard let tab = tabCoordinator.tabs.first(where: { $0.item.id == tabCoordinator.selectedTabID }) else { return }
-
-            if tab.coordinator.path.isEmpty {
-                focusedTabID = tab.item.id
-            } else {
-                tab.coordinator.path.removeLast()
+        .onChange(of: isBrowsingRoot) { _, isRoot in
+            if !isRoot {
+                focusedTabID = nil
             }
         }
+        // Let NavigationStack handle Back on detail pages and restore its previous focus.
+        .onExitCommand(perform: isBrowsingRoot ? {
+            focusedTabID = tabCoordinator.selectedTabID
+            scrollController.revealHeader()
+        } : nil)
     }
     #else
     private var iOSTabContent: some View {

@@ -40,8 +40,22 @@ extension EnvironmentValues {
     @Entry
     var isMainNavigationFocused: Bool = false
 
+    #if os(tvOS)
     @Entry
-    var onMainNavigationScroll: ((CGFloat) -> Void)? = nil
+    var navigationFocusStore: NavigationFocusStore? = nil
+
+    @Entry
+    var navigationFocusPageID: String = "root"
+
+    @Entry
+    var navigationFocusScopeID: String = ""
+
+    @Entry
+    var mainNavigationScrollContext: MainNavigationScrollContext? = nil
+
+    @Entry
+    var initialFocusSelection: FocusState<String?>.Binding? = nil
+    #endif
 
     // TODO: figure out this directional response stuff
     @Entry

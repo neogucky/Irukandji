@@ -15,6 +15,19 @@ extension ItemView {
         @FocusState
         private var focusedButton: String?
 
+        #if os(tvOS)
+        @Environment(\.initialFocusSelection)
+        private var initialFocusSelection
+        #endif
+
+        private var defaultFocusSelection: FocusState<String?>.Binding {
+            #if os(tvOS)
+            initialFocusSelection ?? $focusedButton
+            #else
+            $focusedButton
+            #endif
+        }
+
         @ObservedObject
         var provider: ItemContentGroupProvider
 
@@ -52,7 +65,7 @@ extension ItemView {
             }
             .focusSection()
             .defaultFocus(
-                $focusedButton,
+                defaultFocusSelection,
                 defaultFocusedButton,
                 priority: .userInitiated
             )

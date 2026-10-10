@@ -104,5 +104,8 @@ struct PlayButton: View {
             }
         }
         .disabled(itemProvider == nil)
+        #if os(tvOS)
+        .accessibilityIdentifier("item-play")
+        #endif
     }
 }

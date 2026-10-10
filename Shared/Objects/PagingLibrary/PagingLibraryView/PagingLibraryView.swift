@@ -13,6 +13,11 @@ import SwiftUI
 
 struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: LibraryElement {
 
+    #if os(tvOS)
+    @Environment(\.mainNavigationScrollContext)
+    private var navigationScrollContext
+    #endif
+
     private enum Focus: String {
         case firstElement = "pagingLibrary-firstElement"
     }
@@ -85,6 +90,9 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         // safe area (including filter bars) and the tab's measured top inset.
         var insets = frame.safeAreaInsets
         insets.top = max(insets.top, tabSafeAreaInsets.top)
+        if navigationScrollContext != nil {
+            insets.top += MainNavigationScrollController.headerHeight
+        }
         return insets + EdgeInsets.itemSpacing
         #else
         var insets: EdgeInsets = if isSafeAreaBarApplied {

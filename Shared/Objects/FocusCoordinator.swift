@@ -6,12 +6,13 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Combine
 import SwiftUI
 
 @MainActor
 final class FocusCoordinator: ObservableObject {
 
-    fileprivate struct Request: Equatable {
+    struct Request: Equatable {
         let id: String
         let token = UUID()
     }
@@ -30,7 +31,7 @@ final class FocusCoordinator: ObservableObject {
     @Published
     private(set) var lastFocusedIDs: Set<String> = []
     @Published
-    fileprivate var request: Request?
+    private(set) var request: Request?
 
     @Published
     private var pendingInitialFocusID: String?
@@ -41,8 +42,20 @@ final class FocusCoordinator: ObservableObject {
         pendingInitialFocusID != nil
     }
 
+    #if os(tvOS)
+    private var initialFocusID: String?
+
+    func prefersInitialFocus(_ id: String) -> Bool {
+        initialFocusID == id
+    }
+    #endif
+
     init(initial: String? = nil) {
-        self.request = initial.map { Request(id: $0) }
+        #if os(tvOS)
+        initialFocusID = initial
+        #else
+        request = initial.map { Request(id: $0) }
+        #endif
     }
 
     /// Defers secondary controls until the target receives focus naturally.
@@ -91,6 +104,43 @@ final class FocusCoordinator: ObservableObject {
 }
 
 #if os(tvOS)
+/// Remembers the activated card separately from UIKit's default focus in a rebuilt collection.
+@MainActor
+final class NavigationFocusStore: ObservableObject {
+
+    struct Target: Equatable {
+        let scope: String
+        let item: AnyHashable
+    }
+
+    struct Request {
+        let pageID: String
+        let target: Target
+    }
+
+    @Published
+    private(set) var request: Request?
+    private var targets: [String: Target] = [:]
+
+    func remember(_ target: Target, on pageID: String) {
+        targets[pageID] = target
+    }
+
+    func restore(_ pageID: String) {
+        request = targets[pageID].map { Request(pageID: pageID, target: $0) }
+    }
+
+    func beginNavigation() {
+        request = nil
+    }
+
+    func didRestore(_ target: Target, on pageID: String) {
+        guard request?.pageID == pageID, request?.target == target else { return }
+
+        request = nil
+    }
+}
+
 private struct CoordinatedFocusScopeModifier<Value: Hashable>: ViewModifier {
 
     @State
@@ -167,6 +217,11 @@ private struct CoordinatedFocusModifier: ViewModifier {
     @Environment(\.isMainNavigationFocused)
     private var isMainNavigationFocused
 
+    #if os(tvOS)
+    @Environment(\.initialFocusSelection)
+    private var initialFocusSelection
+    #endif
+
     @EnvironmentObject
     private var coordinator: FocusCoordinator
 
@@ -177,7 +232,12 @@ private struct CoordinatedFocusModifier: ViewModifier {
     var selection: FocusState<String?>.Binding?
 
     private var focus: FocusState<String?>.Binding {
-        selection ?? $localSelection
+        #if os(tvOS)
+        if coordinator.prefersInitialFocus(id), let initialFocusSelection {
+            return initialFocusSelection
+        }
+        #endif
+        return selection ?? $localSelection
     }
 
     private func apply(_ request: FocusCoordinator.Request?) {

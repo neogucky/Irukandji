@@ -10,13 +10,14 @@ import SwiftUI
 
 extension View {
 
-    /// Draw inside the existing bounds so focus never resizes or shifts content.
+    /// Draw outside the existing bounds without changing the layout or hit target.
     @ViewBuilder
     func tvFocusBorder(isFocused: Bool, shape: some InsettableShape) -> some View {
         #if os(tvOS)
         overlay {
             shape
-                .strokeBorder(.white, lineWidth: 6)
+                .inset(by: -3)
+                .stroke(.white, lineWidth: 6)
                 .shadow(color: .black.opacity(0.8), radius: 2)
                 .opacity(isFocused ? 1 : 0)
                 .animation(.easeOut(duration: 0.12), value: isFocused)

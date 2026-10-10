@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Combine
 import SwiftUI
 
 @MainActor
@@ -38,12 +39,22 @@ final class TabCoordinator: ObservableObject {
 
     let tabs: [TabData]
 
+    private var cancellables: Set<AnyCancellable> = []
+
     init(@ArrayBuilder<TabItem> tabs: () -> [TabItem]) {
         let tabs = tabs()
         self.tabs = tabs.map { tab in
             (tab, NavigationCoordinator(usesNavigationStack: UIDevice.isTV), TabItemSelectedPublisher())
         }
         self.selectedTabID = tabs.first?.id
+
+        // The shared header must react to pushes/pops as well as tab changes.
+        for tab in self.tabs {
+            tab.coordinator
+                .objectWillChange
+                .sink { [weak self] _ in self?.objectWillChange.send() }
+                .store(in: &cancellables)
+        }
     }
 
     func route(to route: NavigationRoute) async {

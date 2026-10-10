@@ -22,7 +22,21 @@ final class NavigationCoordinator: ObservableObject {
     }
 
     @Published
-    var path: [NavigationRoute] = []
+    var path: [NavigationRoute] = [] {
+        didSet {
+            #if os(tvOS)
+            if path.count < oldValue.count {
+                focusStore.restore(path.last?.id ?? "root")
+            } else if path.count > oldValue.count {
+                focusStore.beginNavigation()
+            }
+            #endif
+        }
+    }
+
+    #if os(tvOS)
+    let focusStore = NavigationFocusStore()
+    #endif
 
     @Published
     var presentedSheet: PresentedRoute?

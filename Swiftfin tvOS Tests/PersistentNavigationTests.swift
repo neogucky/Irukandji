@@ -67,6 +67,109 @@ final class PersistentNavigationTests: XCTestCase {
         XCTAssertNil(coordinator.tabs[1].coordinator.presentedSheet)
     }
 
+    func testHeaderObservationDoesNotMutateScrollViewOrPublishPageUpdates() {
+        let controller = MainNavigationScrollController()
+        let scrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+        scrollView.contentInset.top = 80
+        let viewport = scrollView.bounds.size
+        var layoutUpdates = 0
+        let subscription = controller.objectWillChange.sink { layoutUpdates += 1 }
+        controller.register(scrollView, tabID: "home")
+        controller.activate("home")
+
+        for offset in stride(from: -80, through: 400, by: 1) {
+            scrollView.contentOffset.y = CGFloat(offset)
+            controller.didScroll(tabID: "home")
+        }
+
+        XCTAssertEqual(scrollView.bounds.size, viewport)
+        XCTAssertEqual(controller.headerState.hiddenHeight, 80)
+        XCTAssertEqual(layoutUpdates, 0)
+        withExtendedLifetime(subscription) {}
+    }
+
+    func testHeaderUsesRememberedOffsetForActiveTabOnly() {
+        let controller = MainNavigationScrollController()
+        let home = UIScrollView()
+        let movies = UIScrollView()
+        home.contentOffset.y = 40
+        movies.contentOffset.y = 200
+        controller.register(home, tabID: "home")
+        controller.register(movies, tabID: "movies")
+        controller.activate("home")
+        XCTAssertEqual(controller.headerState.hiddenHeight, 40)
+
+        controller.didScroll(tabID: "movies")
+        XCTAssertEqual(controller.headerState.hiddenHeight, 40)
+        controller.activate("movies")
+        XCTAssertEqual(controller.headerState.hiddenHeight, 80)
+        controller.activate("home")
+        XCTAssertEqual(controller.headerState.hiddenHeight, 40)
+    }
+
+    func testHeaderStopsPublishingOnceItHasScrolledAway() {
+        let controller = MainNavigationScrollController()
+        let scrollView = UIScrollView()
+        controller.register(scrollView, tabID: "home")
+        controller.activate("home")
+        var headerUpdates = 0
+        let subscription = controller.headerState.objectWillChange.sink { headerUpdates += 1 }
+
+        for offset in stride(from: 0, through: 400, by: 1) {
+            scrollView.contentOffset.y = CGFloat(offset)
+            controller.didScroll(tabID: "home")
+        }
+
+        XCTAssertEqual(headerUpdates, 80)
+        XCTAssertEqual(controller.headerState.hiddenHeight, 80)
+        withExtendedLifetime(subscription) {}
+    }
+
+    func testBackRequestsTheActivatedCardOnItsOriginatingPage() {
+        let coordinator = NavigationCoordinator(usesNavigationStack: true)
+        let homeTarget = NavigationFocusStore.Target(scope: "continue", item: "episode-12")
+        let seriesTarget = NavigationFocusStore.Target(scope: "episodes", item: "episode-13")
+        coordinator.focusStore.remember(homeTarget, on: "root")
+        coordinator.push(route("series"))
+        XCTAssertNil(coordinator.focusStore.request)
+        coordinator.focusStore.remember(seriesTarget, on: "series")
+        coordinator.push(route("episode"))
+
+        coordinator.path.removeLast()
+        XCTAssertEqual(coordinator.focusStore.request?.pageID, "series")
+        XCTAssertEqual(coordinator.focusStore.request?.target, seriesTarget)
+        coordinator.path.removeLast()
+        XCTAssertEqual(coordinator.focusStore.request?.pageID, "root")
+        XCTAssertEqual(coordinator.focusStore.request?.target, homeTarget)
+    }
+
+    func testRestorationIsConsumedOnceSoMovingFocusDoesNotJumpBack() {
+        let store = NavigationFocusStore()
+        let target = NavigationFocusStore.Target(scope: "continue", item: "episode-12")
+        store.remember(target, on: "root")
+        store.restore("root")
+        store.didRestore(target, on: "series")
+        XCTAssertNotNil(store.request)
+        store.didRestore(target, on: "root")
+        XCTAssertNil(store.request)
+        // Remembered activation remains available for another visit to the same detail page.
+        store.restore("root")
+        XCTAssertEqual(store.request?.target, target)
+    }
+
+    func testDetailDefaultFocusRemainsAvailableDuringNavigationTransition() {
+        let coordinator = FocusCoordinator(initial: "play")
+        XCTAssertNil(coordinator.request)
+        XCTAssertTrue(coordinator.prefersInitialFocus("play"))
+        XCTAssertFalse(coordinator.prefersInitialFocus("seasons"))
+
+        // Native default preferences remain available if tvOS evaluates them again
+        // after the transition; they do not issue another imperative focus request.
+        coordinator.focus("seasons")
+        XCTAssertTrue(coordinator.prefersInitialFocus("play"))
+        XCTAssertEqual(coordinator.request?.id, "seasons")
+    }
+
     private func route(
         _ id: String,
         style: NavigationRoute.TransitionStyle = .push(.automatic)

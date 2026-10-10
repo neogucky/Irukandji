@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Combine
 import SwiftUI
 
 struct PosterButton<Item: Poster>: View {
@@ -14,6 +15,23 @@ struct PosterButton<Item: Poster>: View {
     private var viewContext
 
     #if os(tvOS)
+    @Environment(\.navigationFocusStore)
+    private var navigationFocusStore
+    @Environment(\.navigationFocusPageID)
+    private var navigationFocusPageID
+    @Environment(\.navigationFocusScopeID)
+    private var navigationFocusScopeID
+
+    private var returnFocusTarget: NavigationFocusStore.Target {
+        .init(scope: navigationFocusScopeID, item: AnyHashable(item.id))
+    }
+
+    private func restoreFocus(_ request: NavigationFocusStore.Request?) {
+        if request?.pageID == navigationFocusPageID, request?.target == returnFocusTarget {
+            isFocused = true
+        }
+    }
+
     @FocusState
     private var isFocused: Bool
     #endif
@@ -80,6 +98,9 @@ struct PosterButton<Item: Poster>: View {
 
     var body: some View {
         Button {
+            #if os(tvOS)
+            navigationFocusStore?.remember(returnFocusTarget, on: navigationFocusPageID)
+            #endif
             action(namespace)
         } label: {
             #if os(tvOS)
@@ -112,6 +133,17 @@ struct PosterButton<Item: Poster>: View {
         #if os(tvOS)
             .buttonStyle(ArtworkButtonStyle())
             .focused($isFocused)
+            .onAppear { restoreFocus(navigationFocusStore?.request) }
+            .onChange(of: isFocused) { _, isFocused in
+                if isFocused {
+                    navigationFocusStore?.didRestore(returnFocusTarget, on: navigationFocusPageID)
+                }
+            }
+            .onReceive(navigationFocusStore?.$request.eraseToAnyPublisher() ?? Combine.Empty<NavigationFocusStore.Request?, Never>()
+                .eraseToAnyPublisher())
+            { request in
+                restoreFocus(request)
+            }
         #else
             .buttonStyle(.borderless)
         #endif

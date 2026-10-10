@@ -13,6 +13,16 @@ struct PosterHStack<
     Data: Collection
 >: View where Data.Element: Poster, Data.Index == Int {
 
+    #if os(tvOS)
+    @Environment(\.navigationFocusStore)
+    private var navigationFocusStore
+    @Environment(\.navigationFocusPageID)
+    private var navigationFocusPageID
+
+    @State
+    private var focusScopeID = UUID().uuidString
+    #endif
+
     let elements: Data
     let displayType: PosterDisplayType
     let size: PosterDisplayType.Size
@@ -81,9 +91,18 @@ struct PosterHStack<
             ) { namespace in
                 action(item, namespace)
             }
+            #if os(tvOS)
+            // CollectionHStack creates independent UIHostingControllers for its cells.
+            // Pass the originating page's focus context into those roots explicitly.
+            .environment(\.navigationFocusStore, navigationFocusStore)
+            .environment(\.navigationFocusPageID, navigationFocusPageID)
+            .environment(\.navigationFocusScopeID, focusScopeID)
+            #endif
         }
         .clipsToBounds(false)
-        .insets(horizontal: EdgeInsets.edgePadding)
+        // UIKit rounds the viewport to physical pixels. Leave enough height so a
+        // fractional item height cannot exceed it and invalidate tvOS flow layout.
+        .insets(horizontal: EdgeInsets.edgePadding, vertical: UIDevice.isTV ? 1 : 0)
         .itemSpacing(EdgeInsets.itemSpacing)
         .scrollBehavior(.continuousLeadingEdge)
         .withViewContext(.isThumb)

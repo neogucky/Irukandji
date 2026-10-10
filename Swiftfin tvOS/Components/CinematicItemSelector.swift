@@ -14,6 +14,13 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
     @Environment(\.frameForParentView)
     private var frameForParentView
 
+    @Environment(\.mainNavigationScrollContext)
+    private var navigationScrollContext
+
+    private var headerHeight: CGFloat {
+        navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight
+    }
+
     @FocusState
     private var isSectionFocused
 
@@ -56,7 +63,7 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
     }
 
     var body: some View {
-        CinematicContentGroupContainer {
+        CinematicContentGroupContainer(fillsViewport: true) {
             VStack(alignment: .leading, spacing: 28) {
 
                 if let selectedItem {
@@ -76,6 +83,7 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                 }
                 .frame(height: 350)
             }
+            .padding(.bottom, 32)
         }
         .background(alignment: .top) {
             FadeContentTransitionView(
@@ -113,9 +121,9 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                     endPoint: .bottom
                 )
             }
+            .offset(y: -headerHeight)
         }
         .background(IrukandjiTheme.background)
-        .edgePadding(.bottom)
         .onChange(of: focusedPoster) {
             updateSelectedPoster()
         }
