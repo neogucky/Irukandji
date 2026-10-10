@@ -36,14 +36,6 @@ struct SelectionTrack<Elements: RandomAccessCollection, ID: Hashable>: View {
         self.action = action
     }
 
-    private var setID: ID? {
-        #if os(tvOS)
-        focus.wrappedValue ?? selection
-        #else
-        selection
-        #endif
-    }
-
     var body: some View {
         HStack(spacing: spacing) {
             ForEach(elements, id: id) { element in
@@ -51,7 +43,7 @@ struct SelectionTrack<Elements: RandomAccessCollection, ID: Hashable>: View {
                     action(element)
                 }
                 .focused(focus, equals: element[keyPath: id])
-                .isSelected(setID == element[keyPath: id])
+                .isSelected(selection == element[keyPath: id])
             }
         }
         .buttonStyle(.capsule(isSelectionActive: focus.wrappedValue != nil))

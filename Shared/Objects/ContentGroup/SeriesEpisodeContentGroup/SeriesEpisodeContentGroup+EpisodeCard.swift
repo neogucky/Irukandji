@@ -220,7 +220,8 @@ extension SeriesEpisodeContentGroup {
                     EpisodeMetadataView(
                         header: header,
                         subHeader: subHeader,
-                        content: content
+                        content: content,
+                        isHighlighted: focusedElement != nil
                     )
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(contentAccessibilityLabel)
@@ -230,7 +231,6 @@ extension SeriesEpisodeContentGroup {
                 #if os(tvOS)
                     .buttonStyle(
                         EpisodeContentButtonStyle(
-                            showsMaterial: focusedElement != nil,
                             isFocused: focusedElement == .content
                         )
                     )
@@ -252,22 +252,31 @@ extension SeriesEpisodeContentGroup {
         let header: String
         let subHeader: String
         let content: String
+        let isHighlighted: Bool
+
+        private func textStyle(_ style: HierarchicalShapeStyle) -> AnyShapeStyle {
+            #if os(tvOS)
+            AnyShapeStyle(Color.white.opacity(isHighlighted ? 1 : 0.7))
+            #else
+            AnyShapeStyle(style)
+            #endif
+        }
 
         var body: some View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(subHeader)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(textStyle(.secondary))
                     .lineLimit(1)
 
                 Text(header)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(textStyle(.primary))
                     .lineLimit(1)
 
                 SeeMoreText(content)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(textStyle(.secondary))
                     .multilineTextAlignment(.leading)
                     .lineLimit(3, reservesSpace: true)
             }
@@ -278,7 +287,6 @@ extension SeriesEpisodeContentGroup {
     #if os(tvOS)
     private struct EpisodeContentButtonStyle: ButtonStyle {
 
-        let showsMaterial: Bool
         let isFocused: Bool
 
         private let cornerRadius: CGFloat = 20
@@ -292,23 +300,8 @@ extension SeriesEpisodeContentGroup {
                     alignment: .topLeading
                 )
                 .frame(height: 200)
-                .backport
-                .glassEffect(
-                    showsMaterial ? .regular : .identity,
-                    in: .rect(
-                        cornerRadius: cornerRadius,
-                        style: .continuous
-                    )
-                )
                 .tvFocusBorder(isFocused: isFocused, shape: RoundedRectangle(cornerRadius: cornerRadius))
-                .brightness(isFocused ? 0.04 : 0)
                 .opacity(configuration.isPressed ? 0.85 : 1)
-                .shadow(
-                    color: .black.opacity(isFocused ? 0.3 : 0),
-                    radius: isFocused ? 18 : 0,
-                    y: isFocused ? 10 : 0
-                )
-                .animation(.easeInOut(duration: 0.2), value: showsMaterial)
                 .animation(.easeOut(duration: 0.15), value: isFocused)
                 .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
         }

@@ -96,6 +96,9 @@ struct PosterButton<Item: Poster>: View {
                     .posterAccessibility(for: item)
 
                 item.posterLabel
+                    .foregroundStyle(.white)
+                    .opacity(isFocused ? 1 : 0.7)
+                    .animation(.easeOut(duration: 0.12), value: isFocused)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityHidden(true)
             }

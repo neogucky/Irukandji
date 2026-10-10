@@ -138,7 +138,42 @@ struct CapsuleButtonStyle: ButtonStyle {
         return 1
     }
 
+    #if os(tvOS)
+    private func tvOSBody(configuration: Configuration) -> some View {
+        let hasFocus = isEnabled && isFocused
+        let isHighlighted = isSelected || hasFocus
+        let pillOpacity: Double = isSelected ? 1 : (hasFocus ? 0.7 : 0)
+
+        return ZStack {
+            Capsule()
+                .fill(.white.opacity(pillOpacity))
+
+            configuration.label
+                .font(font ?? metrics.font)
+                .fontWeight(.semibold)
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(isHighlighted ? Color.black : Color.white.opacity(0.7))
+                .padding(.horizontal, metrics.horizontalPadding)
+                .padding(.vertical, metrics.verticalPadding)
+                .frame(minHeight: metrics.minimumHeight)
+                .blendMode(isHighlighted ? .destinationOut : .normal)
+        }
+        .fixedSize()
+        .compositingGroup()
+        .contentShape(.capsule)
+        .opacity(opacity(isPressed: configuration.isPressed))
+        .animation(.easeOut(duration: 0.12), value: hasFocus)
+        .animation(.easeOut(duration: 0.12), value: isSelected)
+        .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+    #endif
+
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
+        #if os(tvOS)
+        tvOSBody(configuration: configuration)
+        #else
         configuration.label
             .font(font ?? metrics.font)
             .fontWeight(.semibold)
@@ -150,11 +185,7 @@ struct CapsuleButtonStyle: ButtonStyle {
             .clipShape(.capsule)
             .background { background }
             .contentShape(.capsule)
-        #if os(tvOS)
-            .tvFocusBorder(isFocused: isEnabled && isFocused, shape: Capsule())
-        #else
             .scaleEffect(isEnabled && isFocused ? 1.05 : 1)
-        #endif
             .opacity(opacity(isPressed: configuration.isPressed))
             .shadow(color: isEnabled && isFocused ? .black.opacity(0.5) : .clear, radius: 10)
             .animation(.linear(duration: 0.1), value: isFocused)
@@ -162,5 +193,6 @@ struct CapsuleButtonStyle: ButtonStyle {
             .animation(.linear(duration: 0.1), value: isSelectionActive)
             .animation(.linear(duration: 0.1), value: configuration.isPressed)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
+        #endif
     }
 }

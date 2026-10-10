@@ -148,7 +148,10 @@ final class CinematicSelectionContentGroupViewModel: ViewModel, WithRefresh {
         recentlyAddedLibrary: RecentlyAddedLibrary
     ) {
         self.resumeViewModel = PagingLibraryViewModel(library: resumeLibrary, pageSize: 20)
-        self.recentlyAddedGroup = PosterGroup(library: recentlyAddedLibrary)
+        self.recentlyAddedGroup = PosterGroup(
+            library: recentlyAddedLibrary,
+            environment: .init(isHeaderButtonEnabled: false)
+        )
 
         super.init()
 

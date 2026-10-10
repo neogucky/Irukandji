@@ -42,6 +42,14 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
         return _makeGroups(userViews: resolvedUserViews)
     }
 
+    private var isHomeHeaderButtonEnabled: Bool {
+        #if os(tvOS)
+        false
+        #else
+        true
+        #endif
+    }
+
     @ContentGroupBuilder
     private func _makeGroups(userViews: [BaseItemDto]) -> [any ContentGroup] {
 
@@ -62,7 +70,8 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
         #endif
 
         PosterGroup(
-            library: NextUpLibrary()
+            library: NextUpLibrary(),
+            environment: .init(isHeaderButtonEnabled: isHomeHeaderButtonEnabled)
         )
 
         if Defaults[.Customization.Home.showRecentlyAdded] {
@@ -94,7 +103,8 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
                         sortOrder: [.descending],
                         traits: [.isPlayed]
                     )
-                )
+                ),
+                environment: .init(isHeaderButtonEnabled: isHomeHeaderButtonEnabled)
             )
         }
 
@@ -102,7 +112,8 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
             id: "programs-recommended",
             library: RecommendedProgramsLibrary(),
             posterDisplayType: .landscape,
-            posterSize: .small
+            posterSize: .small,
+            environment: .init(isHeaderButtonEnabled: isHomeHeaderButtonEnabled)
         )
 
         userViews
@@ -110,7 +121,8 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
             .map {
                 PosterGroup(
                     library: $0,
-                    posterDisplayType: .landscape
+                    posterDisplayType: .landscape,
+                    environment: .init(isHeaderButtonEnabled: isHomeHeaderButtonEnabled)
                 )
             }
     }
