@@ -142,7 +142,9 @@ struct CapsuleButtonStyle: ButtonStyle {
     private func tvOSBody(configuration: Configuration) -> some View {
         let hasFocus = isEnabled && isFocused
         let isHighlighted = isSelected || hasFocus
-        let pillOpacity: Double = isSelected ? 1 : (hasFocus ? 0.7 : 0)
+        let pillOpacity: Double = isSelected
+            ? (hasFocus || isSelectionActive ? 1 : 0.7)
+            : (hasFocus ? 0.7 : 0)
 
         return ZStack {
             Capsule()
@@ -164,6 +166,7 @@ struct CapsuleButtonStyle: ButtonStyle {
         .opacity(opacity(isPressed: configuration.isPressed))
         .animation(.easeOut(duration: 0.12), value: hasFocus)
         .animation(.easeOut(duration: 0.12), value: isSelected)
+        .animation(.easeOut(duration: 0.12), value: isSelectionActive)
         .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
