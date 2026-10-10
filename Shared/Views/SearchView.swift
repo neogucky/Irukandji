@@ -98,6 +98,7 @@ struct SearchView: View {
             }
         }
         .ignoresSafeArea(edges: .horizontal)
+        .mainNavigationScrollObserver()
         .scrollIndicators(.hidden)
         .animation(.linear(duration: 0.2), value: viewModel.state)
         .ignoresSafeArea(.keyboard)

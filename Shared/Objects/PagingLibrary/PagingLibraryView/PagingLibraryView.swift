@@ -156,6 +156,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             }
             #endif
             .ignoresSafeArea()
+            .mainNavigationScrollObserver()
         }
         .scrollIndicators(.hidden)
         .withViewContext(.isListRowSeparatorVisible)

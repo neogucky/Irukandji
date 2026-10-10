@@ -15,18 +15,18 @@ struct AboutAppView: View {
     private var router
 
     var body: some View {
-        Form(image: .jellyfinBlobBlue) {
+        Form(image: .alphaneMark) {
 
             #if os(iOS)
             Section {
                 VStack(alignment: .center, spacing: 10) {
 
-                    Image(.jellyfinBlobBlue)
+                    Image(.alphaneMark)
                         .resizable()
                         .aspectRatio(1, contentMode: .fit)
                         .frame(height: 150)
 
-                    Text(verbatim: "Swiftfin")
+                    Text(verbatim: L10n.alphane)
                         .fontWeight(.semibold)
                         .font(.title2)
                 }

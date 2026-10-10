@@ -18,6 +18,17 @@ struct MainTabView: View {
 
     @State
     private var loadedTabIDs: Set<String> = []
+
+    @State
+    private var scrollOffsets: [String: CGFloat] = [:]
+
+    private let headerHeight: CGFloat = 80
+
+    private var hiddenHeaderHeight: CGFloat {
+        guard focusedTabID == nil else { return 0 }
+
+        return min(scrollOffsets[tabCoordinator.selectedTabID, default: 0], headerHeight)
+    }
     #endif
 
     @InjectedObject(\.userSessionManager)
@@ -97,13 +108,13 @@ struct MainTabView: View {
             focus: $focusedTabID,
             action: selectTab
         )
-        .controlSize(.extraLarge)
+        .controlSize(.large)
         .transaction { transaction in
             transaction.animation = nil
             transaction.disablesAnimations = true
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 104)
+        .frame(height: headerHeight)
         .edgePadding(.horizontal)
         .background(IrukandjiTheme.background)
         .focusSection()
@@ -115,6 +126,9 @@ struct MainTabView: View {
     private var tvOSTabContent: some View {
         VStack(spacing: 0) {
             navigationHeader
+                .offset(y: -hiddenHeaderHeight)
+                .frame(height: headerHeight - hiddenHeaderHeight, alignment: .top)
+                .clipped()
 
             GeometryReader { proxy in
                 ZStack {
@@ -124,6 +138,11 @@ struct MainTabView: View {
                             tabRoot(tab)
                                 .environment(\.tabSafeAreaInsets, proxy.safeAreaInsets)
                                 .environment(\.isMainNavigationFocused, focusedTabID != nil)
+                                .environment(\.onMainNavigationScroll) { offset in
+                                    guard tab.item.id == tabCoordinator.selectedTabID else { return }
+
+                                    scrollOffsets[tab.item.id] = max(0, offset)
+                                }
                                 .opacity(isActive ? 1 : 0)
                                 .disabled(!isActive)
                                 .allowsHitTesting(isActive)
@@ -133,6 +152,7 @@ struct MainTabView: View {
                                     guard isActive, newCount > oldCount else { return }
 
                                     // Keep focus on the current category while its new page loads.
+                                    scrollOffsets[tab.item.id] = 0
                                     focusedTabID = tab.item.id
                                 }
                         }

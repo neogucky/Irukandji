@@ -92,6 +92,7 @@ extension ItemView {
                         .padding(.top, isEnhanced ? 0 : tabSafeAreaInsets.top)
                 }
                 .trackingFrame(for: .scrollView)
+                .mainNavigationScrollObserver()
                 #if os(tvOS)
                     .ignoresSafeArea(.container, edges: isEnhanced ? .all : [.horizontal, .top])
                 #else

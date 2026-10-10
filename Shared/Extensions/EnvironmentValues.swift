@@ -40,6 +40,9 @@ extension EnvironmentValues {
     @Entry
     var isMainNavigationFocused: Bool = false
 
+    @Entry
+    var onMainNavigationScroll: ((CGFloat) -> Void)? = nil
+
     // TODO: figure out this directional response stuff
     @Entry
     var panGestureDirection: Direction = .all

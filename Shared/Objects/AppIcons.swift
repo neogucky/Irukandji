@@ -32,7 +32,7 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
     var displayTitle: String {
         switch self {
         case .jellyfin:
-            L10n.jellyfin
+            L10n.dark
         case .red:
             L10n.red
         case .orange:
@@ -42,7 +42,7 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
         case .green:
             L10n.green
         case .blue:
-            L10n.blue
+            L10n.alphane
         }
     }
 

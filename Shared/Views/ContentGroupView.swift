@@ -57,6 +57,7 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
                 }
             }
             .trackingFrame(for: .scrollView)
+            .mainNavigationScrollObserver()
             #if os(tvOS)
             .coordinatedFocus(Focus.content.rawValue)
             .ignoresSafeArea(.container, edges: [.horizontal, .top])

@@ -81,6 +81,7 @@ private struct PlatformForm<Image: View, Content: View>: PlatformView {
                 content
             }
             .scrollClipDisabled()
+            .mainNavigationScrollObserver()
             .mask(extendedBy: .init(vertical: 20, horizontal: 100)) {
                 VStack(spacing: 0) {
                     LinearGradient(

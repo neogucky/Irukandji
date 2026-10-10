@@ -74,6 +74,7 @@ struct NavigationInjectionView: View {
                 }
                 .environment(\.tabSafeAreaInsets, .zero)
                 .environment(\.isMainNavigationFocused, false)
+                .environment(\.onMainNavigationScroll, nil)
                 .background(.regularMaterial)
             }
             .fullScreenCover(
@@ -84,6 +85,7 @@ struct NavigationInjectionView: View {
                 }
                 .environment(\.tabSafeAreaInsets, .zero)
                 .environment(\.isMainNavigationFocused, false)
+                .environment(\.onMainNavigationScroll, nil)
             }
         #else
             .sheet(

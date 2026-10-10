@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Alphane</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Alphane</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
@@ -23,6 +23,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>alphane</string>
 				<string>swiftfin</string>
 				<string>jellyfin</string>
 			</array>
@@ -31,7 +32,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundledisplayTitle</key>
-	<string>Jellyfin</string>
+	<string>Alphane</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>youtube</string>
@@ -55,6 +56,8 @@
 	</array>
 	<key>UILaunchScreen</key>
 	<dict>
+		<key>UIImageName</key>
+		<string>alphane-launch</string>
 		<key>UIColorName</key>
 		<string>LaunchScreenBackground</string>
 	</dict>
