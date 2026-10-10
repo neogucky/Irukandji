@@ -143,8 +143,8 @@ struct CapsuleButtonStyle: ButtonStyle {
         let hasFocus = isEnabled && isFocused
         let isHighlighted = isSelected || hasFocus
         let pillOpacity: Double = isSelected
-            ? (hasFocus || isSelectionActive ? 1 : 0.7)
-            : (hasFocus ? 0.7 : 0)
+            ? (hasFocus || isSelectionActive ? 1 : 0.8)
+            : (hasFocus ? 0.8 : 0)
 
         return ZStack {
             Capsule()
@@ -154,7 +154,7 @@ struct CapsuleButtonStyle: ButtonStyle {
                 .font(font ?? metrics.font)
                 .fontWeight(.semibold)
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(isHighlighted ? Color.black : Color.white.opacity(0.7))
+                .foregroundStyle(isHighlighted ? Color.black : Color.white.opacity(0.8))
                 .padding(.horizontal, metrics.horizontalPadding)
                 .padding(.vertical, metrics.verticalPadding)
                 .frame(minHeight: metrics.minimumHeight)

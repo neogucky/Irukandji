@@ -161,7 +161,7 @@ extension VideoPlayer.PlaybackControls {
             .monospacedDigit()
             .trackingSize($contentSize)
             .foregroundStyle(viewState.isProgressBarFocused ? .primary : .secondary)
-            .opacity(viewState.isProgressBarFocused ? 1 : 0.7)
+            .opacity(viewState.isProgressBarFocused ? 1 : 0.8)
         }
     }
 }

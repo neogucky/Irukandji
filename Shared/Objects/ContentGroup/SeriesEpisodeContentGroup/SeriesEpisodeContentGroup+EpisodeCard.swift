@@ -256,7 +256,7 @@ extension SeriesEpisodeContentGroup {
 
         private func textStyle(_ style: HierarchicalShapeStyle) -> AnyShapeStyle {
             #if os(tvOS)
-            AnyShapeStyle(Color.white.opacity(isHighlighted ? 1 : 0.7))
+            AnyShapeStyle(Color.white.opacity(isHighlighted ? 1 : 0.8))
             #else
             AnyShapeStyle(style)
             #endif

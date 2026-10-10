@@ -180,7 +180,7 @@ extension VideoPlayer.PlaybackControls {
                 }
             }
             .coordinatedFocus(ViewState.Focus.progress)
-            .foregroundStyle(Color.white.opacity(0.75))
+            .foregroundStyle(Color.white.opacity(0.8))
             .overlay(alignment: .topLeading) {
                 previewImage
             }
