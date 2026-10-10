@@ -115,6 +115,7 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
             }
         }
         .background(IrukandjiTheme.background)
+        .edgePadding(.bottom)
         .onChange(of: focusedPoster) {
             updateSelectedPoster()
         }
