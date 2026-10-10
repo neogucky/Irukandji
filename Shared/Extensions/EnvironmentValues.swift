@@ -37,6 +37,9 @@ extension EnvironmentValues {
     @Entry
     var tabSafeAreaInsets: EdgeInsets = .zero
 
+    @Entry
+    var isMainNavigationFocused: Bool = false
+
     // TODO: figure out this directional response stuff
     @Entry
     var panGestureDirection: Direction = .all

@@ -29,6 +29,12 @@ final class NavigationCoordinator: ObservableObject {
     @Published
     var presentedFullScreen: PresentedRoute?
 
+    let usesNavigationStack: Bool
+
+    init(usesNavigationStack: Bool = false) {
+        self.usesNavigationStack = usesNavigationStack
+    }
+
     func push(
         _ route: NavigationRoute
     ) {
@@ -39,6 +45,9 @@ final class NavigationCoordinator: ObservableObject {
         }
 
         switch route.transitionStyle {
+        case .push where usesNavigationStack:
+            path.append(route)
+
         case .push, .sheet:
             presentedSheet = .init(
                 route: route,

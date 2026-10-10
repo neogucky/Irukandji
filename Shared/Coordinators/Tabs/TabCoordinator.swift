@@ -41,7 +41,7 @@ final class TabCoordinator: ObservableObject {
     init(@ArrayBuilder<TabItem> tabs: () -> [TabItem]) {
         let tabs = tabs()
         self.tabs = tabs.map { tab in
-            (tab, NavigationCoordinator(), TabItemSelectedPublisher())
+            (tab, NavigationCoordinator(usesNavigationStack: UIDevice.isTV), TabItemSelectedPublisher())
         }
         self.selectedTabID = tabs.first?.id
     }

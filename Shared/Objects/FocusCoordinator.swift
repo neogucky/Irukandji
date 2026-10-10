@@ -122,6 +122,9 @@ private struct CoordinatedFocusScopeModifier<Value: Hashable>: ViewModifier {
 
 private struct CoordinatedInitialFocusModifier: ViewModifier {
 
+    @Environment(\.isMainNavigationFocused)
+    private var isMainNavigationFocused
+
     @EnvironmentObject
     private var coordinator: FocusCoordinator
 
@@ -137,14 +140,14 @@ private struct CoordinatedInitialFocusModifier: ViewModifier {
             content
                 .focusable(coordinator.isInitialFocusPending)
                 .focusEffectDisabled()
-                #if os(tvOS)
+            #if os(tvOS)
                 .focused($isPlaceholderFocused)
                 .onAppear {
-                    if coordinator.claimInitialPlaceholderFocus() {
+                    if !isMainNavigationFocused, coordinator.claimInitialPlaceholderFocus() {
                         isPlaceholderFocused = true
                     }
                 }
-                #endif
+            #endif
 
         case .secondary:
             content
@@ -161,6 +164,9 @@ private struct CoordinatedInitialFocusModifier: ViewModifier {
 
 private struct CoordinatedFocusModifier: ViewModifier {
 
+    @Environment(\.isMainNavigationFocused)
+    private var isMainNavigationFocused
+
     @EnvironmentObject
     private var coordinator: FocusCoordinator
 
@@ -175,7 +181,7 @@ private struct CoordinatedFocusModifier: ViewModifier {
     }
 
     private func apply(_ request: FocusCoordinator.Request?) {
-        guard request?.id == id else { return }
+        guard !isMainNavigationFocused, request?.id == id else { return }
 
         focus.wrappedValue = id
     }
