@@ -13,6 +13,8 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
 
     @Environment(\.isSelected)
     private var isSelected
+    @Environment(\.isFocused)
+    private var isFocused
 
     var activeColor: Color?
 
@@ -21,19 +23,28 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
     }
 
     private var tint: Color {
+        #if os(tvOS)
+        return IrukandjiTheme.surface
+        #else
         guard isSelected, let activeColor else {
             return .gray.opacity(0.15)
         }
 
         return activeColor
+        #endif
     }
 
     private var foregroundColor: Color {
+        #if os(tvOS)
+        let color = isSelected ? activeColor ?? .white : .white
+        return color.opacity(isFocused ? 1 : 0.8)
+        #else
         guard isSelected, let activeColor else {
             return .primary
         }
 
         return activeColor.overlayColor
+        #endif
     }
 
     func makeBody(configuration: Configuration) -> some View {

@@ -24,6 +24,8 @@ struct SwiftfinApp: App {
                     RootView()
                 }
             }
+            .background(IrukandjiTheme.background.ignoresSafeArea())
+            .preferredColorScheme(.dark)
         }
     }
 }

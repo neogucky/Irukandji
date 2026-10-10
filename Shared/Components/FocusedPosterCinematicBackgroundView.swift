@@ -19,20 +19,26 @@ struct FocusedPosterCinematicBackgroundView: View {
     private var focusedPoster
 
     var body: some View {
-        if isCinematicBackgroundEnabled {
-            FadeContentTransitionView(
-                item: focusedPoster,
-                debounce: 0.5
-            ) { item in
-                ImageView(item?.imageSources(for: .landscape, environment: .init(viewContext: .isBackdrop)) ?? [])
-                    .failure {
-                        EmptyView()
-                    }
-                    .aspectRatio(contentMode: .fill)
+        ZStack {
+            IrukandjiTheme.background
+
+            if isCinematicBackgroundEnabled {
+                FadeContentTransitionView(
+                    item: focusedPoster,
+                    debounce: 0.5
+                ) { item in
+                    ImageView(item?.imageSources(for: .landscape, environment: .init(viewContext: .isBackdrop)) ?? [])
+                        .failure {
+                            EmptyView()
+                        }
+                        .aspectRatio(contentMode: .fill)
+                }
+                .blur(radius: 50)
+                .opacity(0.08)
             }
-            .blurred()
-            .ignoresSafeArea()
         }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
     }
 }
 #endif

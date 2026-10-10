@@ -57,10 +57,11 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
 
     var body: some View {
         CinematicContentGroupContainer {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 28) {
 
                 if let selectedItem {
                     topContent(selectedItem)
+                        .frame(height: 340, alignment: .bottomLeading)
                         .id(selectedItem.hashValue)
                         .transition(.opacity)
                 }
@@ -73,13 +74,13 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                 ) { item, _ in
                     action(item)
                 }
-                .frame(height: 400)
+                .frame(height: 350)
             }
         }
-        .background(alignment: .top) {
+        .background(alignment: .topTrailing) {
             FadeContentTransitionView(
                 item: resolvedSelectedPoster,
-                debounce: 0.5
+                debounce: 0.3
             ) { item in
                 ImageView(item?.imageSources(for: .landscape, environment: .init(viewContext: .isBackdrop)) ?? [])
                     .failure {
@@ -87,21 +88,30 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                     }
                     .aspectRatio(contentMode: .fill)
             }
+            .saturation(0.8)
+            .opacity(0.6)
+            .frame(width: parentFrame.width * 0.72, height: parentFrame.height * 0.8)
+            .clipped()
             .overlay {
-                Color.black
-                    .mask(gradient: .linear) {
-                        (location: 0.5, opacity: 0)
-                        (location: 0.6, opacity: 0.4)
-                        (location: 1, opacity: 1)
-                    }
+                LinearGradient(
+                    stops: [
+                        .init(color: IrukandjiTheme.background, location: 0),
+                        .init(color: IrukandjiTheme.background.opacity(0.6), location: 0.35),
+                        .init(color: .clear, location: 1),
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
             }
-            .frame(height: parentFrame.height)
-            .mask(gradient: .linear) {
-                (location: 0.82, opacity: 1)
-                (location: 0.94, opacity: 0.55)
-                (location: 1, opacity: 0)
+            .overlay {
+                LinearGradient(
+                    colors: [.clear, IrukandjiTheme.background],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
         }
+        .background(IrukandjiTheme.background)
         .onChange(of: focusedPoster) {
             updateSelectedPoster()
         }

@@ -9,8 +9,6 @@
 import JellyfinAPI
 import SwiftUI
 
-// TODO: tvOS black background if not enhanced?
-
 extension ItemView {
 
     struct ContentGroupScrollView: View {
@@ -41,40 +39,47 @@ extension ItemView {
             }
         }
 
-        @ViewBuilder
+        #if os(tvOS)
         private var background: some View {
-            AlternateLayoutView {
-                Color.clear
-            } content: {
-                ImageView(backgroundImageItem.imageSources(
-                    for: .landscape,
-                    environment: .init(maxWidth: 1920)
-                ))
-                .failure {
-                    Color.black
+            ZStack {
+                IrukandjiTheme.background
+
+                AlternateLayoutView {
+                    Color.clear
+                } content: {
+                    ImageView(backgroundImageItem.imageSources(
+                        for: .landscape,
+                        environment: .init(maxWidth: 1920)
+                    ))
+                    .failure {
+                        IrukandjiTheme.background
+                    }
+                    .aspectRatio(contentMode: .fill)
                 }
-                .aspectRatio(contentMode: .fill)
+                .saturation(0.75)
+                .opacity(isHeaderFocused ? 0.65 : 0.12)
+
+                LinearGradient(
+                    stops: [
+                        .init(color: IrukandjiTheme.background.opacity(0.1), location: 0),
+                        .init(color: IrukandjiTheme.background.opacity(0.7), location: 0.6),
+                        .init(color: IrukandjiTheme.background, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
             .accessibilityHidden(true)
-            .overlay {
-                Rectangle()
-                    .fill(Material.regular)
-                    .mask(gradient: .linear) {
-                        if isHeaderFocused {
-                            (location: 0.3, opacity: 0)
-                        } else {
-                            (location: 0, opacity: 1)
-                        }
-
-                        (location: 1, opacity: 1)
-                    }
-            }
-            .animation(.linear(duration: 0.2), value: isHeaderFocused)
+            .animation(.easeOut(duration: 0.2), value: isHeaderFocused)
         }
+        #endif
 
         var body: some View {
             ZStack {
                 #if os(tvOS)
+                IrukandjiTheme.background
+                    .ignoresSafeArea()
+
                 if isEnhanced {
                     background
                         .ignoresSafeArea()
@@ -88,11 +93,11 @@ extension ItemView {
                 }
                 .trackingFrame(for: .scrollView)
                 #if os(tvOS)
-                .ignoresSafeArea(.container, edges: isEnhanced ? .all : [.horizontal, .top])
+                    .ignoresSafeArea(.container, edges: isEnhanced ? .all : [.horizontal, .top])
                 #else
-                .ignoresSafeArea(edges: isEnhanced ? .all : .horizontal)
+                    .ignoresSafeArea(edges: isEnhanced ? .all : .horizontal)
                 #endif
-                .scrollIndicators(.hidden)
+                    .scrollIndicators(.hidden)
             }
         }
     }

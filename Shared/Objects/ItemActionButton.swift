@@ -90,11 +90,18 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
     var activeColor: Color? {
         switch self {
         case .played:
+            #if os(tvOS)
+            IrukandjiTheme.accent
+            #else
             .jellyfinPurple
+            #endif
+
         case .favorited:
             .pink
+
         case .record:
             .red
+
         default:
             nil
         }
@@ -113,7 +120,7 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         .subtitles,
         .delete
     ]
-        #if os(iOS)
-            .prepending(.editMetadata)
-        #endif
+    #if os(iOS)
+    .prepending(.editMetadata)
+    #endif
 }

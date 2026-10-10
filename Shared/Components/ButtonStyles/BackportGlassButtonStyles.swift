@@ -198,7 +198,11 @@ private struct BackportGlassButtonStyleBody: View {
         case .destructive, .cancel:
             .red
         default:
+            #if os(tvOS)
+            IrukandjiTheme.surface
+            #else
             accentColor
+            #endif
         }
     }
 }

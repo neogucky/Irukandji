@@ -35,40 +35,55 @@ struct CinematicSelectionContentGroup: ContentGroup {
 
     private struct SelectionView: View {
 
-        @Environment(\.frameForParentView)
-        private var frameForParentView
-
         @ObservedObject
         var viewModel: CinematicSelectionContentGroupViewModel
 
         @Router
         private var router
 
-        private var parentFrame: CGRect {
-            frameForParentView[.scrollView, default: .zero].frame
-        }
+        private func itemInformation(_ item: BaseItemDto) -> some View {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(IrukandjiTheme.accent)
+                        .frame(width: 3, height: 18)
 
-        private func itemSelectorImageSource(for item: BaseItemDto) -> ImageSource? {
-            if item.type == .episode {
-                item.imageSource(
-                    .logo,
-                    itemID: item.parentLogoItemID,
-                    tag: item.parentLogoImageTag,
-                    environment: ImageSourceOptions(
-                        maxWidth: CinematicSelectionLayout.logoMaxWidth,
-                        maxHeight: CinematicSelectionLayout.logoMaxHeight
-                    )
-                )
-            } else {
-                item.imageSource(
-                    .logo,
-                    itemID: item.id,
-                    environment: ImageSourceOptions(
-                        maxWidth: CinematicSelectionLayout.logoMaxWidth,
-                        maxHeight: CinematicSelectionLayout.logoMaxHeight
-                    )
-                )
+                    Text(viewModel.hasResumeItems ? L10n.continue : L10n.recentlyAdded.localizedCapitalized)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(IrukandjiTheme.secondaryText)
+                }
+
+                Text(item.type == .episode ? item.seriesName ?? item.displayTitle : item.displayTitle)
+                    .font(.system(size: 54, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(2, reservesSpace: true)
+
+                DotHStack {
+                    if item.type == .episode {
+                        Text(item.displayTitle)
+                    }
+                    if let locator = item.seasonEpisodeLabel {
+                        Text(locator)
+                    }
+                    if let year = item.productionYear, item.type != .episode {
+                        Text(String(year))
+                    }
+                    if let runtime = item.runTimeLabel {
+                        Text(runtime)
+                    }
+                }
+                .font(.callout)
+                .foregroundStyle(IrukandjiTheme.secondaryText)
+                .lineLimit(1)
+
+                Text(item.overview ?? "")
+                    .font(.footnote)
+                    .foregroundStyle(IrukandjiTheme.secondaryText)
+                    .lineLimit(3, reservesSpace: true)
             }
+            .frame(maxWidth: 900, alignment: .leading)
+            .edgePadding(.horizontal)
         }
 
         var body: some View {
@@ -80,19 +95,7 @@ struct CinematicSelectionContentGroup: ContentGroup {
             ) { item in
                 router.route(to: .item(item: item))
             } topContent: { item in
-                ImageView(itemSelectorImageSource(for: item))
-                    .placeholder { _ in
-                        EmptyView()
-                    }
-                    .failure {
-                        Text(item.displayTitle)
-                            .font(.largeTitle)
-                            .fontWeight(.semibold)
-                    }
-                    .edgePadding(.leading)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: CinematicSelectionLayout.logoMaxHeight, alignment: .bottomLeading)
-                    .frame(maxWidth: CinematicSelectionLayout.logoMaxWidth)
+                itemInformation(item)
             }
             .preference(
                 key: ContentGroupCustomizationKey.self,
@@ -175,10 +178,4 @@ final class CinematicSelectionContentGroupViewModel: ViewModel, WithRefresh {
 
         _ = await (resume, recentlyAdded)
     }
-}
-
-private enum CinematicSelectionLayout {
-
-    static let logoMaxHeight: CGFloat = 100
-    static let logoMaxWidth: CGFloat = 450
 }

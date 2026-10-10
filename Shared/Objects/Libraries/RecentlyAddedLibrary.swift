@@ -20,6 +20,9 @@ struct RecentlyAddedLibrary: BaseItemKindLibrary {
         var parameters = Paths.GetItemsParameters()
         parameters.enableUserData = true
         parameters.fields = PosterSubtitleField.itemFields
+        #if os(tvOS)
+        parameters.fields?.append(.overview)
+        #endif
         parameters.includeItemTypes = [.movie, .series]
         parameters.isRecursive = true
         parameters.limit = pageState.pageSize

@@ -19,7 +19,7 @@ struct BasicHoverButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .tvFocusBorder(isFocused: isFocused && isEnabled, shape: Capsule())
-            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.5)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : (isFocused ? 1 : 0.8)) : 0.5)
     }
 }
 #else

@@ -22,6 +22,14 @@ struct PlayButton: View {
     @Router
     private var router
 
+    private var actionTint: Color {
+        #if os(tvOS)
+        IrukandjiTheme.surface
+        #else
+        accentColor
+        #endif
+    }
+
     private var itemProvider: MediaPlayerItemProvider? {
         provider.mediaPlayerItemProvider
     }
@@ -80,8 +88,8 @@ struct PlayButton: View {
             .backport
             .glassEffect(
                 .regular.selection(
-                    tint: accentColor,
-                    foregroundColor: accentColor.overlayColor
+                    tint: actionTint,
+                    foregroundColor: actionTint.overlayColor
                 ),
                 in: .capsule
             )

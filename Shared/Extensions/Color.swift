@@ -12,6 +12,14 @@ extension Color {
 
     static let jellyfinPurple = Color(red: 172 / 255, green: 92 / 255, blue: 195 / 255, opacity: 1)
 
+    static var defaultClientAccent: Color {
+        #if os(tvOS)
+        IrukandjiTheme.accent
+        #else
+        .jellyfinPurple
+        #endif
+    }
+
     var uiColor: UIColor {
         UIColor(self)
     }

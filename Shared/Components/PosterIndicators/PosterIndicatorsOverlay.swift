@@ -30,6 +30,14 @@ struct PosterIndicatorsOverlay: View {
         posterConfiguration.indicators
     }
 
+    private var playedBadgeColor: Color {
+        #if os(tvOS)
+        IrukandjiTheme.surface
+        #else
+        accentColor
+        #endif
+    }
+
     private var indicatorSize: CGFloat {
         UIDevice.isTV ? 45 : 25
     }
@@ -77,7 +85,7 @@ struct PosterIndicatorsOverlay: View {
         }
 
         if showsPlayedIndicator {
-            QuadrantItem(color: accentColor) {
+            QuadrantItem(color: playedBadgeColor) {
                 Text(Image(systemName: "checkmark"))
                     .fontWeight(.bold)
                     .accessibilityLabel(L10n.played)
