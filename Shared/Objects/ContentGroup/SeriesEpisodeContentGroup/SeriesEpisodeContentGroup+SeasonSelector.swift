@@ -42,13 +42,18 @@ extension SeriesEpisodeContentGroup {
                 ScrollView(.horizontal) {
                     SelectionTrack(
                         seasons,
-                        selection: selection,
+                        selection: focusedSeason ?? selection,
                         focus: $focusedSeason
                     ) { season in
                         selection = season.id
                     }
                     .controlSize(.large)
                     .edgePadding(.horizontal)
+                    .transaction { transaction in
+                        // Switch the pill in one frame instead of crossfading two seasons.
+                        transaction.animation = nil
+                        transaction.disablesAnimations = true
+                    }
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
@@ -58,30 +63,16 @@ extension SeriesEpisodeContentGroup {
                     preferredSelection,
                     priority: .userInitiated
                 )
-                .task(id: focusedSeason) {
-                    await selectSeasonAfterFocusDebounce(focusedSeason)
+                .onChange(of: focusedSeason) { _, seasonID in
+                    guard let seasonID,
+                          seasonID != selection,
+                          seasons.contains(where: { $0.id == seasonID })
+                    else { return }
+
+                    // Episode retrieval can finish later; selection follows focus immediately.
+                    selection = seasonID
                 }
             }
-        }
-
-        @MainActor
-        private func selectSeasonAfterFocusDebounce(
-            _ seasonID: PagingLibraryViewModel<EpisodeLibrary>.ID?
-        ) async {
-            guard let seasonID, seasonID != selection else { return }
-
-            do {
-                try await Task.sleep(for: .milliseconds(350))
-            } catch {
-                return
-            }
-
-            guard seasonID == focusedSeason,
-                  seasonID != selection,
-                  seasons.contains(where: { $0.id == seasonID })
-            else { return }
-
-            selection = seasonID
         }
 
         var iOSView: some View {
