@@ -33,8 +33,7 @@ struct FocusedPosterCinematicBackgroundView: View {
                         }
                         .aspectRatio(contentMode: .fill)
                 }
-                .blur(radius: 50)
-                .opacity(0.08)
+                .blurred()
             }
         }
         .ignoresSafeArea()

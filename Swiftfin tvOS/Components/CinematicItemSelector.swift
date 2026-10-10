@@ -77,7 +77,7 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                 .frame(height: 350)
             }
         }
-        .background(alignment: .topTrailing) {
+        .background(alignment: .top) {
             FadeContentTransitionView(
                 item: resolvedSelectedPoster,
                 debounce: 0.3
@@ -88,16 +88,14 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                     }
                     .aspectRatio(contentMode: .fill)
             }
-            .saturation(0.8)
-            .opacity(0.6)
-            .frame(width: parentFrame.width * 0.72, height: parentFrame.height * 0.8)
+            .frame(width: parentFrame.width, height: parentFrame.height)
             .clipped()
             .overlay {
                 LinearGradient(
                     stops: [
-                        .init(color: IrukandjiTheme.background, location: 0),
-                        .init(color: IrukandjiTheme.background.opacity(0.6), location: 0.35),
-                        .init(color: .clear, location: 1),
+                        .init(color: IrukandjiTheme.background.opacity(0.85), location: 0),
+                        .init(color: IrukandjiTheme.background.opacity(0.72), location: 0.4),
+                        .init(color: .clear, location: 0.75),
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -105,7 +103,12 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
             }
             .overlay {
                 LinearGradient(
-                    colors: [.clear, IrukandjiTheme.background],
+                    stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .clear, location: 0.5),
+                        .init(color: IrukandjiTheme.background.opacity(0.8), location: 0.82),
+                        .init(color: IrukandjiTheme.background, location: 1),
+                    ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
