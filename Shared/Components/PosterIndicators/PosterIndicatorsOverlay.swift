@@ -42,6 +42,14 @@ struct PosterIndicatorsOverlay: View {
         UIDevice.isTV ? 45 : 25
     }
 
+    private var unplayedIndicatorAlignment: Alignment {
+        #if os(tvOS)
+        .bottomLeading
+        #else
+        .topTrailing
+        #endif
+    }
+
     private var showsUnplayedIndicator: Bool {
         indicators.contains(.unplayed) &&
             item.canBePlayed &&
@@ -101,7 +109,7 @@ struct PosterIndicatorsOverlay: View {
                         count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
                     )
                     .frame(height: indicatorSize)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: unplayedIndicatorAlignment)
                 }
 
                 if !showsProgressIndicator {

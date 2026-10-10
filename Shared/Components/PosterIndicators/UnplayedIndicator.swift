@@ -24,9 +24,17 @@ struct UnplayedIndicator: View {
         #endif
     }
 
+    private var badgeCorner: QuadrantCorner {
+        #if os(tvOS)
+        .bottomLeading
+        #else
+        .topTrailing
+        #endif
+    }
+
     var body: some View {
         if let count, count > 0 {
-            Quadrant(.topTrailing) {
+            Quadrant(badgeCorner) {
                 QuadrantItem(color: badgeColor) {
                     Text(count.description)
                         .font(.body)
@@ -37,12 +45,14 @@ struct UnplayedIndicator: View {
             .accessibilityLabel(L10n.posterAccessibilityUnplayedCount(count.formatted()))
         } else {
             #if os(tvOS)
-            Circle()
-                .fill(accentColor)
-                .frame(width: 8, height: 8)
-                .padding(12)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .accessibilityLabel(L10n.unplayed)
+            Quadrant(.bottomLeading) {
+                QuadrantItem(color: badgeColor) {
+                    Text(Image(systemName: "eye.slash"))
+                        .fontWeight(.bold)
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(L10n.unplayed)
             #else
             Q3RightTriangle()
                 .fill(accentColor)
