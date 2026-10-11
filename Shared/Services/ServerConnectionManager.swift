@@ -55,9 +55,9 @@ final class ServerConnectionManager: ObservableObject {
         case unreachable([ServerConnection])
     }
 
-    private static let logger = Logger.swiftfin()
+    private static let logger = Logger.alphane()
 
-    private let queue = DispatchQueue(label: "Swiftfin.ServerConnectionMonitor")
+    private let queue = DispatchQueue(label: "Alphane.ServerConnectionMonitor")
 
     private weak var userSession: UserSession?
     private var monitor: NWPathMonitor?
@@ -71,18 +71,18 @@ final class ServerConnectionManager: ObservableObject {
         accessToken: String? = nil,
         matchingServerID serverID: String
     ) async throws -> PublicSystemInfo {
-        let sessionConfiguration = URLSessionConfiguration.swiftfin.copy() as! URLSessionConfiguration
+        let sessionConfiguration = URLSessionConfiguration.alphane.copy() as! URLSessionConfiguration
         sessionConfiguration.timeoutIntervalForRequest = 8
         sessionConfiguration.timeoutIntervalForResource = 12
         sessionConfiguration.waitsForConnectivity = false
 
         let client = JellyfinClient(
-            configuration: .swiftfinConfiguration(
+            configuration: .alphaneConfiguration(
                 url: connection.url,
                 accessToken: accessToken
             ),
             sessionConfiguration: sessionConfiguration,
-            sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
+            sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.alphane())
         )
 
         let response = try await client.send(Paths.getPublicSystemInfo)

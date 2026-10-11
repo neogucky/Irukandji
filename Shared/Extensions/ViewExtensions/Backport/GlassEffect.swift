@@ -131,7 +131,7 @@ struct BackportGlassEffectModifier<BackgroundShape: Shape>: ViewModifier {
             } else {
                 #if os(tvOS)
                 shape
-                    .fill(IrukandjiTheme.surface)
+                    .fill(AlphaneTheme.surface)
                 #else
                 shape
                     .fill(.ultraThinMaterial)

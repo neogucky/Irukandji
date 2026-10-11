@@ -11,8 +11,8 @@ import Foundation
 extension URLSessionConfiguration {
 
     /// A session configuration object built upon the default
-    /// configuration with values for Swiftfin.
-    static let swiftfin: URLSessionConfiguration = {
+    /// configuration with values for Alphane.
+    static let alphane: URLSessionConfiguration = {
         .default.mutating(\.timeoutIntervalForRequest, with: 20)
     }()
 }

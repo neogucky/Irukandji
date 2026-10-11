@@ -42,7 +42,7 @@ extension ItemView {
         #if os(tvOS)
         private var background: some View {
             ZStack {
-                IrukandjiTheme.background
+                AlphaneTheme.background
 
                 AlternateLayoutView {
                     Color.clear
@@ -52,7 +52,7 @@ extension ItemView {
                         environment: .init(maxWidth: 1920)
                     ))
                     .failure {
-                        IrukandjiTheme.background
+                        AlphaneTheme.background
                     }
                     .aspectRatio(contentMode: .fill)
                 }
@@ -61,9 +61,9 @@ extension ItemView {
 
                 LinearGradient(
                     stops: [
-                        .init(color: IrukandjiTheme.background.opacity(0.1), location: 0),
-                        .init(color: IrukandjiTheme.background.opacity(0.7), location: 0.6),
-                        .init(color: IrukandjiTheme.background, location: 1),
+                        .init(color: AlphaneTheme.background.opacity(0.1), location: 0),
+                        .init(color: AlphaneTheme.background.opacity(0.7), location: 0.6),
+                        .init(color: AlphaneTheme.background, location: 1),
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -77,7 +77,7 @@ extension ItemView {
         var body: some View {
             ZStack {
                 #if os(tvOS)
-                IrukandjiTheme.background
+                AlphaneTheme.background
                     .ignoresSafeArea()
 
                 if isEnhanced, provider.item.type == .person {

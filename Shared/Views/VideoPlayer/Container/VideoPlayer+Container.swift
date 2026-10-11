@@ -370,7 +370,7 @@ extension VideoPlayer {
             return (dismissedSupplementContainerOffset + EdgeInsets.edgePadding) * offsetPercentage
         }
 
-        private let logger = Logger.swiftfin()
+        private let logger = Logger.alphane()
         private let manager: MediaPlayerManager
         private let videoSize: PublishedBox<CGSize>
         private let player: (VideoLayout) -> AnyView

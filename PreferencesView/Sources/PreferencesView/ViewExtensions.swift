@@ -6,7 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import SwiftfinMacros
+import AlphaneMacros
 import SwiftUI
 
 extension UIInterfaceOrientationMask: @retroactive CustomDebugStringConvertible {

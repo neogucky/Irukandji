@@ -63,7 +63,7 @@ final class UserSessionManager: ObservableObject {
 
     var cancellables = Set<AnyCancellable>()
 
-    let logger = Logger.swiftfin()
+    let logger = Logger.alphane()
 
     private(set) var mediaPlayerManager: MediaPlayerManager?
 

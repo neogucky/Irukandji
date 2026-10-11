@@ -156,7 +156,7 @@ struct SelectUserView: View {
                 Color.clear
             } content: {
                 ImageView(splashScreenImageSources)
-                    .pipeline(.Swiftfin.local)
+                    .pipeline(.Alphane.local)
                     .aspectRatio(contentMode: .fill)
                     .id(splashScreenImageSources)
             }
@@ -373,7 +373,7 @@ struct SelectUserView: View {
         }
         .background {
             #if os(tvOS)
-            IrukandjiTheme.background
+            AlphaneTheme.background
                 .overlay {
                     RadialGradient(
                         colors: [.white.opacity(0.04), .clear],

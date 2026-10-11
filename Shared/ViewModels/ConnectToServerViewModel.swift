@@ -50,7 +50,7 @@ final class ConnectToServerViewModel: ObservableObject {
     @Published
     var localServers: OrderedSet<ServerState> = []
 
-    let logger = Logger.swiftfin()
+    let logger = Logger.alphane()
     var cancellables = Set<AnyCancellable>()
 
     @Function(\Action.Cases.connect)
@@ -58,15 +58,15 @@ final class ConnectToServerViewModel: ObservableObject {
 
         let address = try ServerAddress(url)
         let result = try await address.resolve { url in
-            let sessionConfiguration = URLSessionConfiguration.swiftfin.copy() as! URLSessionConfiguration
+            let sessionConfiguration = URLSessionConfiguration.alphane.copy() as! URLSessionConfiguration
             sessionConfiguration.timeoutIntervalForRequest = 8
             sessionConfiguration.timeoutIntervalForResource = 12
             sessionConfiguration.waitsForConnectivity = false
 
             let client = JellyfinClient(
-                configuration: .swiftfinConfiguration(url: url),
+                configuration: .alphaneConfiguration(url: url),
                 sessionConfiguration: sessionConfiguration,
-                sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
+                sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.alphane())
             )
 
             // Probe only the public API before choosing a scheme.

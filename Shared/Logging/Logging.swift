@@ -11,12 +11,12 @@ import Logging
 
 extension Logger {
 
-    static func swiftfin() -> Logger {
-        Logger(label: "org.jellyfin.swiftfin")
+    static func alphane() -> Logger {
+        Logger(label: "com.neogucky.alphane")
     }
 }
 
-struct SwiftfinConsoleHandler: LogHandler {
+struct AlphaneConsoleHandler: LogHandler {
 
     var logLevel: Logger.Level = .trace
     var metadata: Logger.Metadata = [:]

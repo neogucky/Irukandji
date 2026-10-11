@@ -14,7 +14,7 @@ extension Color {
 
     static var defaultClientAccent: Color {
         #if os(tvOS)
-        IrukandjiTheme.accent
+        AlphaneTheme.accent
         #else
         .jellyfinPurple
         #endif

@@ -99,7 +99,7 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         switch self {
         case .played:
             #if os(tvOS)
-            IrukandjiTheme.accent
+            AlphaneTheme.accent
             #else
             .jellyfinPurple
             #endif

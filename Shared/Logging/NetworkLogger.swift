@@ -14,7 +14,7 @@ private let redactedMessage = "<Redacted by Alphane>"
 
 extension NetworkLogger {
 
-    static func swiftfin() -> NetworkLogger {
+    static func alphane() -> NetworkLogger {
         var configuration = NetworkLogger.Configuration()
 
         configuration.willHandleEvent = { event -> LoggerStore.Event? in

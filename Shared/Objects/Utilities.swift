@@ -11,7 +11,7 @@ import Foundation
 @_exported import CasePaths
 @_exported import Engine
 @_exported import StatefulMacros
-@_exported import SwiftfinMacros
+@_exported import AlphaneMacros
 
 @inlinable
 func clamp<T: Comparable>(_ x: T, min y: T, max z: T) -> T {

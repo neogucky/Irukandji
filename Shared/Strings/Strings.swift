@@ -1936,6 +1936,8 @@ internal enum L10n {
   internal static let uploadFile = L10n.tr("Localizable", "uploadFile", fallback: "Upload file")
   /// Upload photo
   internal static let uploadPhoto = L10n.tr("Localizable", "uploadPhoto", fallback: "Upload photo")
+  /// Based on Swiftfin by Jellyfin and its contributors. Licensed under MPL 2.0.
+  internal static let upstreamAttribution = L10n.tr("Localizable", "upstreamAttribution", fallback: "Based on Swiftfin by Jellyfin and its contributors. Licensed under MPL 2.0.")
   /// URL
   internal static let url = L10n.tr("Localizable", "url", fallback: "URL")
   /// Use

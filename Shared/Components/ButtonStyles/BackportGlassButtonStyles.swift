@@ -199,7 +199,7 @@ private struct BackportGlassButtonStyleBody: View {
             .red
         default:
             #if os(tvOS)
-            IrukandjiTheme.surface
+            AlphaneTheme.surface
             #else
             accentColor
             #endif

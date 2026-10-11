@@ -14,7 +14,7 @@ enum SelectUserServerSelection: RawRepresentable, Hashable, Storable {
     var rawValue: String {
         switch self {
         case .all:
-            "swiftfin-all"
+            "alphane-all"
         case let .server(id):
             id
         }
@@ -22,7 +22,7 @@ enum SelectUserServerSelection: RawRepresentable, Hashable, Storable {
 
     init?(rawValue: String) {
         switch rawValue {
-        case "swiftfin-all":
+        case "alphane-all", UpstreamCompatibility.legacyAllServers:
             self = .all
         default:
             self = .server(id: rawValue)

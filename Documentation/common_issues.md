@@ -1,8 +1,8 @@
 # Common Issues
 
-This document contains common Swiftfin issues, troubleshooting steps, and resolutions for items that come up frequently.
+This document contains common Alphane issues, troubleshooting steps, and resolutions for items that come up frequently.
 
-If your issue isn't here, please check our [existing issues](https://github.com/jellyfin/Swiftfin/issues) before opening a new one. For issues or questions about playback, see the [Players Documentation](players.md). For library support, see [Libraries Documentation](libraries.md).
+If your issue isn't here, please check our [existing issues](https://github.com/neogucky/Irukandji/issues) before opening a new one. For issues or questions about playback, see the [Players Documentation](players.md). For library support, see [Libraries Documentation](libraries.md).
 
 ---
 
@@ -12,10 +12,10 @@ These four steps resolve many common issues or help narrow down unique issues fr
 
 | Step | Why |
 |------|-----|
-| **1. Update Swiftfin** | We are only able to support the current release which may already have a code fix for the issue you are experiencing. If you see a closed issue for your problem, but it's still not resolved on the latest release, please try using our [TestFlight](https://testflight.apple.com/join/SqNPfdxq) before reporting a new issue. |
+| **1. Update Alphane** | We are only able to support the current release which may already have a code fix for the issue you are experiencing. If you see a closed issue for your problem, but it's still not resolved on the latest release, please build the current main branch before reporting a new issue. |
 | **2. Switch the player** <br>*Settings > Advanced > Video Player > Engine* | Each player is based on a different playback engine. Confirming which player(s) has an issue helps narrow the troubleshooting steps. |
 | **3. Connect by direct `IP:port`** | If this works and your domain doesn't, the problem is your reverse proxy or network. |
-| **4. Check the logs** <br>*Login Issues: Settings > Advanced > Logs* <br>*Other Issues: Settings > Logs* | These logs show network traffic and logs for Swiftfin. Identifying the failing decodes or packets that exist can help resolve network/proxy issues. |
+| **4. Check the logs** <br>*Login Issues: Settings > Advanced > Logs* <br>*Other Issues: Settings > Logs* | These logs show network traffic and logs for Alphane. Identifying the failing decodes or packets that exist can help resolve network/proxy issues. |
 
 ---
 
@@ -27,7 +27,7 @@ Your library, posters, and metadata all load. Pressing play gives a black screen
 
 **Your reverse proxy is TLS 1.3 only.** libvlc only supports TLS **1.1 and 1.2**, so media playback fails while everything else works. NGINX has included 1.3 by default since 1.23.4, so this can appear after an update. Enable 1.2 alongside 1.3 (having both is fine) and libvlc will fall back to using the supported version. This is a libvlc limitation and is documented in the [Players Documentation](players.md).
 
-**You entered `http` for an `https` server.** You can sign in and browse everything, but nothing plays. Swiftfin attempts to resolve this at login, but HSTS and redirects can mask the issue since some requests follow the redirect but media requests do not. Re-add the server with the correct scheme.
+**You entered `http` for an `https` server.** You can sign in and browse everything, but nothing plays. Alphane attempts to resolve this at login, but HSTS and redirects can mask the issue since some requests follow the redirect but media requests do not. Re-add the server with the correct scheme.
 
 If neither applies, please test on a direct `IP:port` connection before reporting.
 
@@ -47,7 +47,7 @@ Please see the notes in the [Players Documentation](players.md) before reporting
 
 ### Audio Out of Sync over AirPlay Speakers or HomePods
 
-This is a [known SwiftVLC bug](https://code.videolan.org/videolan/VLCKit/-/issues/544) and tracked on Swiftfin [here](https://github.com/jellyfin/Swiftfin/issues/937). This item cannot be resolved by Swiftfin and requires a patch from VLC. As a workaround, please use the Native player for this output.
+This is a [known SwiftVLC bug](https://code.videolan.org/videolan/VLCKit/-/issues/544) and tracked upstream in Swiftfin [here](https://github.com/jellyfin/Swiftfin/issues/937). This item cannot be resolved by Alphane and requires a patch from VLC. As a workaround, please use the Native player for this output.
 
 ### Native Player Cannot Select Subtitles or Change Audio Tracks
 
@@ -55,7 +55,7 @@ The Native player is built on top of AVPlayer but has not yet been connected to 
 
 ### Unnecessary Transcoding or Remuxing
 
-Swiftfin uses **Device Profiles** that can be manually adjusted based on your device and media. These settings can be found in **Settings > Advanced > Video Player > Playback Quality** where you can change to a different pre-made **Device Profile** or you can select **Custom** to build your own.
+Alphane uses **Device Profiles** that can be manually adjusted based on your device and media. These settings can be found in **Settings > Advanced > Video Player > Playback Quality** where you can change to a different pre-made **Device Profile** or you can select **Custom** to build your own.
 
 You can add a new profile to the existing ones that would keep all else the same but allows a specific format to **Direct Play**, or you can fully replace them all with **Custom** profiles.
 
@@ -71,21 +71,21 @@ To leave `Gesture Lock`, hold a single point on the screen until the `Gestures u
 
 ### No Local Servers Found
 
-Automatic discovery uses UDP broadcast on port `7359` and this port cannot be changed. Start by ensuring that this port is accessible from your server and that your server and device are on the same network. mDNS and UDP broadcast must be available from your router. These are network configurations and outside the scope of Swiftfin. [Jellyfin forum or chat rooms](https://jellyfin.org/contact/) would be the best place for troubleshooting assistance for these types of issues.
+Automatic discovery uses UDP broadcast on port `7359` and this port cannot be changed. Start by ensuring that this port is accessible from your server and that your server and device are on the same network. mDNS and UDP broadcast must be available from your router. These are network configurations and outside the scope of Alphane. [Jellyfin forum or chat rooms](https://jellyfin.org/contact/) would be the best place for troubleshooting assistance for these types of issues.
 
 ### "The Internet Connection Appears to Be Offline"
 
-Swiftfin can't reach the server but a browser on the same device can. Common causes:
+Alphane can't reach the server but a browser on the same device can. Common causes:
 
-- **Local Network permission is off.** Enable it in iOS Settings > Swiftfin.
-- **Reverse Proxy or Custom Headers**, which Swiftfin does not currently support. See [Reverse Proxies](#reverse-proxies).
+- **Local Network permission is off.** Enable it in iOS Settings > Alphane.
+- **Reverse Proxy or Custom Headers**, which Alphane does not currently support. See [Reverse Proxies](#reverse-proxies).
 - **Stale iOS network cache**, usually after changing networks or during server maintenance. Restarting your device should be your first step in resolving this issue.
 
-If the issue persists, please reach out with an issue and include your logs from Swiftfin found at *Settings > Logs*. If you are unable to login, these logs can be found at *Settings > Advanced > Logs*.
+If the issue persists, please reach out with an issue and include your logs from Alphane found at *Settings > Logs*. If you are unable to login, these logs can be found at *Settings > Advanced > Logs*.
 
 ### "The Data Couldn't Be Read Because It Isn't in the Correct Format"
 
-This is a generic error that means that Jellyfin sent information to Swiftfin in a format that was not expected. The usual culprits:
+This is a generic error that means that Jellyfin sent information to Alphane in a format that was not expected. The usual culprits:
 
 - A **`baseurl`** set on your server that isn't included in the address you entered, so we receive HTML instead of JSON.
 - **Server plugins** that change API responses away from what the SDK expects.
@@ -95,7 +95,7 @@ This is a generic error that means that Jellyfin sent information to Swiftfin in
 
 ### Reverse Proxies
 
-Most connection problems that reach us are proxy configuration rather than Swiftfin. Please start from a configuration Jellyfin has vetted as Swiftfin should be compatible with standard configurations:
+Most connection problems that reach us are proxy configuration rather than Alphane. Please start from a configuration Jellyfin has vetted as Alphane should be compatible with standard configurations:
 
 - [Caddy](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/caddy)
 - [Nginx](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/nginx)
@@ -103,9 +103,9 @@ Most connection problems that reach us are proxy configuration rather than Swift
 - [Traefik](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/traefik)
 - [HAProxy](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/haproxy)
 
-Beyond a working Jellyfin proxy, Swiftfin needs **TLS 1.2 available**, a certificate from a **trusted CA** at the OS level, and no filtering middleware in the request path. ModSecurity has been confirmed to block requests with a `403` while leaving browsers intact.
+Beyond a working Jellyfin proxy, Alphane needs **TLS 1.2 available**, a certificate from a **trusted CA** at the OS level, and no filtering middleware in the request path. ModSecurity has been confirmed to block requests with a `403` while leaving browsers intact.
 
-**The Swiftfin team is not able to troubleshoot custom or heavily modified proxy setups.** The Jellyfin team that works on Swiftfin are not experts on networking or proxies. These issues are best handled by the [Jellyfin forum or chat rooms](https://jellyfin.org/contact/). If your configuration differs from the documented ones, please reproduce the problem on a documented config or a direct `IP:port` connection before reporting.
+**The Alphane team is not able to troubleshoot custom or heavily modified proxy setups.** Custom networking and proxy configurations are best debugged at the server. These issues are best handled by the [Jellyfin forum or chat rooms](https://jellyfin.org/contact/). If your configuration differs from the documented ones, please reproduce the problem on a documented config or a direct `IP:port` connection before reporting.
 
 When you do investigate, please read your **proxy's** logs as Jellyfin does not see requests that the proxy has rejected.
 
@@ -116,7 +116,7 @@ This error means your authentication to your Jellyfin server is not valid. The m
 - **Your password has changed**
 - **Your device was removed from the Admin Dashboard**
 
-To resolve this issue, go to *Settings > Sign Out* then use the Add button to re-add your same account back to Swiftfin. On enter, Swiftfin will provide you the option to **Replace** the existing login. Performing this action will swap out your authentication token while preserving your Swiftfin settings.
+To resolve this issue, go to *Settings > Sign Out* then use the Add button to re-add your same account back to Alphane. On enter, Alphane will provide you the option to **Replace** the existing login. Performing this action will swap out your authentication token while preserving your Alphane settings.
 
 ---
 
@@ -124,7 +124,7 @@ To resolve this issue, go to *Settings > Sign Out* then use the Add button to re
 
 ### No Media After Signing In
 
-Swiftfin filters by library **collection type**, not by the items inside. A library with a blank or unsupported type disappears entirely. Please set the correct type in Jellyfin.
+Alphane filters by library **collection type**, not by the items inside. A library with a blank or unsupported type disappears entirely. Please set the correct type in Jellyfin.
 
 See the [Libraries Documentation](libraries.md) for what is currently supported.
 
@@ -136,7 +136,7 @@ On tvOS, the top level **Movies** and **Shows** sections group by *media type* a
 
 ## Server Compatibility
 
-Swiftfin is built against the latest OpenAPI specification produced by the Jellyfin Server Team. **Support is only guaranteed for the current stable Jellyfin release.** Running server pre-releases or legacy versions may result in issues. The compatible version can be found on the project [README](https://github.com/jellyfin/Swiftfin).
+Alphane is built against the latest OpenAPI specification produced by the Jellyfin Server Team. **Support is only guaranteed for the current stable Jellyfin release.** Running server pre-releases or legacy versions may result in issues. The compatible version can be found on the project [README](https://github.com/neogucky/Irukandji).
 
 ---
 
@@ -144,4 +144,4 @@ Swiftfin is built against the latest OpenAPI specification produced by the Jelly
 
 For **configuration help** such as proxies, certificates, transcoding, networking, etc, please start at the [Jellyfin forum or chat rooms](https://jellyfin.org/contact/).
 
-If you've found a reproducible bug in Swiftfin, please [open an issue](https://github.com/jellyfin/Swiftfin/issues/new/choose).
+If you've found a reproducible bug in Alphane, please [open an issue](https://github.com/neogucky/Irukandji/issues/new/choose).

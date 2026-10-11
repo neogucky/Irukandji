@@ -15,14 +15,14 @@ import Nuke
 //       host and only use path + query which has ids and tags
 
 extension DataCache {
-    enum Swiftfin {}
+    enum Alphane {}
 }
 
-extension DataCache.Swiftfin {
+extension DataCache.Alphane {
 
     static let posters: DataCache? = {
 
-        let dataCache = try? DataCache(name: "org.jellyfin.swiftfin/Posters") { name in
+        let dataCache = try? DataCache(name: "com.neogucky.alphane/Posters") { name in
             guard let url = name.url else { return nil }
 
             return ImagePipeline.cacheKey(for: url)
@@ -40,7 +40,7 @@ extension DataCache.Swiftfin {
             return nil
         }
 
-        let path = root.appendingPathComponent("Caches/org.jellyfin.swiftfin.local", isDirectory: true)
+        let path = UpstreamCompatibility.localImageDirectory(in: root)
 
         return try? DataCache(path: path) { name in
 

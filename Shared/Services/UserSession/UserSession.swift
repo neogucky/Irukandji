@@ -16,12 +16,12 @@ final class UserSession {
     let user: UserState
 
     lazy var client: JellyfinClient = JellyfinClient(
-        configuration: .swiftfinConfiguration(
+        configuration: .alphaneConfiguration(
             url: server.effectiveServerURL,
             accessToken: user.accessToken
         ),
-        sessionConfiguration: .swiftfin,
-        sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.swiftfin())
+        sessionConfiguration: .alphane,
+        sessionDelegate: URLSessionProxyDelegate(logger: NetworkLogger.alphane())
     )
 
     @MainActor

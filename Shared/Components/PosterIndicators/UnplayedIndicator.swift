@@ -18,7 +18,7 @@ struct UnplayedIndicator: View {
 
     private var badgeColor: Color {
         #if os(tvOS)
-        IrukandjiTheme.surface
+        AlphaneTheme.surface
         #else
         accentColor
         #endif

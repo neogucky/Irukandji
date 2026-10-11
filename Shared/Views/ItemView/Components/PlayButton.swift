@@ -24,7 +24,7 @@ struct PlayButton: View {
 
     private var actionTint: Color {
         #if os(tvOS)
-        IrukandjiTheme.surface
+        AlphaneTheme.surface
         #else
         accentColor
         #endif

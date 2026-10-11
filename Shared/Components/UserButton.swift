@@ -133,7 +133,7 @@ extension UserButton {
                 source: user.profileImageSource(
                     client: server.client
                 ),
-                pipeline: .Swiftfin.local
+                pipeline: .Alphane.local
             ),
             title: user.username,
             subtitle: showServer ? server.name : nil,
@@ -154,7 +154,7 @@ extension UserButton {
                     client: client,
                     maxWidth: 240
                 ),
-                pipeline: .Swiftfin.local
+                pipeline: .Alphane.local
             ),
             title: user.name ?? .emptyDash,
             subtitle: nil,

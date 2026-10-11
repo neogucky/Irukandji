@@ -14,7 +14,7 @@ import UIKit
 
 extension ImagePipeline {
 
-    enum Swiftfin {}
+    enum Alphane {}
 
     nonisolated static func cacheKey(for url: URL) -> String? {
         guard var components = url.components else { return nil }
@@ -60,18 +60,18 @@ extension ImagePipeline {
     }
 }
 
-extension ImagePipeline.Swiftfin {
+extension ImagePipeline.Alphane {
 
     /// The default `ImagePipeline` to use for images that are typically posters
     /// or server user images that should be presentable with an active connection.
-    static let posters: ImagePipeline = ImagePipeline(delegate: SwiftfinImagePipelineDelegate()) { config in
-        config.dataCache = DataCache.Swiftfin.posters
+    static let posters: ImagePipeline = ImagePipeline(delegate: AlphaneImagePipelineDelegate()) { config in
+        config.dataCache = DataCache.Alphane.posters
 
         let dataLoader = DataLoader(
-            configuration: .swiftfin
+            configuration: .alphane
         )
         dataLoader.delegate = URLSessionProxyDelegate(
-            logger: NetworkLogger.swiftfin(),
+            logger: NetworkLogger.alphane(),
             delegate: nil
         )
         config.dataLoader = dataLoader
@@ -79,14 +79,14 @@ extension ImagePipeline.Swiftfin {
 
     /// The `ImagePipeline` used for images that should have longer lifetimes and usable
     /// without a connection, likes local user profile images and server splashscreens.
-    static let local: ImagePipeline = ImagePipeline(delegate: SwiftfinImagePipelineDelegate()) { config in
-        config.dataCache = DataCache.Swiftfin.local
+    static let local: ImagePipeline = ImagePipeline(delegate: AlphaneImagePipelineDelegate()) { config in
+        config.dataCache = DataCache.Alphane.local
 
         let dataLoader = DataLoader(
-            configuration: .swiftfin
+            configuration: .alphane
         )
         dataLoader.delegate = URLSessionProxyDelegate(
-            logger: NetworkLogger.swiftfin(),
+            logger: NetworkLogger.alphane(),
             delegate: nil
         )
         config.dataLoader = dataLoader
@@ -96,7 +96,7 @@ extension ImagePipeline.Swiftfin {
     static let other: ImagePipeline = ImagePipeline(configuration: .withURLCache)
 }
 
-final class SwiftfinImagePipelineDelegate: ImagePipeline.Delegate {
+final class AlphaneImagePipelineDelegate: ImagePipeline.Delegate {
 
     func cacheKey(for request: ImageRequest, pipeline: ImagePipeline) -> String? {
         guard let url = request.url else { return nil }

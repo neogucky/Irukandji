@@ -66,7 +66,7 @@ final class RootCoordinator: ObservableObject {
         started = true
 
         do {
-            try await SwiftfinStore.setupDataStack()
+            try await AlphaneStore.setupDataStack()
             startPreferenceObservation()
         } catch {
             throw AppStartupError.dataStack(error)

@@ -15,13 +15,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../SwiftfinMacros"),
+        .package(path: "../AlphaneMacros"),
     ],
     targets: [
         .target(
             name: "PreferencesView",
             dependencies: [
-                .product(name: "SwiftfinMacros", package: "SwiftfinMacros"),
+                .product(name: "AlphaneMacros", package: "AlphaneMacros"),
             ]
         ),
     ]

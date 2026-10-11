@@ -124,7 +124,7 @@ struct MainTabView: View {
         .edgePadding(.horizontal)
         .background {
             if tabCoordinator.selectedTabID != tabCoordinator.tabs.first?.item.id {
-                IrukandjiTheme.background
+                AlphaneTheme.background
             }
         }
         .focusSection()

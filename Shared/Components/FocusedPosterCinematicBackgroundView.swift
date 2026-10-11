@@ -20,7 +20,7 @@ struct FocusedPosterCinematicBackgroundView: View {
 
     var body: some View {
         ZStack {
-            IrukandjiTheme.background
+            AlphaneTheme.background
 
             if isCinematicBackgroundEnabled {
                 FadeContentTransitionView(

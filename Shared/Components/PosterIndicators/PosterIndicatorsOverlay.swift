@@ -32,7 +32,7 @@ struct PosterIndicatorsOverlay: View {
 
     private var playedBadgeColor: Color {
         #if os(tvOS)
-        IrukandjiTheme.surface
+        AlphaneTheme.surface
         #else
         accentColor
         #endif

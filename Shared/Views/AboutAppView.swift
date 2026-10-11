@@ -78,7 +78,7 @@ struct AboutAppView: View {
                     image: .logoGithub,
                     external: true
                 ) {
-                    UIApplication.shared.open(.swiftfinGithub)
+                    UIApplication.shared.open(.alphaneGithub)
                 }
 
                 ChevronButton(
@@ -87,7 +87,7 @@ struct AboutAppView: View {
                     systemName: "text.document",
                     external: true
                 ) {
-                    UIApplication.shared.open(.swiftfinGithubLicense)
+                    UIApplication.shared.open(.alphaneGithubLicense)
                 }
 
                 ChevronButton(
@@ -95,10 +95,15 @@ struct AboutAppView: View {
                     systemName: "plus.circle.fill",
                     external: true
                 ) {
-                    UIApplication.shared.open(.swiftfinGithubIssues)
+                    UIApplication.shared.open(.alphaneGithubIssues)
                 }
                 .symbolRenderingMode(.monochrome)
                 #endif
+            }
+            Section {
+                Text(L10n.upstreamAttribution)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
         .navigationTitle(L10n.aboutApp)

@@ -26,8 +26,8 @@ jobs:
     strategy:
       matrix:
         scheme:
-          - "Swiftfin"
-          - "Swiftfin tvOS"
+          - "Alphane"
+          - "Alphane tvOS"
 
     runs-on: macos-26
 
@@ -56,7 +56,7 @@ jobs:
             build/SourcePackages/repositories
             build/SourcePackages/artifacts
             build/SourcePackages/workspace-state.json
-          key: spm-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.XCODE_VERSION }}-${{ matrix.scheme }}-${{ hashFiles('Swiftfin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          key: spm-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.XCODE_VERSION }}-${{ matrix.scheme }}-${{ hashFiles('Alphane.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             spm-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.XCODE_VERSION }}-${{ matrix.scheme }}-
 

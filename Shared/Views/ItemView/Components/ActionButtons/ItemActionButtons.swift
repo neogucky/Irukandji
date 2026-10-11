@@ -24,7 +24,7 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
 
     private var tint: Color {
         #if os(tvOS)
-        return IrukandjiTheme.surface
+        return AlphaneTheme.surface
         #else
         guard isSelected, let activeColor else {
             return .gray.opacity(0.15)
