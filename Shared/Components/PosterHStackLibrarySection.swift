@@ -117,7 +117,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     }
 
     var body: some View {
-        if viewModel.elements.isNotEmpty {
+        if viewModel.elements.count >= group.environment.minimumItemCount {
             ContentGroupSection {
                 PosterHStack(
                     elements: viewModel.elements.elements,
@@ -127,6 +127,11 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                     element.libraryDidSelectElement(router: router, in: namespace)
                 }
                 .withViewContext(.isThumb)
+                #if os(tvOS)
+                // Lazy Home rows may rebuild their cells after visiting details.
+                // Keep the restoration target tied to the row, rather than the view's lifetime.
+                .environment(\.navigationFocusScopeID, group.id)
+                #endif
                 .focusSection()
                 .focused($focusedSection, equals: .content)
             } header: {

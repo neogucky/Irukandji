@@ -143,9 +143,13 @@ struct FilterTrack: View {
             button(for: target)
                 .fixedSize()
         }
-        .font(UIDevice.isTV ? .callout : .footnote)
-        .controlSize(UIDevice.isTV ? .large : .small)
-        .buttonStyle(.capsule(selectionTint: accentColor, focusTint: UIDevice.isTV ? .white : nil))
+        .font(UIDevice.isTV ? .system(size: 22) : .footnote)
+        .controlSize(UIDevice.isTV ? .regular : .small)
+        .buttonStyle(.capsule(
+            selectionTint: UIDevice.isTV ? .white : accentColor,
+            focusTint: UIDevice.isTV ? .white : nil,
+            isSelectionActive: !UIDevice.isTV || focus.wrappedValue != nil
+        ))
         #if os(tvOS)
         .animation(.snappy(duration: 0.2), value: focus.wrappedValue)
         #endif

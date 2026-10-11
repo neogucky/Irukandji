@@ -45,17 +45,20 @@ struct PosterButton<Item: Poster>: View {
     let item: Item
     let displayType: PosterDisplayType
     let size: PosterDisplayType.Size
+    let onFocus: ((Item) -> Void)?
     let action: (Namespace.ID) -> Void
 
     init(
         item: Item,
         displayType: PosterDisplayType,
         size: PosterDisplayType.Size = .small,
+        onFocus: ((Item) -> Void)? = nil,
         action: @escaping (Namespace.ID) -> Void
     ) {
         self.item = item
         self.displayType = displayType
         self.size = size
+        self.onFocus = onFocus
         self.action = action
     }
 
@@ -133,11 +136,20 @@ struct PosterButton<Item: Poster>: View {
         #if os(tvOS)
             .buttonStyle(ArtworkButtonStyle())
             .focused($isFocused)
-            .onAppear { restoreFocus(navigationFocusStore?.request) }
+            .onAppear {
+                restoreFocus(navigationFocusStore?.request)
+                if isFocused { onFocus?(item) }
+            }
             .onChange(of: isFocused) { _, isFocused in
                 if isFocused {
                     navigationFocusStore?.didRestore(returnFocusTarget, on: navigationFocusPageID)
+                    onFocus?(item)
                 }
+            }
+            .onChange(of: item) {
+                // A refreshed collection can replace a focused cell's item
+                // without a focus transition between hosting controllers.
+                if isFocused { onFocus?(item) }
             }
             .onReceive(navigationFocusStore?.$request.eraseToAnyPublisher() ?? Combine.Empty<NavigationFocusStore.Request?, Never>()
                 .eraseToAnyPublisher())

@@ -150,14 +150,14 @@ extension NavigationRoute {
     }
 
     @MainActor
-    static func item(item: BaseItemDto) -> NavigationRoute {
+    static func item(item: BaseItemDto, startPlayback: Bool = false) -> NavigationRoute {
         let provider = ItemContentGroupProvider(item: item)
 
         return NavigationRoute(
             id: "item-\(item.id ?? "Unknown")",
             withNamespace: { .push(.zoom(sourceID: "item", namespace: $0)) }
         ) {
-            ItemView(provider: provider)
+            ItemView(provider: provider, startPlayback: startPlayback)
         }
     }
 

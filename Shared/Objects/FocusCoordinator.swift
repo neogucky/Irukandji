@@ -126,8 +126,12 @@ final class NavigationFocusStore: ObservableObject {
         targets[pageID] = target
     }
 
+    func target(on pageID: String) -> Target? {
+        targets[pageID]
+    }
+
     func restore(_ pageID: String) {
-        request = targets[pageID].map { Request(pageID: pageID, target: $0) }
+        request = target(on: pageID).map { Request(pageID: pageID, target: $0) }
     }
 
     func beginNavigation() {

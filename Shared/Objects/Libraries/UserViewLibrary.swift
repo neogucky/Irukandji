@@ -164,7 +164,28 @@ private struct UserViewLibraryGridElement: View {
     @State
     private var imageSources: [ImageSource] = []
 
+    #if os(tvOS)
+    @FocusState
+    private var isFocused: Bool
+    #endif
+
     let element: UserViewLibraryElement
+
+    private var titleColor: Color {
+        #if os(tvOS)
+        isFocused ? .white : AlphaneTheme.secondaryText
+        #else
+        .primary
+        #endif
+    }
+
+    private var placeholderColor: Color {
+        #if os(tvOS)
+        AlphaneTheme.surface
+        #else
+        Color.secondarySystemFill.opacity(0.75)
+        #endif
+    }
 
     private var isTitleLabelVisible: Bool {
         switch element {
@@ -191,16 +212,18 @@ private struct UserViewLibraryGridElement: View {
                     titleLabelOverlay(with: DefaultPlaceholderView(blurHash: imageSource.blurHash))
                 }
                 .failure {
-                    Color.secondarySystemFill
-                        .opacity(0.75)
+                    placeholderColor
                         .overlay {
                             titleLabel
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(titleColor)
                         }
                 }
                 .id(imageSources.hashValue)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .posterStyle(.landscape)
+            #if os(tvOS)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+            #endif
                 .matchedTransitionSource(id: "item", in: namespace)
         }
         .foregroundStyle(.primary, .secondary)
@@ -210,6 +233,7 @@ private struct UserViewLibraryGridElement: View {
         }
         #if os(tvOS)
         .buttonStyle(.focusBorder)
+        .focused($isFocused)
         #else
         .buttonStyle(.card)
         #endif
@@ -234,7 +258,7 @@ private struct UserViewLibraryGridElement: View {
                 .opacity(0.5)
 
             titleLabel
-                .foregroundStyle(.white)
+                .foregroundStyle(UIDevice.isTV ? titleColor : .white)
         }
     }
 

@@ -21,14 +21,8 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
         navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight
     }
 
-    @FocusState
-    private var isSectionFocused
-
-    @FocusedValue(\.focusedPoster)
-    private var focusedPoster
-
     @State
-    private var selectedPoster: AnyPoster?
+    private var selection = CinematicItemSelection<Item>()
 
     private let action: (Item) -> Void
     private let items: [Item]
@@ -49,17 +43,11 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
     }
 
     private var resolvedSelectedPoster: AnyPoster? {
-        selectedPoster ?? items.first.map { AnyPoster($0) }
+        selectedItem.map { AnyPoster($0) }
     }
 
     private var selectedItem: Item? {
-        resolvedSelectedPoster?._poster as? Item
-    }
-
-    private func updateSelectedPoster() {
-        guard isSectionFocused, let focusedPoster else { return }
-
-        selectedPoster = focusedPoster
+        selection.item(in: items)
     }
 
     var body: some View {
@@ -77,7 +65,8 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
                 PosterHStack(
                     elements: items,
                     displayType: .landscape,
-                    size: .medium
+                    size: .medium,
+                    onFocus: { selection.focus($0, in: items) }
                 ) { item, _ in
                     action(item)
                 }
@@ -124,14 +113,24 @@ struct CinematicItemSelector<Item: Poster, TopContent: View>: View {
             .offset(y: -headerHeight)
         }
         .background(AlphaneTheme.background)
-        .onChange(of: focusedPoster) {
-            updateSelectedPoster()
-        }
-        .onChange(of: isSectionFocused) {
-            updateSelectedPoster()
-        }
         .focusSection()
-        .focused($isSectionFocused)
+    }
+}
+
+/// Retain a selection's identity, while always reading its current row data.
+/// A removed Continue item must never remain in the cinematic preview.
+struct CinematicItemSelection<Item: Identifiable> {
+
+    private(set) var selectedID: Item.ID?
+
+    func item(in items: [Item]) -> Item? {
+        items.first(where: { $0.id == selectedID }) ?? items.first
+    }
+
+    mutating func focus(_ item: Item, in items: [Item]) {
+        guard items.contains(where: { $0.id == item.id }) else { return }
+
+        selectedID = item.id
     }
 }
 

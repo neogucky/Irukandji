@@ -21,11 +21,13 @@ struct CinematicSelectionContentGroup: ContentGroup {
 
     init(
         resumeLibrary: ResumeItemsLibrary,
-        recentlyAddedLibrary: RecentlyAddedLibrary
+        recentlyAddedLibrary: RecentlyAddedLibrary,
+        includesRecentlyAdded: Bool = true
     ) {
         self.viewModel = CinematicSelectionContentGroupViewModel(
             resumeLibrary: resumeLibrary,
-            recentlyAddedLibrary: recentlyAddedLibrary
+            recentlyAddedLibrary: recentlyAddedLibrary,
+            includesRecentlyAdded: includesRecentlyAdded
         )
     }
 
@@ -128,6 +130,7 @@ final class CinematicSelectionContentGroupViewModel: ViewModel, WithRefresh {
 
     let recentlyAddedGroup: PosterGroup<RecentlyAddedLibrary>
     let resumeViewModel: PagingLibraryViewModel<ResumeItemsLibrary>
+    private let includesRecentlyAdded: Bool
 
     var recentlyAddedViewModel: PagingLibraryViewModel<RecentlyAddedLibrary> {
         recentlyAddedGroup.viewModel
@@ -143,14 +146,16 @@ final class CinematicSelectionContentGroupViewModel: ViewModel, WithRefresh {
     }
 
     var hasContent: Bool {
-        hasResumeItems || recentlyAddedViewModel.elements.isNotEmpty
+        hasResumeItems || (includesRecentlyAdded && recentlyAddedViewModel.elements.isNotEmpty)
     }
 
     init(
         resumeLibrary: ResumeItemsLibrary,
-        recentlyAddedLibrary: RecentlyAddedLibrary
+        recentlyAddedLibrary: RecentlyAddedLibrary,
+        includesRecentlyAdded: Bool = true
     ) {
         self.resumeViewModel = PagingLibraryViewModel(library: resumeLibrary, pageSize: 20)
+        self.includesRecentlyAdded = includesRecentlyAdded
         self.recentlyAddedGroup = PosterGroup(
             library: recentlyAddedLibrary,
             environment: .init(isHeaderButtonEnabled: false)
@@ -173,6 +178,11 @@ final class CinematicSelectionContentGroupViewModel: ViewModel, WithRefresh {
     }
 
     func refresh() async {
+        guard includesRecentlyAdded else {
+            await resumeViewModel.refresh()
+            return
+        }
+
         async let resume: Void = resumeViewModel.refresh()
         async let recentlyAdded: Void = recentlyAddedViewModel.refresh()
 

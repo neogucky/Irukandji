@@ -51,11 +51,15 @@ struct PosterIndicatorsOverlay: View {
     }
 
     private var showsUnplayedIndicator: Bool {
+        #if os(tvOS)
+        false
+        #else
         indicators.contains(.unplayed) &&
             item.canBePlayed &&
             !item.isLiveStream &&
             item.userData?.isPlayed == false &&
             (item.userData?.playbackPositionTicks ?? 0) == 0
+        #endif
     }
 
     private var showsProgressIndicator: Bool {

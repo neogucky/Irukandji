@@ -70,7 +70,11 @@ extension ItemView {
             }
             .frame(height: stacksPlaybackControls ? 140 : 64)
             .focusSection()
-            .defaultFocus(defaultFocusSelection, defaultFocusedButton, priority: .userInitiated)
+            .defaultFocus(
+                defaultFocusSelection,
+                provider.shouldFocusNextEpisode ? nil : defaultFocusedButton,
+                priority: .userInitiated
+            )
             #else
             VStack(alignment: alignment, spacing: UIDevice.isTV ? 24 : 8) {
                 if provider.item.presentPlayButton {

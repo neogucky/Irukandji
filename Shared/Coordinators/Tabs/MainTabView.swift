@@ -87,6 +87,13 @@ struct MainTabView: View {
     private func tabRoot(_ tab: TabCoordinator.TabData) -> some View {
         NavigationInjectionView(coordinator: tab.coordinator) {
             tab.item.content
+            #if os(tvOS)
+                .if(tabCoordinator.tabs.first?.item.id != tab.item.id) { view in
+                    // Reserve the menu's space inside the root's safe area.
+                    // Details keep their full viewport and Home sizes its own hero.
+                    view.safeAreaPadding(.top, MainNavigationScrollController.headerHeight)
+                }
+            #endif
             #if os(iOS)
                 .if(tabCoordinator.tabs.first?.item.id == tab.item.id) { view in
                     view.topBarTrailing {
@@ -122,11 +129,6 @@ struct MainTabView: View {
         .frame(maxWidth: .infinity)
         .frame(height: MainNavigationScrollController.headerHeight)
         .edgePadding(.horizontal)
-        .background {
-            if tabCoordinator.selectedTabID != tabCoordinator.tabs.first?.item.id {
-                AlphaneTheme.background
-            }
-        }
         .focusSection()
         .defaultFocus($focusedTabID, tabCoordinator.selectedTabID, priority: .automatic)
         .accessibilityElement(children: .contain)
@@ -248,6 +250,7 @@ struct MainTabView: View {
         #if os(tvOS)
             .background(alignment: .top) {
                 FocusedPosterCinematicBackgroundView()
+                    .overlay(AlphaneTheme.background.opacity(0.7))
             }
         #endif
     }

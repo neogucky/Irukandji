@@ -89,10 +89,8 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         // The collection disables automatic adjustment, so include both the local
         // safe area (including filter bars) and the tab's measured top inset.
         var insets = frame.safeAreaInsets
-        insets.top = max(insets.top, tabSafeAreaInsets.top)
-        if navigationScrollContext != nil {
-            insets.top += MainNavigationScrollController.headerHeight
-        }
+        let menuInset = navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight
+        insets.top = max(insets.top, tabSafeAreaInsets.top + menuInset)
         return insets + EdgeInsets.itemSpacing
         #else
         var insets: EdgeInsets = if isSafeAreaBarApplied {
@@ -259,6 +257,14 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         }
         #if os(tvOS)
         .environmentObject(focusCoordinator)
+        .onChange(of: viewModel.state) { _, state in
+            if state == .content {
+                // Collection cells have separate hosting controllers. Their
+                // inner button focus does not reliably reach the outer binding,
+                // so never leave sidebar controls waiting for that event.
+                focusCoordinator.resolveInitialFocus()
+            }
+        }
         #else
         .navigationBarMenuButton(
             isLoading: viewModel.background.is(.gettingNextPage) || viewModel.background.is(.gettingNextSearchPage)

@@ -18,6 +18,7 @@ struct ItemView: View {
         static let header = "itemView-header"
         static let menu = "itemView-menu"
         static let play = "itemView-play"
+        static let nextEpisode = "itemView-next-episode"
     }
 
     @Default(.Customization.itemViewType)
@@ -31,9 +32,18 @@ struct ItemView: View {
     @State
     private var contentSize: CGSize = .zero
 
+    @State
+    private var shouldStartPlayback: Bool
+
     #if os(tvOS)
     @FocusState
     private var initialFocusSelection: String?
+    @State
+    private var shouldRestorePlaybackFocus = false
+
+    private var preferredPlaybackFocus: String {
+        provider.shouldFocusNextEpisode ? Component.nextEpisode : Component.play
+    }
     #endif
 
     @StateObject
@@ -45,10 +55,28 @@ struct ItemView: View {
     @StateObject
     private var deleteViewModel: ItemEditorViewModel
 
-    init(provider: ItemContentGroupProvider) {
+    init(provider: ItemContentGroupProvider, startPlayback: Bool = false) {
+        self._shouldStartPlayback = State(initialValue: startPlayback)
         self._provider = StateObject(wrappedValue: provider)
         self._viewModel = StateObject(wrappedValue: ContentGroupViewModel(provider: provider))
         self._deleteViewModel = StateObject(wrappedValue: ItemEditorViewModel(item: provider.item))
+    }
+
+    private func contentDidLoad() {
+        #if os(tvOS)
+        if shouldRestorePlaybackFocus {
+            shouldRestorePlaybackFocus = false
+            initialFocusSelection = preferredPlaybackFocus
+        }
+        #endif
+
+        guard shouldStartPlayback, let playbackProvider = provider.mediaPlayerItemProvider else { return }
+        // Keep the following episode's details beneath its player, so finishing
+        // it returns to the correct episode and offers its own Next action.
+        shouldStartPlayback = false
+        let queue: (any MediaPlayerQueue)? = playbackProvider.item.type == .episode
+            ? EpisodeMediaPlayerQueue(episode: playbackProvider.item) : nil
+        router.route(to: .videoPlayer(provider: playbackProvider, queue: queue))
     }
 
     private var isCompact: Bool {
@@ -170,7 +198,7 @@ struct ItemView: View {
         }
         .environmentObject(focusCoordinator)
         #if os(tvOS)
-        .defaultFocus($initialFocusSelection, Component.play, priority: .userInitiated)
+        .defaultFocus($initialFocusSelection, preferredPlaybackFocus, priority: .userInitiated)
         .environment(\.initialFocusSelection, $initialFocusSelection)
         #endif
         .confirmationDialog(
@@ -196,9 +224,14 @@ struct ItemView: View {
             guard provider.prepareForPlaybackStop(report) else { return }
             // Rebuild the header and navigation after final progress settles.
             #if os(tvOS)
-            focusCoordinator.focus(Component.play)
+            shouldRestorePlaybackFocus = true
             #endif
             viewModel.refresh()
+        }
+        .onChange(of: viewModel.state) { _, state in
+            if state == .content {
+                contentDidLoad()
+            }
         }
         .errorMessage($deleteViewModel.error)
         #if os(tvOS)

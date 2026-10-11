@@ -17,6 +17,12 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
     #if os(tvOS)
     @Environment(\.mainNavigationScrollContext)
     private var navigationScrollContext
+    @Environment(\.navigationFocusStore)
+    private var navigationFocusStore
+    @Environment(\.navigationFocusPageID)
+    private var navigationFocusPageID
+    @Environment(\.isMainNavigationFocused)
+    private var isMainNavigationFocused
     #endif
 
     private enum Focus: String {
@@ -69,6 +75,20 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
             #if os(tvOS)
             .coordinatedFocus(Focus.content.rawValue)
             .ignoresSafeArea(.container)
+                .task {
+                    guard !isMainNavigationFocused,
+                          let target = navigationFocusStore?.target(on: navigationFocusPageID)
+                    else { return }
+
+                    // Recreate the lazy row before restoring its cell. The pop's
+                    // first focus update can otherwise land on an earlier row.
+                    await Task.yield()
+                    guard !Task.isCancelled else { return }
+                    proxy.scrollTo(target.scope, anchor: .center)
+                    await Task.yield()
+                    guard !Task.isCancelled else { return }
+                    navigationFocusStore?.restore(navigationFocusPageID)
+                }
             #else
             .ignoresSafeArea(
                 edges: contentGroupOptions.contains(.ignoreSafeAreaTop) ? [.horizontal, .top] : .horizontal

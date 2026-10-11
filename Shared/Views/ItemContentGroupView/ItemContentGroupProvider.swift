@@ -31,10 +31,21 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
 
     let id: String
     private var reportedStopPosition: Int?
+    @Published
+    private(set) var lastPlaybackStopPosition: Int?
+
+    var shouldFocusNextEpisode: Bool {
+        PlaybackCompletion.shouldPreferNextEpisode(
+            after: item,
+            stoppedAt: lastPlaybackStopPosition,
+            nextEpisode: nextEpisodeItemProvider?.item
+        )
+    }
 
     func prepareForPlaybackStop(_ report: PlaybackStopInfo) -> Bool {
         guard report.itemID == id else { return false }
         reportedStopPosition = report.positionTicks
+        lastPlaybackStopPosition = report.positionTicks
         return true
     }
 

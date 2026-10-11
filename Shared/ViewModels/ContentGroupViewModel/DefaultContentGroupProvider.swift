@@ -39,7 +39,11 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
                 using: \.collectionType
             )
 
+        #if os(tvOS)
+        return TVHomeRows.makeGroups(userSession: userSession, libraries: resolvedUserViews)
+        #else
         return _makeGroups(userViews: resolvedUserViews)
+        #endif
     }
 
     private var isHomeHeaderButtonEnabled: Bool {

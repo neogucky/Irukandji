@@ -209,7 +209,7 @@ extension ItemView {
                        let next = provider.nextEpisodeItemProvider?.item
                     {
                         NextEpisodeCard(item: next) {
-                            router.route(to: .item(item: next))
+                            router.route(to: .item(item: next, startPlayback: true))
                         }
                     }
                 }
@@ -281,8 +281,19 @@ extension ItemView {
 
     private struct NextEpisodeCard: View {
 
+        @Environment(\.initialFocusSelection)
+        private var initialFocusSelection
+
         @FocusState
-        private var isFocused: Bool
+        private var localFocusSelection: String?
+
+        private var focusSelection: FocusState<String?>.Binding {
+            initialFocusSelection ?? $localFocusSelection
+        }
+
+        private var isFocused: Bool {
+            focusSelection.wrappedValue == ItemView.Component.nextEpisode
+        }
 
         let item: BaseItemDto
         let action: () -> Void
@@ -334,7 +345,7 @@ extension ItemView {
                 .frame(width: 360)
             }
             .buttonStyle(ArtworkButtonStyle())
-            .focused($isFocused)
+            .focused(focusSelection, equals: ItemView.Component.nextEpisode)
             .accessibilityIdentifier("item-next-episode")
         }
     }

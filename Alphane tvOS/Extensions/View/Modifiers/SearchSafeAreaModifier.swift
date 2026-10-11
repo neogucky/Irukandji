@@ -16,13 +16,17 @@ struct SearchSafeAreaModifier: ViewModifier {
     @Environment(\.tabSafeAreaInsets)
     private var tabSafeAreaInsets
 
+    @Environment(\.mainNavigationScrollContext)
+    private var navigationScrollContext
+
     @State
     private var adjustment = SearchSafeAreaAdjustment()
 
     func body(content: Content) -> some View {
         content
             .introspect(SearchContainerType(), on: .tvOS(.v26...)) { container in
-                adjustment.apply(to: container, topInset: tabSafeAreaInsets.top)
+                let menuInset = navigationScrollContext == nil ? 0 : MainNavigationScrollController.headerHeight
+                adjustment.apply(to: container, topInset: tabSafeAreaInsets.top + menuInset)
             }
             .onDisappear {
                 adjustment.reset()

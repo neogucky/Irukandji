@@ -14,6 +14,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
 
         var isHeaderVisible: Bool = true
         var isHeaderButtonEnabled: Bool = true
+        var minimumItemCount: Int = 1
         var viewContext: ViewContext = .init()
 
         static var `default`: Self {
@@ -30,7 +31,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
     let viewModel: PagingLibraryViewModel<Library>
 
     var _shouldBeResolved: Bool {
-        viewModel.elements.isNotEmpty
+        viewModel.elements.count >= environment.minimumItemCount
     }
 
     init(

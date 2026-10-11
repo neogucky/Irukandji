@@ -46,6 +46,65 @@ final class PlaybackCompletionTests: XCTestCase {
         XCTAssertEqual(result.userData?.playbackPositionTicks, 1_503_860_000)
     }
 
+    func testEndingARewatchClearsStaleResumePositionWithoutRetrying() async throws {
+        var watched = item(played: true)
+        watched.userData?.playbackPositionTicks = 1_503_860_000
+        var calls = 0
+        let result = try await PlaybackCompletion.refreshedItem(stoppedAt: 3_102_100_000) {
+            calls += 1
+            return watched
+        } pause: { XCTFail("Already-watched state needs no retry") }
+        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(result.userData?.playbackPositionTicks, 0)
+        XCTAssertTrue(PlaybackCompletion.shouldPreferNextEpisode(
+            after: result, stoppedAt: 3_102_100_000, nextEpisode: nextEpisode
+        ))
+    }
+
+    func testNextFocusRequiresFinishingThisViewingAndAnAvailableNextEpisode() {
+        let watched = item(played: true)
+        XCTAssertTrue(PlaybackCompletion.shouldPreferNextEpisode(
+            after: watched, stoppedAt: watched.runTimeTicks, nextEpisode: nextEpisode
+        ))
+        // Simply opening an episode, even a watched one, keeps Play/Continue selected.
+        XCTAssertFalse(PlaybackCompletion.shouldPreferNextEpisode(
+            after: watched, stoppedAt: nil, nextEpisode: nextEpisode
+        ))
+        XCTAssertFalse(PlaybackCompletion.shouldPreferNextEpisode(
+            after: watched, stoppedAt: 1_503_860_000, nextEpisode: nextEpisode
+        ))
+        var resumable = watched
+        resumable.userData?.playbackPositionTicks = 1_503_860_000
+        XCTAssertFalse(PlaybackCompletion.shouldPreferNextEpisode(
+            after: resumable, stoppedAt: resumable.runTimeTicks, nextEpisode: nextEpisode
+        ))
+        XCTAssertFalse(PlaybackCompletion.shouldPreferNextEpisode(
+            after: watched, stoppedAt: watched.runTimeTicks, nextEpisode: nil
+        ))
+        var movie = watched
+        movie.type = .movie
+        XCTAssertFalse(PlaybackCompletion.shouldPreferNextEpisode(
+            after: movie, stoppedAt: movie.runTimeTicks, nextEpisode: nextEpisode
+        ))
+    }
+
+    func testOnlyTheMatchingStopUpdatesDetailPlaybackFocusContext() {
+        let provider = ItemContentGroupProvider(item: item(played: false))
+        var report = PlaybackStopInfo()
+        report.itemID = "nine"
+        report.positionTicks = 1_503_860_000
+        XCTAssertTrue(provider.prepareForPlaybackStop(report))
+        XCTAssertEqual(provider.lastPlaybackStopPosition, report.positionTicks)
+        report.itemID = "other-episode"
+        report.positionTicks = 3_102_100_000
+        XCTAssertFalse(provider.prepareForPlaybackStop(report))
+        XCTAssertEqual(provider.lastPlaybackStopPosition, 1_503_860_000)
+    }
+
+    private var nextEpisode: BaseItemDto {
+        BaseItemDto(id: "ten", type: .episode)
+    }
+
     func testUnknownRuntimeAndUnrelatedStopCannotCompleteTheDetailPage() {
         var episode = item(played: false)
         episode.runTimeTicks = nil

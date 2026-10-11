@@ -31,6 +31,7 @@ struct ContentGroupVStack: View {
                 makeGroupBody(group)
                     .eraseToAnyView()
                     .coordinatedFocus(group.id)
+                    .id(group.id)
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)

@@ -44,16 +44,7 @@ struct UnplayedIndicator: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(L10n.posterAccessibilityUnplayedCount(count.formatted()))
         } else {
-            #if os(tvOS)
-            Quadrant(.bottomLeading) {
-                QuadrantItem(color: badgeColor) {
-                    Text(Image(systemName: "eye.slash"))
-                        .fontWeight(.bold)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(L10n.unplayed)
-            #else
+            #if !os(tvOS)
             Q3RightTriangle()
                 .fill(accentColor)
                 .aspectRatio(1, contentMode: .fit)

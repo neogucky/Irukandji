@@ -18,6 +18,21 @@ enum PlaybackCompletion {
         return positionTicks >= runtime - 10_000_000
     }
 
+    /// Prefer Next only after this viewing reached the end, never when opening
+    /// an episode or stopping partway through a rewatch.
+    static func shouldPreferNextEpisode(
+        after item: BaseItemDto,
+        stoppedAt positionTicks: Int?,
+        nextEpisode: BaseItemDto?
+    ) -> Bool {
+        item.type == .episode
+            && reachedEnd(of: item, at: positionTicks)
+            && item.userData?.isPlayed == true
+            && (item.userData?.playbackPositionTicks ?? 0) == 0
+            && nextEpisode?.type == .episode
+            && nextEpisode?.isPlayable == true
+    }
+
     @MainActor
     static func refreshedItem(
         stoppedAt positionTicks: Int?,
@@ -28,7 +43,7 @@ enum PlaybackCompletion {
         guard reachedEnd(of: item, at: positionTicks) else { return item }
 
         for _ in 0..<3 {
-            if item.userData?.isPlayed == true { return item }
+            if item.userData?.isPlayed == true { break }
             try await pause()
             item = try await fetch()
         }

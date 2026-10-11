@@ -18,6 +18,8 @@ struct PosterHStack<
     private var navigationFocusStore
     @Environment(\.navigationFocusPageID)
     private var navigationFocusPageID
+    @Environment(\.navigationFocusScopeID)
+    private var navigationFocusScopeID
 
     @State
     private var focusScopeID = UUID().uuidString
@@ -26,6 +28,7 @@ struct PosterHStack<
     let elements: Data
     let displayType: PosterDisplayType
     let size: PosterDisplayType.Size
+    var onFocus: ((Data.Element) -> Void)? = nil
     let action: (Data.Element, Namespace.ID) -> Void
 
     private var layout: CollectionHStackLayout {
@@ -87,7 +90,8 @@ struct PosterHStack<
             PosterButton(
                 item: item,
                 displayType: displayType,
-                size: size
+                size: size,
+                onFocus: onFocus
             ) { namespace in
                 action(item, namespace)
             }
@@ -96,7 +100,7 @@ struct PosterHStack<
             // Pass the originating page's focus context into those roots explicitly.
             .environment(\.navigationFocusStore, navigationFocusStore)
             .environment(\.navigationFocusPageID, navigationFocusPageID)
-            .environment(\.navigationFocusScopeID, focusScopeID)
+            .environment(\.navigationFocusScopeID, navigationFocusScopeID.isEmpty ? focusScopeID : navigationFocusScopeID)
             #endif
         }
         .clipsToBounds(false)
