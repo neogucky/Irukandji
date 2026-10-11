@@ -26,6 +26,7 @@ struct ImageContentColumnsLayout: Layout {
     let imageAspectRatio: CGFloat
     let imageColumnFraction: CGFloat
     let spacing: CGFloat
+    var centersContent = false
 
     private func resolvedWidth(
         for proposal: ProposedViewSize
@@ -88,7 +89,8 @@ struct ImageContentColumnsLayout: Layout {
 
         if measurements.imageHeight > measurements.contentSize.height {
             imageY = bounds.minY
-            contentY = bounds.minY + measurements.imageHeight - measurements.contentSize.height
+            let contentOffset = measurements.imageHeight - measurements.contentSize.height
+            contentY = bounds.minY + contentOffset * (centersContent ? 0.5 : 1)
         } else {
             imageY = bounds.minY + (measurements.contentSize.height - measurements.imageHeight) / 2
             contentY = bounds.minY

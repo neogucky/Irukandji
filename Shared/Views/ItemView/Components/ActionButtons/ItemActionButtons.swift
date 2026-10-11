@@ -48,6 +48,12 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View {
+        #if os(tvOS)
+        Label(configuration)
+            .labelStyle(.iconOnly)
+            .font(.system(size: 28, weight: .medium))
+            .frame(width: 32, height: 36)
+        #else
         Label(configuration)
             .labelStyle(.iconOnly)
             .font(UIDevice.isTV ? .system(size: 30) : .title3)
@@ -62,6 +68,7 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
                 ),
                 in: .capsule
             )
+        #endif
     }
 }
 
@@ -127,7 +134,12 @@ struct ItemActionButtons: View {
         enabledTrailers: TrailerSelection
     ) -> [ItemActionButton] {
         buttons.filter {
-            isAvailable($0, for: provider, enabledTrailers: enabledTrailers)
+            #if os(tvOS)
+            // Keep server administration out of the watching flow. Subtitle management
+            // lives with source and track selection in the playback menu.
+            guard $0 != .delete, $0 != .refresh, $0 != .subtitles else { return false }
+            #endif
+            return isAvailable($0, for: provider, enabledTrailers: enabledTrailers)
         }
     }
 
@@ -137,8 +149,17 @@ struct ItemActionButtons: View {
         for provider: ItemContentGroupProvider,
         enabledTrailers: TrailerSelection
     ) -> (visible: [ItemActionButton], overflow: [ItemActionButton], menu: [ItemActionButton]) {
+        #if os(tvOS)
+        // The source/track control stays discoverable even with a customized action bar.
+        var bar = availableButtons(bar.filter { $0 != .playback }, for: provider, enabledTrailers: enabledTrailers)
+        if isAvailable(.playback, for: provider, enabledTrailers: enabledTrailers) {
+            bar.insert(.playback, at: min(2, bar.count))
+        }
+        let menu = availableButtons(menu.filter { $0 != .playback }, for: provider, enabledTrailers: enabledTrailers)
+        #else
         let bar = availableButtons(bar, for: provider, enabledTrailers: enabledTrailers)
         let menu = availableButtons(menu, for: provider, enabledTrailers: enabledTrailers)
+        #endif
 
         let hasBarMenu = UIDevice.isTV && (menu.isNotEmpty || bar.count > maximumButtons)
         let visible = Array(bar.prefix(hasBarMenu ? maximumButtons - 1 : maximumButtons))
@@ -187,9 +208,22 @@ struct ItemActionButtons: View {
         if buttons.isNotEmpty || hasBarMenu {
             HStack(alignment: .center, spacing: UIDevice.isTV ? 24 : 8) {
                 ForEach(buttons) { button in
+                    #if os(tvOS)
+                    if button == .played || button == .favorited {
+                        Self.view(for: button)
+                            .labelStyle(ItemActionButtonLabelStyle())
+                            .buttonStyle(TVAccentItemActionButtonStyle())
+                            .focused(focusedButton, equals: button.id)
+                    } else {
+                        Self.view(for: button)
+                            .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))
+                            .focused(focusedButton, equals: button.id)
+                    }
+                    #else
                     Self.view(for: button)
                         .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))
                         .focused(focusedButton, equals: button.id)
+                    #endif
                 }
 
                 if hasBarMenu {
@@ -209,10 +243,15 @@ struct ItemActionButtons: View {
                     .focused(focusedButton, equals: ItemView.Component.menu)
                 }
             }
-            .frame(height: UIDevice.isTV ? 75 : 44)
+            .frame(height: UIDevice.isTV ? 56 : 44)
             .environmentObject(provider)
             .buttonBorderShape(.capsule)
+            #if os(tvOS)
+            .buttonStyle(.capsule(isSelectionActive: false))
+            .controlSize(.large)
+            #else
             .buttonStyle(BasicHoverButtonStyle())
+            #endif
             .font(.title3)
             .fontWeight(.semibold)
         }
@@ -274,3 +313,43 @@ extension ItemActionButtons {
         }
     }
 }
+
+#if os(tvOS)
+/// Focus owns the accent pill; persistent state is communicated by the filled symbol.
+private struct TVAccentItemActionButtonStyle: ButtonStyle {
+
+    @Default(.accentColor)
+    private var accentColor
+
+    @Environment(\.isFocused)
+    private var isFocused
+    @Environment(\.isEnabled)
+    private var isEnabled
+    @Environment(\.isSelected)
+    private var isSelected
+
+    func makeBody(configuration: Configuration) -> some View {
+        let hasFocus = isEnabled && isFocused
+
+        ZStack {
+            Capsule()
+                .fill(accentColor.opacity(hasFocus ? (isSelected ? 1 : 0.8) : 0))
+
+            configuration.label
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(hasFocus ? Color.black : accentColor.opacity(0.8))
+                .padding(.horizontal, 24)
+                .padding(.vertical, 6)
+                .frame(minHeight: 36)
+                .blendMode(hasFocus ? .destinationOut : .normal)
+        }
+        .fixedSize()
+        .compositingGroup()
+        .contentShape(.capsule)
+        .opacity(isEnabled ? (configuration.isPressed ? 0.65 : 1) : 0.45)
+        .animation(.easeOut(duration: 0.12), value: hasFocus)
+        .animation(.easeOut(duration: 0.12), value: isSelected)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+#endif

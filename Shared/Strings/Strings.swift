@@ -732,6 +732,8 @@ internal enum L10n {
   internal static let fill = L10n.tr("Localizable", "fill", fallback: "Fill")
   /// Filters
   internal static let filters = L10n.tr("Localizable", "filters", fallback: "Filters")
+  /// Find subtitles
+  internal static let findSubtitles = L10n.tr("Localizable", "findSubtitles", fallback: "Find subtitles")
   /// Folder
   internal static let folder = L10n.tr("Localizable", "folder", fallback: "Folder")
   /// Folders
@@ -1184,6 +1186,8 @@ internal enum L10n {
   internal static let originalTitle = L10n.tr("Localizable", "originalTitle", fallback: "Original title")
   /// Other
   internal static let other = L10n.tr("Localizable", "other", fallback: "Other")
+  /// Other users
+  internal static let otherUsers = L10n.tr("Localizable", "otherUsers", fallback: "Other users")
   /// Overview
   internal static let overview = L10n.tr("Localizable", "overview", fallback: "Overview")
   /// Packet Length
@@ -1372,8 +1376,12 @@ internal enum L10n {
   internal static let profileImageDescription = L10n.tr("Localizable", "profileImageDescription", fallback: "A profile or headshot image, typically used for people such as actors, directors, or artists.")
   /// Profile not saved
   internal static let profileNotSaved = L10n.tr("Localizable", "profileNotSaved", fallback: "Profile not saved")
+  /// Who’s watching?
+  internal static let profilePickerTitle = L10n.tr("Localizable", "profilePickerTitle", fallback: "Who’s watching?")
   /// Profiles
   internal static let profiles = L10n.tr("Localizable", "profiles", fallback: "Profiles")
+  /// Sign in to add this profile
+  internal static let profileSignInRequired = L10n.tr("Localizable", "profileSignInRequired", fallback: "Sign in to add this profile")
   /// Program
   internal static let program = L10n.tr("Localizable", "program", fallback: "Program")
   /// Programs
@@ -1554,6 +1562,8 @@ internal enum L10n {
   internal static let sampleRate = L10n.tr("Localizable", "sampleRate", fallback: "Sample rate")
   /// Save
   internal static let save = L10n.tr("Localizable", "save", fallback: "Save")
+  /// Your profiles
+  internal static let savedProfiles = L10n.tr("Localizable", "savedProfiles", fallback: "Your profiles")
   /// Save the user to this device without any local authentication.
   internal static let saveUserWithoutAuthDescription = L10n.tr("Localizable", "saveUserWithoutAuthDescription", fallback: "Save the user to this device without any local authentication.")
   /// Scan for new and update files
@@ -1696,6 +1706,8 @@ internal enum L10n {
   internal static let sortTitle = L10n.tr("Localizable", "sortTitle", fallback: "Sort title")
   /// Source
   internal static let source = L10n.tr("Localizable", "source", fallback: "Source")
+  /// Source & tracks
+  internal static let sourceAndTracks = L10n.tr("Localizable", "sourceAndTracks", fallback: "Source & tracks")
   /// Source code
   internal static let sourceCode = L10n.tr("Localizable", "sourceCode", fallback: "Source code")
   /// Special features

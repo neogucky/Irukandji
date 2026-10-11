@@ -19,6 +19,15 @@ extension ConnectToServerView {
 
         var body: some View {
             Button(action: action) {
+                #if os(tvOS)
+                VStack(spacing: 6) {
+                    Text(server.name).font(.system(size: 24, weight: .semibold))
+                    Text(server.currentURL.absoluteString)
+                        .font(.system(size: 18))
+                        .opacity(0.8)
+                }
+                .frame(minWidth: 440)
+                #else
                 HStack {
                     VStack(alignment: .leading) {
                         Text(server.name)
@@ -36,13 +45,12 @@ extension ConnectToServerView {
                         .fontWeight(.regular)
                         .foregroundStyle(.secondary)
                 }
-                #if os(tvOS)
-                .padding()
                 #endif
             }
             .foregroundStyle(.primary, .secondary)
             #if os(tvOS)
-                .buttonStyle(.focusBorder)
+                .buttonStyle(.capsule)
+                .controlSize(.large)
             #else
                 .buttonStyle(.card)
             #endif

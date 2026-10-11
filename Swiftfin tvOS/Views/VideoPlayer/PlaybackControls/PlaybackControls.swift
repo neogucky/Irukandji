@@ -46,15 +46,20 @@ extension VideoPlayer {
 
             VStack(spacing: 0) {
 
-                Toolbar()
+                Toolbar.TitleView(item: manager.item)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .isVisible(viewState.visibleElements.contains(.toolbar))
-                    .enabled(viewState.visibleElements.contains(.toolbar))
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 24)
 
                 PlaybackProgress()
                     .fixedSize(horizontal: false, vertical: true)
                     .isVisible(viewState.isPresentingProgress)
                     .enabled(viewState.isPresentingProgress)
+
+                cinemaControls
+                    .padding(.top, 24)
+                    .isVisible(viewState.visibleElements.contains(.playbackButtons))
+                    .enabled(viewState.visibleElements.contains(.playbackButtons))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .edgePadding(.horizontal)

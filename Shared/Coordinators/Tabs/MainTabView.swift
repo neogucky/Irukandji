@@ -68,8 +68,18 @@ struct MainTabView: View {
         guard let deepLink else { return }
 
         Task { @MainActor in
-            let route = deepLink.route()
-            await tabCoordinator.route(to: route)
+            guard let session = userSessionManager.currentSession else { return }
+            do {
+                let route = try await deepLink.route(userSession: session)
+                guard userSessionManager.currentSession === session else { return }
+                await tabCoordinator.route(to: route)
+            } catch {
+                guard userSessionManager.currentSession === session else { return }
+                userSessionManager.logger.error("Unable to open Top Shelf item: \(error.localizedDescription)")
+                if case let .play(id) = deepLink.destination {
+                    await tabCoordinator.route(to: .item(id: id))
+                }
+            }
         }
     }
 
@@ -104,7 +114,7 @@ struct MainTabView: View {
             focus: $focusedTabID,
             action: selectTab
         )
-        .controlSize(.regular)
+        .controlSize(.large)
         .transaction { transaction in
             transaction.animation = nil
             transaction.disablesAnimations = true
@@ -186,8 +196,8 @@ struct MainTabView: View {
                 focusedTabID = nil
             }
         }
-        // Let NavigationStack handle Back on detail pages and restore its previous focus.
-        .onExitCommand(perform: isBrowsingRoot ? {
+        // Back first returns to the menu. Once there, let tvOS handle Back and show its Home Screen.
+        .onExitCommand(perform: isBrowsingRoot && focusedTabID == nil ? {
             focusedTabID = tabCoordinator.selectedTabID
             scrollController.revealHeader()
         } : nil)
@@ -224,6 +234,9 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent()
+            .task {
+                routePendingDeepLink(userSessionManager.consumePendingDeepLink())
+            }
             .onChange(of: userSessionManager.pendingDeepLink) {
                 routePendingDeepLink(userSessionManager.consumePendingDeepLink())
             }

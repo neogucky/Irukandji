@@ -19,10 +19,18 @@ extension ItemActionButtons {
             provider.item.userData?.isPlayed == true
         }
 
+        private var systemImage: String {
+            #if os(tvOS)
+            isPlayed ? "checkmark.circle.fill" : ItemActionButton.played.systemImage
+            #else
+            ItemActionButton.played.systemImage
+            #endif
+        }
+
         var body: some View {
             Button(
                 isPlayed ? L10n.markAsUnplayed : L10n.markAsPlayed,
-                systemImage: ItemActionButton.played.systemImage
+                systemImage: systemImage
             ) {
                 Task { await provider.toggleIsPlayed() }
             }

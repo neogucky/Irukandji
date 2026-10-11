@@ -30,10 +30,13 @@ final class UserSession {
     lazy var serverSocketManager = ServerSocketManager()
 
     @MainActor
-    private lazy var services: [any UserSessionService] = [
-        serverConnectionManager,
-        serverSocketManager,
-    ]
+    private lazy var services: [any UserSessionService] = {
+        var services: [any UserSessionService] = [serverConnectionManager, serverSocketManager]
+        #if os(tvOS)
+        services.append(TopShelfService())
+        #endif
+        return services
+    }()
 
     init(
         server: ServerState,

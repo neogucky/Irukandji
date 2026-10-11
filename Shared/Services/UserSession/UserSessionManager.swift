@@ -13,6 +13,9 @@ import Foundation
 import JellyfinAPI
 import KeychainSwift
 import Logging
+#if os(tvOS)
+import TVServices
+#endif
 
 extension Container {
 
@@ -168,6 +171,9 @@ final class UserSessionManager: ObservableObject {
                 try await signIn(userID: deepLinkSession.user.id)
             }
 
+            if case .play = deepLink.destination, hasActivePlayback {
+                await stopActivePlayback()
+            }
             pendingDeepLink = deepLink
         } catch {
             logger.error(
@@ -315,6 +321,10 @@ final class UserSessionManager: ObservableObject {
         }
 
         if newSession == nil {
+            #if os(tvOS)
+            try? TopShelfStorage.shared?.clear()
+            TVTopShelfContentProvider.topShelfContentDidChange()
+            #endif
             state = .signedOut
         } else {
             state = .signedIn

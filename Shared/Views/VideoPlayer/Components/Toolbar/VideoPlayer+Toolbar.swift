@@ -118,16 +118,22 @@ extension VideoPlayer.PlaybackControls.Toolbar {
         }
 
         var tvOSView: some View {
-            VStack(alignment: .leading) {
-                if let subtitle = _titleSubtitle.subtitle {
-                    Text(subtitle)
-                        .font(.callout)
-                        .fontWeight(.medium)
+            VStack(alignment: .leading, spacing: 6) {
+                if item.type == .episode, let parentTitle = item.parentTitle {
+                    Text(parentTitle)
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
                 }
 
-                Text(_titleSubtitle.title)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                Text(item.displayTitle)
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(.white)
+
+                if let episode = item.seasonEpisodeLabel {
+                    Text(episode)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                }
             }
             .lineLimit(1)
         }

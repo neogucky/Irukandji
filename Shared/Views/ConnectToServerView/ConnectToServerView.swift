@@ -139,13 +139,11 @@ struct ConnectToServerView: View {
             router.dismiss()
         }
         #else
-        SplitLoginWindowView(
-            isLoading: viewModel.state == .connecting
-        ) {
-            connectSection
-        } trailingContentView: {
-            localServersSection
-        }
+        TVSetupContent(
+            url: $url,
+            isURLFocused: $isURLFocused,
+            viewModel: viewModel
+        )
         #endif
     }
 
@@ -171,11 +169,15 @@ struct ConnectToServerView: View {
                 UIDevice.feedback(.error)
                 isURLFocused = true
             }
+            #if os(tvOS)
+            .toolbarVisibility(.hidden, for: .navigationBar)
+            #else
             .topBarTrailing {
                 if viewModel.state == .connecting {
                     ProgressView()
                 }
             }
+            #endif
             .sheet(item: $duplicateServer) { server in
                 DuplicateServerConnectionView(server: server) {
                     viewModel.addConnection(serverState: server)

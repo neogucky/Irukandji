@@ -36,36 +36,36 @@ struct CapsuleButtonStyle: ButtonStyle {
         init(_ controlSize: ControlSize) {
             switch controlSize {
             case .mini:
-                self.font = .caption2
-                self.horizontalPadding = 6
+                self.font = UIDevice.isTV ? .system(size: 16) : .caption2
+                self.horizontalPadding = UIDevice.isTV ? 18 : 6
                 self.verticalPadding = 2
                 self.minimumHeight = 20
                 self.labelSpacing = 2
 
             case .small:
-                self.font = .footnote
-                self.horizontalPadding = 8
+                self.font = UIDevice.isTV ? .system(size: 18) : .footnote
+                self.horizontalPadding = UIDevice.isTV ? 20 : 8
                 self.verticalPadding = 4
                 self.minimumHeight = 26
                 self.labelSpacing = 2
 
             case .regular:
-                self.font = .callout
-                self.horizontalPadding = 10
+                self.font = UIDevice.isTV ? .system(size: 22) : .callout
+                self.horizontalPadding = UIDevice.isTV ? 22 : 10
                 self.verticalPadding = 5
                 self.minimumHeight = 30
                 self.labelSpacing = 4
 
             case .large:
-                self.font = .headline
-                self.horizontalPadding = 12
+                self.font = UIDevice.isTV ? .system(size: 26) : .headline
+                self.horizontalPadding = UIDevice.isTV ? 24 : 12
                 self.verticalPadding = 6
                 self.minimumHeight = 36
                 self.labelSpacing = 5
 
             case .extraLarge:
-                self.font = .title3
-                self.horizontalPadding = 16
+                self.font = UIDevice.isTV ? .system(size: 30) : .title3
+                self.horizontalPadding = UIDevice.isTV ? 28 : 16
                 self.verticalPadding = 8
                 self.minimumHeight = 44
                 self.labelSpacing = 6

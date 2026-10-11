@@ -24,6 +24,7 @@ extension SelectUserView {
         private var router
 
         let servers: OrderedSet<ServerState>
+        var compact = false
 
         var body: some View {
             Menu {
@@ -75,13 +76,14 @@ extension SelectUserView {
                         .font(.subheadline)
                 }
                 .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: compact ? nil : .infinity, maxHeight: compact ? nil : .infinity)
             }
             .foregroundStyle(.primary, .secondary)
             .menuOrder(.fixed)
             .symbolRenderingMode(.monochrome)
-            .backport
-            .glassEffect(in: .capsule)
+            .if(!compact) { view in
+                view.backport.glassEffect(in: .capsule)
+            }
         }
     }
 }

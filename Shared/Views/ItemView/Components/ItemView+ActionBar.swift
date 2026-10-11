@@ -34,13 +34,16 @@ extension ItemView {
         private var buttonConfiguration = ItemActionButtons.Configuration()
 
         let alignment: HorizontalAlignment
+        let stacksPlaybackControls: Bool
 
         init(
             provider: ItemContentGroupProvider,
-            alignment: HorizontalAlignment = .center
+            alignment: HorizontalAlignment = .center,
+            stacksPlaybackControls: Bool = false
         ) {
             self.provider = provider
             self.alignment = alignment
+            self.stacksPlaybackControls = stacksPlaybackControls
         }
 
         var body: some View {
@@ -48,6 +51,27 @@ extension ItemView {
             let defaultFocusedButton = provider.item.presentPlayButton ?
                 ItemView.Component.play : visible.first?.id ?? ItemView.Component.menu
 
+            #if os(tvOS)
+            let layout = stacksPlaybackControls
+                ? AnyLayout(VStackLayout(alignment: alignment, spacing: 20))
+                : AnyLayout(HStackLayout(spacing: 20))
+            layout {
+                if provider.item.presentPlayButton {
+                    PlayButton(provider: provider)
+                        .coordinatedFocus(ItemView.Component.play, selection: $focusedButton)
+                }
+                ItemActionButtons(
+                    provider: provider,
+                    buttons: visible,
+                    overflowButtons: overflow,
+                    menuButtons: menu,
+                    focusedButton: $focusedButton
+                )
+            }
+            .frame(height: stacksPlaybackControls ? 140 : 64)
+            .focusSection()
+            .defaultFocus(defaultFocusSelection, defaultFocusedButton, priority: .userInitiated)
+            #else
             VStack(alignment: alignment, spacing: UIDevice.isTV ? 24 : 8) {
                 if provider.item.presentPlayButton {
                     PlayButton(provider: provider)
@@ -70,6 +94,7 @@ extension ItemView {
                 priority: .userInitiated
             )
             .multilineTextAlignment(.center)
+            #endif
         }
     }
 }

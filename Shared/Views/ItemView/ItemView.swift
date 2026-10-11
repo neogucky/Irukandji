@@ -81,6 +81,9 @@ struct ItemView: View {
     }
 
     private var contentGroups: [any ContentGroup] {
+        #if os(tvOS)
+        let header: any ContentGroup = TVDetailHeaderContentGroup(provider: provider)
+        #else
         let header: any ContentGroup = switch (isEnhanced, isCompact) {
         case (true, true):
             CompactEnhancedHeaderContentGroup(provider: provider)
@@ -92,6 +95,7 @@ struct ItemView: View {
             RegularSimpleHeaderContentGroup(provider: provider)
         }
 
+        #endif
         return [header] + viewModel.groups
     }
 
@@ -185,6 +189,9 @@ struct ItemView: View {
         .onNotification(.didSendStopReport) { report in
             guard provider.prepareForPlaybackStop(report) else { return }
             // Rebuild the header and navigation after final progress settles.
+            #if os(tvOS)
+            focusCoordinator.focus(Component.play)
+            #endif
             viewModel.refresh()
         }
         .errorMessage($deleteViewModel.error)

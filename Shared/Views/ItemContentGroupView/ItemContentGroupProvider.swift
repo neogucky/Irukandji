@@ -22,6 +22,8 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
     @Published
     private(set) var nextEpisodeItemProvider: MediaPlayerItemProvider?
     @Published
+    private(set) var episodeSeasons: [BaseItemDto] = []
+    @Published
     private(set) var randomBackdropItem: BaseItemDto?
 
     @Published
@@ -73,6 +75,11 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         mediaPlayerItemProvider = newMediaPlayerItemProvider
         nextEpisodeItemProvider = nextEpisode?
             .getPlaybackItemProvider(userSession: userSession)
+        episodeSeasons = if fullItem.type == .episode {
+            (try? await seasons(for: fullItem)) ?? season(for: fullItem).map { [$0] } ?? []
+        } else {
+            []
+        }
         randomBackdropItem = newRandomBackdropItem
 
         return try await _makeGroups(
@@ -84,10 +91,11 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
     @ContentGroupBuilder
     private func _makeGroups(item: BaseItemDto, itemID: String) async throws -> [any ContentGroup] {
 
+        #if !os(tvOS)
         if item.type == .episode {
-            let seasons = (try? await seasons(for: item)) ?? season(for: item).map { [$0] } ?? []
-            EpisodeNavigationContentGroup(nextEpisode: nextEpisodeItemProvider?.item, seasons: seasons)
+            EpisodeNavigationContentGroup(nextEpisode: nextEpisodeItemProvider?.item, seasons: episodeSeasons)
         }
+        #endif
 
         if let birthday = item.birthday?.formatted(date: .long, time: .omitted) {
             LabeledContentGroup(

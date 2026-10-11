@@ -179,7 +179,57 @@ extension VideoPlayer.PlaybackControls.Toolbar {
             .focusSection()
         }
 
+        #if os(tvOS)
+        private var cinemaMenuButtons: [VideoPlayerActionButton] {
+            resolvedActionButtons(Array((rawBarActionButtons + rawMenuActionButtons).uniqued()))
+                .filter { $0 != .audio && $0 != .subtitles }
+        }
+
+        private var cinemaSupplements: [any MediaPlayerSupplement] {
+            viewState.supplements.filter { $0.id != manager.queue?.id }
+        }
+
+        private var cinemaView: some View {
+            HStack(spacing: 20) {
+                if manager.playbackItem?.audioStreams.isNotEmpty == true {
+                    Audio()
+                        .coordinatedFocus(ViewState.Focus.action("audio"))
+                }
+
+                if manager.playbackItem?.subtitleStreams.isNotEmpty == true {
+                    Subtitles()
+                        .coordinatedFocus(ViewState.Focus.action("subtitles"))
+                }
+
+                if cinemaMenuButtons.isNotEmpty || cinemaSupplements.isNotEmpty {
+                    Menu {
+                        ForEach(cinemaMenuButtons, content: view(for:))
+                            .withViewContext(.isInMenu)
+
+                        if cinemaSupplements.isNotEmpty {
+                            Divider()
+                            ForEach(cinemaSupplements, id: \.id) { supplement in
+                                Button(supplement.displayTitle) {
+                                    viewState.selectedSupplementID = supplement.id
+                                }
+                            }
+                        }
+                    } label: {
+                        // swiftlint:disable:next hard_coded_display_string
+                        Label("More", systemImage: "ellipsis")
+                    }
+                    .coordinatedFocus(ViewState.Focus.action("menu"))
+                }
+            }
+            .labelStyle(VideoPlayer.PlaybackControls.CinemaActionLabelStyle())
+            .focusSection()
+        }
+        #endif
+
         var body: some View {
+            #if os(tvOS)
+            cinemaView
+            #else
             Group {
                 if viewState.isCompact {
                     compactView
@@ -188,6 +238,7 @@ extension VideoPlayer.PlaybackControls.Toolbar {
                 }
             }
             .modifier(VideoPlayer.PlaybackControls.OverlayBarButtonStyleModifier())
+            #endif
         }
     }
 }

@@ -270,7 +270,7 @@ extension VideoPlayer {
 
             case .controls:
                 var elements: Set<Element> = [.progress, .toolbar, .playbackButtons, .dimming]
-                if supplements.isNotEmpty {
+                if !UIDevice.isTV, supplements.isNotEmpty {
                     elements.insert(.supplements)
                 }
                 return elements

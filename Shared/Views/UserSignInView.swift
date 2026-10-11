@@ -47,7 +47,8 @@ struct UserSignInView: View {
     @StateObject
     private var viewModel: UserSignInViewModel
 
-    init(server: ServerState) {
+    init(server: ServerState, username: String? = nil) {
+        self._username = State(initialValue: username ?? "")
         self._viewModel = StateObject(wrappedValue: UserSignInViewModel(server: server))
     }
 
@@ -343,7 +344,7 @@ struct UserSignInView: View {
             .interactiveDismissDisabled(viewModel.state == .signingIn)
             .onReceive(viewModel.events, perform: handleEvent)
             .onFirstAppear {
-                focusedTextField = .username
+                focusedTextField = username.isEmpty ? .username : .password
                 viewModel.getPublicData()
             }
             .alert(

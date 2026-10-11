@@ -140,28 +140,20 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var tvOSView: some View {
-            ZStack {
+            HStack {
+                Text(scrubbedSeconds, format: .runtime)
+
+                Spacer()
+
                 if let runtime = manager.item.runtime {
                     Text(.zero - (runtime - scrubbedSeconds), format: .runtime)
                 } else {
                     Text(verbatim: .emptyRuntime)
                 }
             }
-            .opacity(shouldHideTrailingTimestamp ? 0 : 1)
-            .animation(.linear(duration: 0.1), value: shouldHideTrailingTimestamp)
-            .trackingSize($trailingTimestampSize)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .overlay(alignment: .leading) {
-                Text(scrubbedSeconds, format: .runtime)
-                    .trackingSize($leadingTimestampSize)
-                    .offset(x: previewXOffset)
-            }
-            .font(.caption)
-            .fontWeight(UIDevice.isTV ? .medium : nil)
+            .font(.system(size: 20, weight: .medium))
             .monospacedDigit()
-            .trackingSize($contentSize)
-            .foregroundStyle(viewState.isProgressBarFocused ? .primary : .secondary)
-            .opacity(viewState.isProgressBarFocused ? 1 : 0.8)
+            .foregroundStyle(viewState.isProgressBarFocused ? Color.white : Color.white.opacity(0.8))
         }
     }
 }

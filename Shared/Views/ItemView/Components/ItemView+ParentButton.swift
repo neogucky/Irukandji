@@ -27,14 +27,54 @@ extension ItemView {
                         .lineLimit(1)
                 } icon: {
                     Image(systemName: "chevron.forward")
+                        #if os(iOS)
                         .foregroundStyle(.secondary)
+                        #endif
                 }
             }
             .lineLimit(1)
-            .foregroundStyle(.primary, .secondary)
             .labelStyle(.trailingIcon)
+            #if os(tvOS)
+            .buttonStyle(TVParentLinkButtonStyle())
+            #else
+            .foregroundStyle(.primary, .secondary)
             .buttonStyle(.capsule)
-            .controlSize(UIDevice.isTV ? .large : .regular)
+            #endif
+            .controlSize(.regular)
         }
     }
 }
+
+#if os(tvOS)
+/// Anchor the series label to the title; only the focus pill extends into the gutter.
+private struct TVParentLinkButtonStyle: ButtonStyle {
+
+    @Environment(\.isFocused)
+    private var isFocused
+    @Environment(\.isEnabled)
+    private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        let hasFocus = isEnabled && isFocused
+
+        ZStack {
+            Capsule()
+                .fill(.white.opacity(hasFocus ? 0.8 : 0))
+                .padding(.horizontal, -22)
+
+            configuration.label
+                .font(.system(size: 22, weight: .semibold))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(hasFocus ? Color.black : Color.white.opacity(0.8))
+                .padding(.vertical, 5)
+                .frame(minHeight: 30)
+                .blendMode(hasFocus ? .destinationOut : .normal)
+        }
+        .fixedSize()
+        .compositingGroup()
+        .contentShape(.capsule)
+        .opacity(isEnabled ? (configuration.isPressed ? 0.65 : 1) : 0.45)
+        .animation(.easeOut(duration: 0.12), value: hasFocus)
+    }
+}
+#endif

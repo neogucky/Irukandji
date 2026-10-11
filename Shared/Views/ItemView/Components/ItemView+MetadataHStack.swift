@@ -33,9 +33,14 @@ extension ItemView {
                     Text(seasonEpisodeLabel)
                 }
             }
-            .font(.caption)
             .fontWeight(.semibold)
+            #if os(tvOS)
+            .font(.system(size: 22))
+            .foregroundStyle(IrukandjiTheme.secondaryText)
+            #else
+            .font(.caption)
             .foregroundStyle(.secondary)
+            #endif
         }
     }
 }

@@ -44,13 +44,13 @@ extension NavigationRoute {
     }
     #endif
 
-    static func userSignIn(server: ServerState) -> NavigationRoute {
+    static func userSignIn(server: ServerState, username: String? = nil) -> NavigationRoute {
         NavigationRoute(
             id: "userSignIn",
             style: .sheet
         ) {
             WithLocalUserAuthentication {
-                UserSignInView(server: server)
+                UserSignInView(server: server, username: username)
             }
         }
     }

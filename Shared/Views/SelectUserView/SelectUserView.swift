@@ -269,9 +269,23 @@ struct SelectUserView: View {
                 ProgressView()
             case .content:
                 if viewModel.servers.isEmpty {
+                    #if os(tvOS)
+                    ConnectToServerView()
+                    #else
                     ConnectToJellyfinView()
+                    #endif
                 } else {
+                    #if os(tvOS)
+                    TVProfilePicker(
+                        userItems: userItems,
+                        servers: viewModel.servers.keys,
+                        serverSelection: serverSelection,
+                        action: { select(user: $0) },
+                        onDelete: { delete(user: $0) }
+                    )
+                    #else
                     contentView
+                    #endif
                 }
             }
         }
@@ -283,6 +297,7 @@ struct SelectUserView: View {
             viewModel.getServers()
         }
         .toolbar {
+            #if os(iOS)
             ToolbarItem(placement: .principal) {
                 Image(.alphaneMark)
                     .resizable()
@@ -290,7 +305,6 @@ struct SelectUserView: View {
                     .frame(width: UIDevice.isTV ? 100 : 30)
             }
 
-            #if os(iOS)
             if horizontalSizeClass == .compact {
                 ToolbarItem(placement: .topBarLeading) {
                     if isEditing {
@@ -358,8 +372,21 @@ struct SelectUserView: View {
             #endif
         }
         .background {
+            #if os(tvOS)
+            IrukandjiTheme.background
+                .overlay {
+                    RadialGradient(
+                        colors: [.white.opacity(0.04), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 700
+                    )
+                }
+                .ignoresSafeArea()
+            #else
             splashScreenBackground
                 .ignoresSafeArea()
+            #endif
         }
         #if os(iOS)
         .ignoresSafeArea(.keyboard, edges: .bottom)

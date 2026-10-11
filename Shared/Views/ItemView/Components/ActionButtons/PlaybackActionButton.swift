@@ -36,6 +36,14 @@ extension ItemActionButtons {
             provider.mediaPlayerItemProvider?.mediaSource?.subtitleStreams ?? []
         }
 
+        private var canFindSubtitles: Bool {
+            #if os(tvOS)
+            provider.item.canEditSubtitles
+            #else
+            false
+            #endif
+        }
+
         private var supportedBitrates: [PlaybackBitrate] {
             provider.mediaPlayerItemProvider?.mediaSource?.supportedBitrates ?? []
         }
@@ -134,7 +142,7 @@ extension ItemActionButtons {
                     qualityPicker
                 }
 
-                if audioStreams.isNotEmpty || subtitleStreams.isNotEmpty {
+                if audioStreams.isNotEmpty || subtitleStreams.isNotEmpty || canFindSubtitles {
                     Section(L10n.tracks) {
                         if audioStreams.isNotEmpty {
                             trackPicker(
@@ -151,6 +159,11 @@ extension ItemActionButtons {
                                 selection: subtitleStreamSelection
                             )
                         }
+                        #if os(tvOS)
+                        if provider.item.canEditSubtitles {
+                            Subtitles(title: L10n.findSubtitles)
+                        }
+                        #endif
                     }
                 }
             }

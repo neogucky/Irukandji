@@ -95,7 +95,7 @@ extension VideoPlayer {
                                     Color.black.opacity(0.8)
                                 } else {
                                     EasedGradient(
-                                        colors: [.clear, .black],
+                                        colors: [.clear, UIDevice.isTV ? Color(hex: "181A1D").opacity(0.98) : .black],
                                         startPoint: .center,
                                         endPoint: .bottom
                                     )
@@ -589,6 +589,10 @@ extension VideoPlayer {
             }
 
             #if os(tvOS)
+            // Controls become available after the presentation's hit blocker is removed.
+            // Re-enter their hosting hierarchy instead of retaining focus on the detail page.
+            setNeedsFocusUpdate()
+            updateFocusIfNeeded()
             Task { @MainActor in
                 disableTogglePlayPauseCommand()
             }
@@ -613,9 +617,9 @@ extension VideoPlayer {
             }
 
             #if os(tvOS)
-            let gesture = UITapGestureRecognizer(target: self, action: #selector(handleMenuEnded))
-            gesture.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
-            view.addGestureRecognizer(gesture)
+            let backGesture = UITapGestureRecognizer(target: self, action: #selector(handleMenuEnded))
+            backGesture.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+            view.addGestureRecognizer(backGesture)
             #endif
         }
 
@@ -690,7 +694,7 @@ extension VideoPlayer {
             #if os(tvOS)
             let playbackControlsBottomAnchor = playbackControlsView.bottomAnchor.constraint(
                 equalTo: view.bottomAnchor,
-                constant: -dismissedSupplementContainerOffset
+                constant: -EdgeInsets.edgePadding
             )
             #else
             let playbackControlsBottomAnchor = playbackControlsView.bottomAnchor.constraint(
@@ -706,7 +710,7 @@ extension VideoPlayer {
                 playbackControlsBottomAnchor,
                 playbackControlsView.bottomAnchor.constraint(
                     lessThanOrEqualTo: overlayActionsView.topAnchor,
-                    constant: -EdgeInsets.edgePadding
+                    constant: UIDevice.isTV ? -24 : -EdgeInsets.edgePadding
                 ),
             ])
 
@@ -917,6 +921,14 @@ extension VideoPlayer {
 
         override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
             for press in presses {
+                // Simulator remotes can deliver Back as a keyboard Escape press.
+                if press.key?.keyCode == .keyboardEscape {
+                    if !canHandleBack {
+                        forwardPressesBegan([press], event: event)
+                    }
+                    continue
+                }
+
                 switch press.type {
                 case .playPause, .select, .menu:
                     continue
@@ -940,13 +952,23 @@ extension VideoPlayer {
 
         override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
             for press in presses {
+                if press.key?.keyCode == .keyboardEscape {
+                    if canHandleBack {
+                        handleMenuEnded()
+                    } else {
+                        forwardPressesEnded([press], event: event)
+                    }
+                    continue
+                }
+
                 switch press.type {
                 case .playPause:
                     handlePlayPauseEnded()
                 case .select:
                     handleSelectEnded(press, event: event)
                 case .menu:
-                    handleMenuEnded()
+                    // The menu gesture consumes the release once for the entire player.
+                    continue
                 default:
                     let defaultAction: () -> Void = { [weak self] in
                         guard let self else { return }
@@ -1028,10 +1050,28 @@ extension VideoPlayer {
             }
         }
 
+        private var canHandleBack: Bool {
+            guard !viewState.isPresentingCloseConfirmation else { return false }
+            if viewState.presentation == .hidden {
+                return true
+            }
+
+            // SwiftUI focus items need not be UIViews. Follow their public focus
+            // environment chain to distinguish our controls from system menus.
+            var environment: (any UIFocusEnvironment)? = UIFocusSystem(for: self)?.focusedItem
+            while let current = environment {
+                if current === self {
+                    return true
+                }
+                environment = current.parentFocusEnvironment
+            }
+            return false
+        }
+
         @objc
         private func handleMenuEnded() {
-            // Let a system menu or alert consume Back before dismissing player UI.
-            guard !viewState.isFocusOutsidePlayer || viewState.presentation == .hidden else { return }
+            // System menus and alerts own Back while their content has focus.
+            guard canHandleBack else { return }
 
             if viewState.isScrubbing {
                 viewState.cancelScrub()

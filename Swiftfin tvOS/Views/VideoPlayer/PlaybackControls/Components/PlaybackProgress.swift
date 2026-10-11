@@ -40,7 +40,7 @@ extension VideoPlayer.PlaybackControls {
         private let previewImageHeight: CGFloat = 200
 
         private var sliderHeight: CGFloat {
-            isScrubbing ? 20 : 14
+            24
         }
 
         private var isScrubbing: Bool {
@@ -141,7 +141,7 @@ extension VideoPlayer.PlaybackControls {
                     isScrubbing = true
                 }
             }
-            .sliderContainerStyle(.capsule(showsProgressWhenUnfocused: false))
+            .sliderContainerStyle(CinemaSliderStyle())
             .if(chapterSlider) { view in
                 if let chapters = manager.item.chapters, chapters.isNotEmpty {
                     view.inverseMask { ChapterTrackMask(chapters: chapters, runtime: manager.item.runtime ?? .zero) }
@@ -176,7 +176,7 @@ extension VideoPlayer.PlaybackControls {
                     videoPlayerSlider
 
                     SplitTimeStamp()
-                        .foregroundStyle(.white, Color.lightGray)
+                        .foregroundStyle(viewState.isProgressBarFocused ? Color.white : IrukandjiTheme.secondaryText)
                 }
             }
             .coordinatedFocus(ViewState.Focus.progress)

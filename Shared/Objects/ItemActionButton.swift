@@ -31,7 +31,11 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         case .trailers:
             L10n.trailers
         case .playback:
+            #if os(tvOS)
+            L10n.sourceAndTracks
+            #else
             L10n.playback
+            #endif
         case .record:
             L10n.record
         case .refresh:
@@ -60,7 +64,11 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         case .trailers:
             "movieclapper"
         case .playback:
+            #if os(tvOS)
+            "slider.horizontal.3"
+            #else
             "list.and.film"
+            #endif
         case .record:
             "record.circle.fill"
         case .refresh:

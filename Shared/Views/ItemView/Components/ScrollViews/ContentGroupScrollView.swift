@@ -80,7 +80,7 @@ extension ItemView {
                 IrukandjiTheme.background
                     .ignoresSafeArea()
 
-                if isEnhanced {
+                if isEnhanced, provider.item.type == .person {
                     background
                         .ignoresSafeArea()
                 }

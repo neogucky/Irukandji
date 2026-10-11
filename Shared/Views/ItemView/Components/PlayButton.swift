@@ -69,6 +69,18 @@ struct PlayButton: View {
         Button {
             play()
         } label: {
+            #if os(tvOS)
+            HStack(spacing: 14) {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 24))
+                Text(itemProvider?.item.progressLabel == nil ? (itemProvider?.item.playButtonLabel ?? L10n.play) : L10n.resume)
+                if let progressLabel = itemProvider?.item.progressLabel {
+                    Text(progressLabel)
+                        .font(.system(size: 22))
+                }
+            }
+            .frame(minWidth: 160)
+            #else
             HStack {
                 Image(systemName: "play.fill")
 
@@ -93,9 +105,15 @@ struct PlayButton: View {
                 ),
                 in: .capsule
             )
+            #endif
         }
         .buttonBorderShape(.capsule)
+        #if os(tvOS)
+        .buttonStyle(.capsule)
+        .controlSize(.extraLarge)
+        #else
         .buttonStyle(BasicHoverButtonStyle())
+        #endif
         .contextMenu {
             if itemProvider?.item.userData?.playbackPositionTicks != 0 {
                 Button(L10n.playFromBeginning, systemImage: "gobackward") {

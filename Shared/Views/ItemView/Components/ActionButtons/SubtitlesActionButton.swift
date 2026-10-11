@@ -18,6 +18,8 @@ extension ItemActionButtons {
         @Router
         private var router
 
+        var title = ItemActionButton.subtitles.displayTitle
+
         private func action() {
             #if os(iOS)
             router.route(to: .editSubtitles(item: provider.item))
@@ -28,7 +30,7 @@ extension ItemActionButtons {
 
         var body: some View {
             Button(
-                ItemActionButton.subtitles.displayTitle,
+                title,
                 systemImage: ItemActionButton.subtitles.systemImage,
                 action: action
             )
