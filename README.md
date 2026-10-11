@@ -4,14 +4,18 @@
 
 # Alphane
 
-Alphane is a Jellyfin client for Apple TV and iOS, with a charcoal interface, direct navigation, and improved episode continuation.
+Alphane is a Jellyfin client for Apple TV, built on Swiftfin and redesigned to look, feel, and behave like a modern streaming app.
 
-This fork is based on [Swiftfin](https://github.com/jellyfin/Swiftfin), built by Jellyfin and its contributors. It uses SwiftUI with native and VLC playback engines.
+Compared with Swiftfin, Alphane focuses on:
 
-To build locally, open `Alphane.xcodeproj` and select the existing `Alphane tvOS` or `Alphane` scheme. Signing overrides belong in the ignored `XcodeConfig/DevelopmentTeam.xcconfig` file.
+- **Discovery:** cinematic Continue artwork and lazy-loaded recommendation rows with randomized categories and titles.
+- **Remote navigation:** direct top navigation, clear focus outlines, consistent controls, and Back navigation that remembers your place.
+- **Episode flow:** progress updates after playback and a next-episode action ready when an episode finishes.
+- **Playback:** minimal cinema controls with quick access to audio and subtitles.
+- **Apple TV Home Screen:** Continue and Next Up artwork through Top Shelf.
 
-Report issues or follow development in [this repository](https://github.com/neogucky/Irukandji).
+To build, open `Alphane.xcodeproj` in Xcode and select the `Alphane tvOS` scheme. Local signing overrides belong in the ignored `XcodeConfig/DevelopmentTeam.xcconfig` file.
 
-Alphane retains Swiftfin's [Mozilla Public License 2.0](LICENSE.md) and original source attribution. See [Documentation](Documentation) for the inherited development and playback documentation.
+Report issues and follow development in [this repository](https://github.com/neogucky/alphane).
 
-The Xcode project, app modules, and local packages use the Alphane name. `Shared/Services/UpstreamCompatibility.swift` contains the legacy Swiftfin storage identifiers needed to migrate existing profiles, settings, and custom artwork. The app keeps its bundle identifier so installed updates retain Keychain access.
+Alphane is a fork of [Swiftfin](https://github.com/jellyfin/Swiftfin), built by Jellyfin and its contributors, and retains its [Mozilla Public License 2.0](LICENSE.md) and source attribution.
