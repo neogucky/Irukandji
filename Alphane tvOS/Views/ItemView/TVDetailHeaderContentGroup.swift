@@ -47,15 +47,6 @@ extension ItemView {
                 return height > 0 ? height : 1080
             }
 
-            private var artworkHeight: CGFloat {
-                // Use the space for artwork when there is no synopsis, rather than
-                // leaving a blank description area. Text below remains self-sizing.
-                let fraction = provider.item.type == .episode
-                    ? (overviewText == nil ? 0.54 : 0.46)
-                    : 0.58
-                return max(360, viewportHeight * fraction)
-            }
-
             private var usesPanorama: Bool {
                 provider.item.type != .person && provider.item.type != .season
             }
@@ -99,149 +90,145 @@ extension ItemView {
                     }
                     .buttonStyle(.focusBorder)
                     .focused($descriptionIsFocused)
+                    .frame(maxWidth: 1040, alignment: .leading)
                     .accessibilityIdentifier("item-description")
                 }
             }
 
             private var panoramaArtwork: some View {
-                Rectangle()
-                    .fill(AlphaneTheme.background)
-                    .frame(height: artworkHeight)
-                    .overlay {
-                        GeometryReader { proxy in
-                            ImageView(provider.item.imageSources(
-                                for: .landscape,
-                                environment: .init(maxWidth: 1920, viewContext: [.isBackdrop])
-                            ))
-                            .image { (image: Image) in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: proxy.size.width, height: proxy.size.height)
-                            }
-                            .failure { AlphaneTheme.background }
+                GeometryReader { proxy in
+                    ZStack(alignment: .top) {
+                        AlphaneTheme.background
+
+                        ImageView(provider.item.imageSources(
+                            for: .landscape,
+                            environment: .init(maxWidth: 1920, viewContext: [.isBackdrop])
+                        ))
+                        .image { (image: Image) in
+                            // Preserve the entire backdrop. A shallow fill frame cropped
+                            // faces out of ensemble artwork before playback.
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: proxy.size.width, height: viewportHeight, alignment: .top)
                         }
-                    }
-                    .clipped()
-                    .overlay {
+                        .failure { AlphaneTheme.background }
+                        .visualEffect { content, geometry in
+                            // tvOS nudges the scroll view as focus enters the lower
+                            // controls. Hold the backdrop in place within the hero so
+                            // that movement does not cut off the top of the artwork.
+                            content.offset(y: max(0, -geometry.frame(in: .scrollView(axis: .vertical)).minY))
+                        }
+
                         LinearGradient(
                             stops: [
-                                .init(color: AlphaneTheme.background.opacity(0.35), location: 0),
-                                .init(color: .clear, location: 0.25),
-                                .init(color: .clear, location: 0.55),
+                                .init(color: .clear, location: 0),
+                                .init(color: AlphaneTheme.background.opacity(0.02), location: 0.24),
+                                .init(color: AlphaneTheme.background.opacity(0.56), location: 0.52),
+                                .init(color: AlphaneTheme.background.opacity(0.94), location: 0.76),
                                 .init(color: AlphaneTheme.background, location: 1),
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
-                    }
-                    .accessibilityHidden(true)
-                    .overlay(alignment: .topLeading) {
-                        if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
-                            ParentButton(title: parentTitle, id: parentID)
-                                .edgePadding(.horizontal)
-                                .padding(.top, 72)
-                        }
-                    }
-            }
 
-            private var panoramaDetails: some View {
-                HStack(alignment: .center, spacing: 80) {
-                    VStack(alignment: .leading, spacing: 14) {
-                        MetadataHStack(item: provider.item)
-                            .font(.system(size: 22))
-                            .foregroundStyle(AlphaneTheme.secondaryText)
-
-                        Text(provider.item.displayTitle)
-                            .font(.system(size: 52, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        overview
-
-                        AttributesHStack(
-                            attributes: attributes,
-                            item: provider.item,
-                            selectedMediaSource: provider.mediaPlayerItemProvider?.mediaSource,
-                            alignment: .leading
+                        LinearGradient(
+                            colors: [AlphaneTheme.background.opacity(0.22), .clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
                         )
-                        .font(.system(size: 18))
-                        .foregroundStyle(AlphaneTheme.secondaryText)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    ActionBar(provider: provider, alignment: .center, stacksPlaybackControls: true)
-                        .frame(width: 360)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .clipped()
                 }
-                .edgePadding(.horizontal)
-                .padding(.top, 20)
-                .padding(.bottom, overviewText == nil ? 24 : 40)
-                .focusSection()
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
 
             @ViewBuilder
-            private var episodeNavigation: some View {
-                if provider.nextEpisodeItemProvider != nil || !provider.episodeSeasons.isEmpty {
-                    VStack(spacing: 28) {
-                        Rectangle()
-                            .fill(.white.opacity(0.14))
-                            .frame(height: 1)
-                            .accessibilityHidden(true)
-
-                        HStack(spacing: 40) {
-                            if let next = provider.nextEpisodeItemProvider?.item {
-                                NextEpisodeCard(item: next) {
-                                    router.route(to: .item(item: next))
-                                }
-                            }
-
-                            Spacer(minLength: 0)
-
-                            if !provider.episodeSeasons.isEmpty {
-                                Menu {
-                                    ForEach(provider.episodeSeasons, id: \.id) { season in
-                                        Button(season.displayTitle) {
-                                            router.route(to: .item(item: season))
-                                        }
-                                    }
-                                } label: {
-                                    Label(L10n.seasons, systemImage: "chevron.down")
-                                        .labelStyle(.trailingIcon)
-                                }
-                                .buttonStyle(.capsule)
-                                .controlSize(.large)
-                                .accessibilityIdentifier("item-seasons")
+            private var seasonsButton: some View {
+                if !provider.episodeSeasons.isEmpty {
+                    Menu {
+                        ForEach(provider.episodeSeasons, id: \.id) { season in
+                            Button(season.displayTitle) {
+                                router.route(to: .item(item: season))
                             }
                         }
-                        .focusSection()
+                    } label: {
+                        Label(L10n.seasons, systemImage: "chevron.down")
+                            .labelStyle(.trailingIcon)
                     }
-                    .edgePadding(.horizontal)
-                    .padding(.top, 12)
-                    .padding(.bottom, 56)
+                    .buttonStyle(.capsule)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("item-seasons")
                 }
+            }
+
+            private var panoramaActions: some View {
+                HStack(spacing: 28) {
+                    ActionBar(provider: provider, alignment: .leading)
+
+                    if !provider.episodeSeasons.isEmpty {
+                        Rectangle()
+                            .fill(.white.opacity(0.2))
+                            .frame(width: 1, height: 28)
+                            .accessibilityHidden(true)
+
+                        seasonsButton
+                    }
+                }
+                .padding(.top, 12)
+                .focusSection()
+            }
+
+            private var panoramaDetails: some View {
+                VStack(alignment: .leading, spacing: 14) {
+                    title
+
+                    overview
+
+                    AttributesHStack(
+                        attributes: attributes,
+                        item: provider.item,
+                        selectedMediaSource: provider.mediaPlayerItemProvider?.mediaSource,
+                        alignment: .leading
+                    )
+                    .font(.system(size: 18))
+                    .foregroundStyle(AlphaneTheme.secondaryText)
+
+                    panoramaActions
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             private var panorama: some View {
-                VStack(alignment: .leading, spacing: 0) {
-                    panoramaArtwork
+                HStack(alignment: .bottom, spacing: 72) {
                     panoramaDetails
-                    episodeNavigation
+
+                    if provider.item.userData?.isPlayed == true,
+                       let next = provider.nextEpisodeItemProvider?.item
+                    {
+                        NextEpisodeCard(item: next) {
+                            router.route(to: .item(item: next))
+                        }
+                    }
                 }
-                .frame(minHeight: viewportHeight - 60, alignment: .top)
-                .background(AlphaneTheme.background)
+                .edgePadding(.horizontal)
+                .padding(.top, viewportHeight * 0.34)
+                .padding(.bottom, 72)
+                .frame(minHeight: viewportHeight, alignment: .bottom)
+                .background { panoramaArtwork }
                 .accessibilityElement(children: .contain)
             }
 
+            @ViewBuilder
             private var compactOverview: some View {
-                Group {
-                    if let overviewText {
-                        Text(overviewText)
+                if let overviewText {
+                    Text(overviewText)
                         .font(.system(size: 24))
                         .foregroundStyle(AlphaneTheme.secondaryText)
                         .lineSpacing(5)
                         .lineLimit(3)
-                    }
                 }
             }
 
@@ -302,31 +289,32 @@ extension ItemView {
 
         var body: some View {
             Button(action: action) {
-                HStack(spacing: 24) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(L10n.next)
+                        .font(.system(size: 24, weight: .medium))
+
                     ImageView(item.imageSources(
                         for: .landscape,
-                        environment: .init(maxWidth: 400, useParent: false, viewContext: [.isThumb])
+                        environment: .init(maxWidth: 640, useParent: false, viewContext: [.isThumb])
                     ))
-                        .image { (image: Image) in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 200, height: 112.5)
-                        }
-                        .failure {
-                            AlphaneTheme.background
-                                .overlay { Image(systemName: "film") }
-                        }
-                        .frame(width: 200, height: 112.5)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .accessibilityHidden(true)
+                    .image { (image: Image) in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 360, height: 202.5)
+                    }
+                    .failure {
+                        AlphaneTheme.background
+                            .overlay { Image(systemName: "film") }
+                    }
+                    .frame(width: 360, height: 202.5)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .tvFocusBorder(isFocused: isFocused, shape: RoundedRectangle(cornerRadius: 16))
+                    .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(L10n.next)
-                            .font(.system(size: 20))
-
                         Text(item.displayTitle)
-                            .font(.system(size: 28, weight: .medium))
+                            .font(.system(size: 26, weight: .medium))
                             .lineLimit(2)
 
                         DotHStack {
@@ -340,17 +328,12 @@ extension ItemView {
                         .font(.system(size: 20))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Image(systemName: "chevron.forward")
-                        .font(.system(size: 20, weight: .medium))
                 }
                 .foregroundStyle(isFocused ? .white : AlphaneTheme.secondaryText)
                 .multilineTextAlignment(.leading)
-                .padding(16)
-                .frame(width: 660)
-                .background(AlphaneTheme.surface, in: RoundedRectangle(cornerRadius: 20))
+                .frame(width: 360)
             }
-            .buttonStyle(.focusBorder)
+            .buttonStyle(ArtworkButtonStyle())
             .focused($isFocused)
             .accessibilityIdentifier("item-next-episode")
         }

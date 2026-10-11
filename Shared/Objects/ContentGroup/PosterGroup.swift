@@ -12,6 +12,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
 
     struct Environment: WithDefaultValue, WithViewContext {
 
+        var isHeaderVisible: Bool = true
         var isHeaderButtonEnabled: Bool = true
         var viewContext: ViewContext = .init()
 

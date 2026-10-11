@@ -36,11 +36,21 @@ struct TopShelfSnapshot: Codable, Equatable {
 struct TopShelfStorage {
     let directory: URL
 
+    init(directory: URL) {
+        self.directory = directory
+    }
+
+    init(appGroupContainer: URL) {
+        // Physical tvOS permits cache writes within Library/Caches; the
+        // app-group root can appear writable in the simulator alone.
+        self.directory = appGroupContainer.appendingPathComponent("Library/Caches/TopShelf", isDirectory: true)
+    }
+
     static var shared: Self? {
         guard let group = Bundle.main.object(forInfoDictionaryKey: "AlphaneAppGroup") as? String,
               let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
         else { return nil }
-        return Self(directory: container.appendingPathComponent("TopShelf", isDirectory: true))
+        return Self(appGroupContainer: container)
     }
 
     private var manifest: URL { directory.appendingPathComponent("content.json") }

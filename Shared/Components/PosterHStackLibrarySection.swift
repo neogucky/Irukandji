@@ -130,9 +130,11 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                 .focusSection()
                 .focused($focusedSection, equals: .content)
             } header: {
-                sectionHeader
-                    .edgePadding(.horizontal)
-                    .accessibilityAddTraits(.isHeader)
+                if group.environment.isHeaderVisible {
+                    sectionHeader
+                        .edgePadding(.horizontal)
+                        .accessibilityAddTraits(.isHeader)
+                }
             }
             .focusSection()
             .defaultFocus(

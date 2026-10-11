@@ -118,6 +118,11 @@ struct ItemView: View {
     @ViewBuilder
     private var content: some View {
         Group {
+            #if os(tvOS)
+            // Panorama owns the full viewport even when an episode inherits its
+            // series backdrop instead of having its own backdrop image tags.
+            contentGroupScrollView(isEnhanced: provider.item.type != .person && provider.item.type != .season)
+            #else
             switch (isEnhanced, isCompact) {
             case (true, true):
                 blurredNavigationBarScrollView
@@ -132,6 +137,7 @@ struct ItemView: View {
             default:
                 contentGroupScrollView()
             }
+            #endif
         }
         .navigationTitle(provider.item.displayTitle)
     }

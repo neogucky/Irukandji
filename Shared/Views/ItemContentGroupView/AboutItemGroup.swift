@@ -15,6 +15,12 @@ struct AboutItemGroup: ContentGroup {
     let id: String
     let item: BaseItemDto
 
+    #if os(tvOS)
+    var _shouldBeResolved: Bool {
+        item.mediaSources?.isNotEmpty == true
+    }
+    #endif
+
     func body(with viewModel: Empty) -> Body {
         Body(item: item)
     }
@@ -188,6 +194,32 @@ struct AboutItemGroup: ContentGroup {
         private let cardAspectRatio: CGFloat = 1.77
 
         var body: some View {
+            #if os(tvOS)
+            // Synopsis and ratings are already in the hero. Keep technical
+            // details reachable without another heading or oversized cards.
+            ScrollView(.horizontal) {
+                HStack(spacing: EdgeInsets.itemSpacing) {
+                    ForEach(item.mediaSources ?? []) { source in
+                        Button {
+                            router.route(to: .mediaSourceInfo(source: source))
+                        } label: {
+                            Label(
+                                item.mediaSources?.count == 1 ? L10n.media : source.displayTitle,
+                                systemImage: "info.circle"
+                            )
+                        }
+                    }
+                }
+                .buttonStyle(.capsule)
+                .controlSize(.regular)
+                .edgePadding(.horizontal)
+            }
+            .scrollIndicators(.hidden)
+            .scrollClipDisabled()
+            .focusSection()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(L10n.media)
+            #else
             ContentGroupSection {
                 ScrollView(.horizontal) {
                     HStack(spacing: EdgeInsets.itemSpacing) {
@@ -224,6 +256,7 @@ struct AboutItemGroup: ContentGroup {
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(L10n.about)
+            #endif
         }
     }
 }

@@ -129,6 +129,9 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             []
         }
 
+        #if os(tvOS)
+        ItemView.TVDetailMetadataContentGroup(item: item)
+        #else
         if let genres = item.itemGenres, genres.isNotEmpty {
             PillGroup(
                 displayTitle: L10n.genres,
@@ -184,6 +187,8 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             }
         }
 
+        #endif
+
         switch item.type {
         case .movie:
             if item.partCount ?? 0 > 1 {
@@ -231,7 +236,8 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
                     elements: castAndCrew
                 ),
                 posterDisplayType: .portrait,
-                posterSize: .small
+                posterSize: .small,
+                environment: .init(isHeaderVisible: !UIDevice.isTV)
             )
         }
 

@@ -11,9 +11,15 @@ import SwiftUI
 
 struct PillGroup<Element: Displayable>: ContentGroup {
 
+    enum Presentation {
+        case section
+        case inline
+    }
+
     private let action: (Router.Wrapper, Element) -> Void
     private let displayTitle: String
     private let elements: [Element]
+    private let presentation: Presentation
     let id: String
 
     var _shouldBeResolved: Bool {
@@ -24,19 +30,22 @@ struct PillGroup<Element: Displayable>: ContentGroup {
         displayTitle: String,
         id: String,
         elements: [Element],
+        presentation: Presentation = .section,
         action: @escaping (Router.Wrapper, Element) -> Void
     ) {
         self.action = action
         self.displayTitle = displayTitle
         self.id = id
         self.elements = elements
+        self.presentation = presentation
     }
 
     func body(with viewModel: Empty) -> Body {
         Body(
             action: action,
             displayTitle: displayTitle,
-            elements: elements
+            elements: elements,
+            presentation: presentation
         )
     }
 
@@ -48,6 +57,7 @@ struct PillGroup<Element: Displayable>: ContentGroup {
         let action: (Router.Wrapper, Element) -> Void
         let displayTitle: String
         let elements: [Element]
+        let presentation: Presentation
 
         var body: some View {
             ContentGroupSection {
@@ -68,13 +78,13 @@ struct PillGroup<Element: Displayable>: ContentGroup {
                     }
                     .labelStyle(.leadingIcon)
                     .buttonStyle(.capsule)
-                    .controlSize(UIDevice.isTV ? .large : .regular)
+                    .controlSize(UIDevice.isTV && presentation == .section ? .large : .regular)
                     .edgePadding(.horizontal)
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
             } header: {
-                if displayTitle.isNotEmpty {
+                if presentation == .section, displayTitle.isNotEmpty {
                     Text(displayTitle)
                         .font(.title2)
                         .fontWeight(.semibold)

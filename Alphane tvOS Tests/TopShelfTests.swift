@@ -13,6 +13,18 @@ import XCTest
 
 @MainActor
 final class TopShelfTests: XCTestCase {
+    func testSharedCacheUsesTVOSWritableLibraryDirectory() throws {
+        let container = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: container) }
+        let storage = TopShelfStorage(appGroupContainer: container)
+        XCTAssertEqual(storage.directory, container.appendingPathComponent("Library/Caches/TopShelf", isDirectory: true))
+        try storage.activate(serverID: "server", userID: "user")
+        let expected = snapshot()
+        try storage.write(expected)
+        XCTAssertEqual(storage.read(), expected)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: container.appendingPathComponent("TopShelf").path))
+    }
+
     func testResumeWinsAndEachSeriesAppearsOnlyOnce() {
         let resume = episode("resume", seriesID: "series")
         let next = episode("next", seriesID: "series")

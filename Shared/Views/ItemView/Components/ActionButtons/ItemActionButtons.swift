@@ -315,7 +315,7 @@ extension ItemActionButtons {
 }
 
 #if os(tvOS)
-/// Focus owns the accent pill; persistent state is communicated by the filled symbol.
+/// Active statuses use the accent colour; focus adds a pill without changing the status colour.
 private struct TVAccentItemActionButtonStyle: ButtonStyle {
 
     @Default(.accentColor)
@@ -330,14 +330,15 @@ private struct TVAccentItemActionButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         let hasFocus = isEnabled && isFocused
+        let tint: Color = isSelected ? accentColor : .white
 
         ZStack {
             Capsule()
-                .fill(accentColor.opacity(hasFocus ? (isSelected ? 1 : 0.8) : 0))
+                .fill(tint.opacity(hasFocus ? (isSelected ? 1 : 0.8) : 0))
 
             configuration.label
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(hasFocus ? Color.black : accentColor.opacity(0.8))
+                .foregroundStyle(hasFocus ? Color.black : tint.opacity(0.8))
                 .padding(.horizontal, 24)
                 .padding(.vertical, 6)
                 .frame(minHeight: 36)
