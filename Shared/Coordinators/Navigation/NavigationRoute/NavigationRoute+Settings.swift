@@ -12,6 +12,26 @@ import SwiftUI
 
 extension NavigationRoute {
 
+    #if os(tvOS)
+    static var tvAudioSubtitleSettings: NavigationRoute {
+        NavigationRoute(id: "tvAudioSubtitleSettings") {
+            VideoPlayerSettingsView(page: .audioAndSubtitles)
+        }
+    }
+
+    static var tvPlaybackPreferences: NavigationRoute {
+        NavigationRoute(id: "tvPlaybackPreferences") {
+            VideoPlayerSettingsView(page: .playbackPreferences)
+        }
+    }
+
+    static var tvDiagnostics: NavigationRoute {
+        NavigationRoute(id: "tvDiagnostics") {
+            TVDiagnosticsSettingsView()
+        }
+    }
+    #endif
+
     static func actionBarButtonSelector(selectedButtonsBinding: Binding<[VideoPlayerActionButton]>) -> NavigationRoute {
         NavigationRoute(id: "actionBarButtonSelector") {
             OrderedSectionSelectorView(selection: selectedButtonsBinding, sources: VideoPlayerActionButton.allCases)

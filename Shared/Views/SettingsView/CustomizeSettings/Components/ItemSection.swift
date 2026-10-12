@@ -42,11 +42,13 @@ extension CustomizeSettingsView {
 
         var body: some View {
             Form(systemImage: "gear") {
+                #if !os(tvOS)
                 Section {
                     PlatformPicker(L10n.style, selection: $itemViewType)
                 } header: {
                     Text(L10n.itemView.localizedCapitalized)
                 }
+                #endif
 
                 Section {
                     PlatformPicker(L10n.enabledTrailers, selection: $enabledTrailers)

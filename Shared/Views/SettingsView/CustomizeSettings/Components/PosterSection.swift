@@ -127,7 +127,9 @@ extension CustomizeSettingsView {
                 }
 
                 Section(L10n.labels) {
+                    #if !os(tvOS)
                     Toggle(L10n.showTitle, isOn: $posterConfiguration.isTitlePresented)
+                    #endif
 
                     PlatformPicker(L10n.subtitle, selection: $posterConfiguration.subtitleField)
                 }
@@ -140,6 +142,7 @@ extension CustomizeSettingsView {
 
                     Toggle(L10n.played, isOn: $posterConfiguration.indicators.contains(.played))
 
+                    #if !os(tvOS)
                     PlatformPicker(
                         L10n.unplayed,
                         selection: Binding {
@@ -154,6 +157,7 @@ extension CustomizeSettingsView {
                             }
                         }
                     )
+                    #endif
                 }
 
                 Section {

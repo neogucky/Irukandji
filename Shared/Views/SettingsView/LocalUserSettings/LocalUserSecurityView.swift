@@ -69,37 +69,60 @@ struct LocalUserSecurityView: View {
     }
 
     var body: some View {
-        Form(systemImage: "lock.fill") {
-            securitySection
-
-            if signInPolicy == .requirePin {
-                Section {
-                    #if os(iOS)
-                    TextField(L10n.hint, text: $pinHint)
-                    #else
-                    StateAdapter(initialValue: (isPresented: false, hint: pinHint)) { alert in
-                        ChevronButton(L10n.hint, content: pinHint) {
-                            alert.isPresented.wrappedValue = true
-                        }
-                        .alert(L10n.hint, isPresented: alert.isPresented) {
-                            TextField(L10n.hint, text: alert.hint)
-
-                            Button(L10n.save) {
-                                pinHint = alert.hint.wrappedValue
-                            }
-
-                            Button(L10n.cancel, role: .cancel) {}
-                        } message: {
-                            Text(L10n.setPinHintDescription)
-                        }
+        Group {
+            #if os(tvOS)
+            TVSettingsPage(title: "Profile PIN") {
+                VStack(alignment: .leading, spacing: 22) {
+                    Button {
+                        signInPolicy = signInPolicy == .requirePin ? .none : .requirePin
+                    } label: {
+                        TVSettingsRow(
+                            title: "Require PIN",
+                            value: signInPolicy == .requirePin ? TVSettingsText.on : TVSettingsText.off,
+                            symbol: nil
+                        )
                     }
-                    #endif
-                } header: {
-                    Text(L10n.hint)
-                } footer: {
-                    Text(L10n.setPinHintDescription)
+
+                    if signInPolicy == .requirePin {
+                        hintControl
+                    }
+
+                    Text(L10n.additionalSecurityAccessDescription)
+                        .font(.system(size: 20))
+                        .foregroundStyle(AlphaneTheme.secondaryText)
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 12)
+
+                    HStack(spacing: 22) {
+                        Button(L10n.cancel) { router.dismiss() }
+                        if let user = viewModel.userSession?.user {
+                            let isChangingPIN = signInPolicy == .requirePin && signInPolicy == user.accessPolicy
+                            Button(isChangingPIN ? L10n.changePin : L10n.save) {
+                                Task { @MainActor in
+                                    await performSaveSecurityPolicy()
+                                }
+                            }
+                        }
+                        Spacer()
+                    }
+                }
+                .frame(maxWidth: 700)
+            }
+            #else
+            Form(systemImage: "lock.fill") {
+                securitySection
+
+                if signInPolicy == .requirePin {
+                    Section {
+                        hintControl
+                    } header: {
+                        Text(L10n.hint)
+                    } footer: {
+                        Text(L10n.setPinHintDescription)
+                    }
                 }
             }
+            #endif
         }
         .animation(.linear, value: signInPolicy)
         .navigationTitle(L10n.security)
@@ -109,6 +132,7 @@ struct LocalUserSecurityView: View {
             signInPolicy = user.accessPolicy
             pinHint = user.pinHint
         }
+        #if os(iOS)
         .topBarTrailing {
             if let user = viewModel.userSession?.user {
                 let isChangingPIN = signInPolicy == .requirePin && signInPolicy == user.accessPolicy
@@ -134,7 +158,31 @@ struct LocalUserSecurityView: View {
                 }
             }
         }
+        #endif
         .errorMessage($error)
+    }
+
+    @ViewBuilder
+    private var hintControl: some View {
+        #if os(iOS)
+        TextField(L10n.hint, text: $pinHint)
+        #else
+        StateAdapter(initialValue: (isPresented: false, hint: pinHint)) { alert in
+            ChevronButton(L10n.hint, content: pinHint) {
+                alert.isPresented.wrappedValue = true
+            }
+            .alert(L10n.hint, isPresented: alert.isPresented) {
+                TextField(L10n.hint, text: alert.hint)
+
+                Button(L10n.save) {
+                    pinHint = alert.hint.wrappedValue
+                }
+                Button(L10n.cancel, role: .cancel) {}
+            } message: {
+                Text(L10n.setPinHintDescription)
+            }
+        }
+        #endif
     }
 
     @ViewBuilder

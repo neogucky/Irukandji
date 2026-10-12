@@ -11,6 +11,11 @@ import SwiftUI
 
 struct CustomizeSettingsView: View {
 
+    #if os(tvOS)
+    @FocusState
+    private var focusedControl: String?
+    #endif
+
     @Default(.Customization.Search.enabledDrawerFilters)
     private var searchEnabledDrawerFilters
 
@@ -18,6 +23,13 @@ struct CustomizeSettingsView: View {
     private var router
 
     var body: some View {
+        #if os(tvOS)
+        TVSettingsPage(title: L10n.appearance) {
+            TVSettingsAppearanceColumn(showsTitle: false, focus: $focusedControl)
+                .frame(maxWidth: 600)
+                .frame(height: 320)
+        }
+        #else
         Form(systemImage: "gear") {
 
             Section {
@@ -48,5 +60,6 @@ struct CustomizeSettingsView: View {
             HomeSection()
         }
         .navigationTitle(L10n.advanced)
+        #endif
     }
 }

@@ -25,21 +25,105 @@ struct ExperimentalSettingsView: View {
     @Injected(\.userSessionManager)
     private var userSessionManager: UserSessionManager
 
+    #if os(tvOS)
+    private enum Feature {
+        case mpv
+        case programmeGuide
+    }
+
+    @FocusState
+    private var focusedFeature: Feature?
+    @State
+    private var explainedFeature: Feature = .mpv
+
+    private var featureExplanation: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            switch explainedFeature {
+            case .mpv:
+                Text("MPV player")
+                    .font(.system(size: 26, weight: .medium))
+                    .foregroundStyle(.white)
+                Text(
+                    "Adds MPV to Settings → Playback → Player. Enabling this option keeps your current player; choose MPV there to use it for videos you start afterwards."
+                )
+                Text(
+                    "MPV is an alternative playback engine that uses Alphane’s cinema controls and Jellyfin watch-progress reporting. If MPV is selected, switching this option off returns the player to VLC."
+                )
+
+            case .programmeGuide:
+                Text("Live TV programme guide")
+                    .font(.system(size: 26, weight: .medium))
+                    .foregroundStyle(.white)
+                Text(
+                    "Adds a Guide panel while watching Live TV. Browse scheduled programmes and choose another channel while staying in the player."
+                )
+                Text(
+                    "Requires Live TV channels and programme data on your Jellyfin server. It applies to live streams started after enabling it; movies and episodes keep their existing controls."
+                )
+            }
+        }
+        .font(.system(size: 22))
+        .foregroundStyle(AlphaneTheme.secondaryText)
+        .lineSpacing(6)
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .accessibilityElement(children: .combine)
+    }
+    #endif
+
     var body: some View {
-        Form(systemImage: "flask") {
-            // swiftlint:disable hard_coded_display_string
-            Toggle("MPV engine", isOn: $isMPVEnabled)
+        Group {
+            #if os(tvOS)
+            TVSettingsPage(title: L10n.experimental) {
+                HStack(alignment: .top, spacing: 100) {
+                    VStack(spacing: 18) {
+                        Button {
+                            isMPVEnabled.toggle()
+                        } label: {
+                            TVSettingsRow(title: "MPV engine", value: isMPVEnabled ? TVSettingsText.on : TVSettingsText.off, symbol: nil)
+                        }
+                        .focused($focusedFeature, equals: .mpv)
+                        .accessibilityIdentifier("experimental-mpv")
+                        Button {
+                            isVideoPlayerEPGEnabled.toggle()
+                        } label: {
+                            TVSettingsRow(
+                                title: "Live TV programme guide",
+                                value: isVideoPlayerEPGEnabled ? TVSettingsText.on : TVSettingsText.off,
+                                symbol: nil
+                            )
+                        }
+                        .focused($focusedFeature, equals: .programmeGuide)
+                        .accessibilityIdentifier("experimental-guide")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .focusSection()
+                    featureExplanation
+                }
+                .defaultFocus($focusedFeature, .mpv, priority: .userInitiated)
+                .onChange(of: focusedFeature) { _, feature in
+                    if let feature {
+                        explainedFeature = feature
+                    }
+                }
+            }
+            #else
+            Form(systemImage: "flask") {
+                // swiftlint:disable hard_coded_display_string
+                Toggle("MPV engine", isOn: $isMPVEnabled)
 
-            Toggle("Live TV EPG", isOn: $isVideoPlayerEPGEnabled)
+                Toggle("Live TV EPG", isOn: $isVideoPlayerEPGEnabled)
 
-            #if os(iOS)
-            Toggle("Auto switch connection", isOn: $isServerConnectionAutoSwitchEnabled)
+                #if os(iOS)
+                Toggle("Auto switch connection", isOn: $isServerConnectionAutoSwitchEnabled)
+                #endif
+
+                // swiftlint:enable hard_coded_display_string
+            }
             #endif
-
-            // swiftlint:enable hard_coded_display_string
         }
         .onChange(of: isMPVEnabled) {
-            if !isMPVEnabled {
+            if !isMPVEnabled, Defaults[.VideoPlayer.videoPlayerType] == .mpv {
                 Defaults[.VideoPlayer.videoPlayerType] = .vlc
             }
         }

@@ -13,6 +13,14 @@ import SwiftUI
 
 struct VideoPlayerSettingsView: View {
 
+    enum Page {
+        case all
+        case audioAndSubtitles
+        case playbackPreferences
+    }
+
+    private let page: Page
+
     #if os(tvOS)
     typealias PlatformPicker = ListRowMenu
     #else
@@ -70,7 +78,8 @@ struct VideoPlayerSettingsView: View {
     @StateObject
     private var viewModel: ServerUserAdminViewModel
 
-    init() {
+    init(page: Page = .all) {
+        self.page = page
         _viewModel =
             StateObject(wrappedValue: ServerUserAdminViewModel(user: Container.shared.currentUserSession()?.user.data ?? UserDto()))
     }
@@ -87,31 +96,38 @@ struct VideoPlayerSettingsView: View {
 
     var body: some View {
         Form(systemImage: "tv") {
-            engineSettings
+            if page == .all {
+                engineSettings
+            }
 
             #if os(iOS)
             gestureSettings
             #endif
 
-            buttonSettings
+            if page != .audioAndSubtitles {
+                buttonSettings
 
-            resumeSettings
+                resumeSettings
 
-            sliderSettings
+                sliderSettings
 
-            supplementSettings
+                supplementSettings
 
-            timestampSettings
+                #if !os(tvOS)
+                timestampSettings
+                #endif
+            }
 
-            audioSettings
-
-            subtitleSettings
+            if page != .playbackPreferences {
+                audioSettings
+                subtitleSettings
+            }
         }
         .onFirstAppear {
             viewModel.refresh()
         }
         .toolbarTitleDisplayMode(.inline)
-        .navigationTitle(L10n.videoPlayer.localizedCapitalized)
+        .navigationTitle(page == .audioAndSubtitles ? "Audio & subtitles" : L10n.videoPlayer.localizedCapitalized)
         .topBarTrailing {
             if viewModel.background.is(.updating) || viewModel.background.is(.refreshing) {
                 ProgressView()
