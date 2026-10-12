@@ -11,32 +11,29 @@ import SwiftUI
 /// A constant-sized focus target with a slim track and an always-visible playhead.
 struct CinemaSliderStyle: SliderContainerStyle {
 
-    @Environment(\.displayScale)
-    private var displayScale
-
     func makeBody(configuration: SliderContainerStyleConfiguration) -> some View {
         GeometryReader { geometry in
             let progress = configuration.progress
             let origin = configuration.originProgress
             let committed = min(progress, origin ?? progress)
-            let playheadSize: CGFloat = configuration.isFocused ? 18 : 12
+            let playheadSize: CGFloat = 16
             let trackHeight: CGFloat = 4
+            let accent = AlphaneTheme.accent
 
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.25))
+                Capsule().fill(accent.opacity(configuration.isFocused ? 0.4 : 0.16))
 
                 if let origin {
                     Capsule()
-                        .fill(Color.white.opacity(0.5))
+                        .fill(accent.opacity(configuration.isFocused ? 0.6 : 0.3))
                         .frame(width: geometry.size.width * max(progress, origin))
                 }
 
                 Capsule()
-                    .fill(AlphaneTheme.accent)
+                    .fill(accent.opacity(configuration.isFocused ? 1 : 0.45))
                     .frame(width: geometry.size.width * committed)
             }
             .frame(height: trackHeight)
-            .tvFocusBorder(isFocused: configuration.isFocused, shape: Capsule(), lineWidth: 1 / displayScale)
             .overlay(alignment: .leading) {
                 Circle()
                     .fill(configuration.isFocused ? Color.white : AlphaneTheme.secondaryText)

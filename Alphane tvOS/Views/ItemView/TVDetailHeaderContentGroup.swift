@@ -29,10 +29,17 @@ extension ItemView {
             private var frameForParentView
 
             @FocusState
-            private var descriptionIsFocused: Bool
+            private var focusedDetail: String?
 
             @ObservedObject
             var provider: ItemContentGroupProvider
+            var viewportHeightOverride: CGFloat? = nil
+            var showsArtwork = true
+            var bottomPadding: CGFloat = 72
+
+            private var descriptionIsFocused: Bool {
+                focusedDetail == ItemView.Component.description
+            }
 
             @StoredValue(.User.itemViewAttributes)
             private var attributes
@@ -43,6 +50,7 @@ extension ItemView {
             }
 
             private var viewportHeight: CGFloat {
+                if let viewportHeightOverride { return viewportHeightOverride }
                 let height = frameForParentView[.scrollView, default: .zero].frame.height
                 return height > 0 ? height : 1080
             }
@@ -60,6 +68,7 @@ extension ItemView {
                     if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
                         ParentButton(title: parentTitle, id: parentID)
                             .font(.system(size: 22, weight: .medium))
+                            .coordinatedFocus(ItemView.Component.parent, selection: $focusedDetail)
                     }
 
                     Text(provider.item.displayTitle)
@@ -89,60 +98,10 @@ extension ItemView {
                             .padding(.vertical, 8)
                     }
                     .buttonStyle(.focusBorder)
-                    .focused($descriptionIsFocused)
+                    .coordinatedFocus(ItemView.Component.description, selection: $focusedDetail)
                     .frame(maxWidth: 1040, alignment: .leading)
                     .accessibilityIdentifier("item-description")
                 }
-            }
-
-            private var panoramaArtwork: some View {
-                GeometryReader { proxy in
-                    ZStack(alignment: .top) {
-                        AlphaneTheme.background
-
-                        ImageView(provider.item.imageSources(
-                            for: .landscape,
-                            environment: .init(maxWidth: 1920, viewContext: [.isBackdrop])
-                        ))
-                        .image { (image: Image) in
-                            // Preserve the entire backdrop. A shallow fill frame cropped
-                            // faces out of ensemble artwork before playback.
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: proxy.size.width, height: viewportHeight, alignment: .top)
-                        }
-                        .failure { AlphaneTheme.background }
-                        .visualEffect { content, geometry in
-                            // tvOS nudges the scroll view as focus enters the lower
-                            // controls. Hold the backdrop in place within the hero so
-                            // that movement does not cut off the top of the artwork.
-                            content.offset(y: max(0, -geometry.frame(in: .scrollView(axis: .vertical)).minY))
-                        }
-
-                        LinearGradient(
-                            stops: [
-                                .init(color: .clear, location: 0),
-                                .init(color: AlphaneTheme.background.opacity(0.02), location: 0.24),
-                                .init(color: AlphaneTheme.background.opacity(0.56), location: 0.52),
-                                .init(color: AlphaneTheme.background.opacity(0.94), location: 0.76),
-                                .init(color: AlphaneTheme.background, location: 1),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-
-                        LinearGradient(
-                            colors: [AlphaneTheme.background.opacity(0.22), .clear],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    }
-                    .frame(width: proxy.size.width, height: proxy.size.height)
-                    .clipped()
-                }
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
             }
 
             @ViewBuilder
@@ -160,6 +119,7 @@ extension ItemView {
                     }
                     .buttonStyle(.capsule)
                     .controlSize(.large)
+                    .coordinatedFocus(ItemView.Component.seasons, selection: $focusedDetail)
                     .accessibilityIdentifier("item-seasons")
                 }
             }
@@ -215,9 +175,13 @@ extension ItemView {
                 }
                 .edgePadding(.horizontal)
                 .padding(.top, viewportHeight * 0.34)
-                .padding(.bottom, 72)
+                .padding(.bottom, bottomPadding)
                 .frame(minHeight: viewportHeight, alignment: .bottom)
-                .background { panoramaArtwork }
+                .background {
+                    if showsArtwork {
+                        TVDetailArtwork(provider: provider, isShowingInfo: false)
+                    }
+                }
                 .accessibilityElement(children: .contain)
             }
 
@@ -345,7 +309,7 @@ extension ItemView {
                 .frame(width: 360)
             }
             .buttonStyle(ArtworkButtonStyle())
-            .focused(focusSelection, equals: ItemView.Component.nextEpisode)
+            .coordinatedFocus(ItemView.Component.nextEpisode, selection: focusSelection)
             .accessibilityIdentifier("item-next-episode")
         }
     }

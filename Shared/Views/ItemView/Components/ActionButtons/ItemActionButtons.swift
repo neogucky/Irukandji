@@ -213,11 +213,11 @@ struct ItemActionButtons: View {
                         Self.view(for: button)
                             .labelStyle(ItemActionButtonLabelStyle())
                             .buttonStyle(TVAccentItemActionButtonStyle())
-                            .focused(focusedButton, equals: button.id)
+                            .coordinatedFocus(button.id, selection: focusedButton)
                     } else {
                         Self.view(for: button)
                             .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))
-                            .focused(focusedButton, equals: button.id)
+                            .coordinatedFocus(button.id, selection: focusedButton)
                     }
                     #else
                     Self.view(for: button)
@@ -240,7 +240,11 @@ struct ItemActionButtons: View {
                     .labelStyle(ItemActionButtonLabelStyle())
                     .symbolRenderingMode(.monochrome)
                     .foregroundStyle(.primary, .secondary)
+                    #if os(tvOS)
+                    .coordinatedFocus(ItemView.Component.menu, selection: focusedButton)
+                    #else
                     .focused(focusedButton, equals: ItemView.Component.menu)
+                    #endif
                 }
             }
             .frame(height: UIDevice.isTV ? 56 : 44)

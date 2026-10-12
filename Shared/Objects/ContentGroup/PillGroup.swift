@@ -20,6 +20,7 @@ struct PillGroup<Element: Displayable>: ContentGroup {
     private let displayTitle: String
     private let elements: [Element]
     private let presentation: Presentation
+    private let focusIDPrefix: String?
     let id: String
 
     var _shouldBeResolved: Bool {
@@ -31,6 +32,7 @@ struct PillGroup<Element: Displayable>: ContentGroup {
         id: String,
         elements: [Element],
         presentation: Presentation = .section,
+        focusIDPrefix: String? = nil,
         action: @escaping (Router.Wrapper, Element) -> Void
     ) {
         self.action = action
@@ -38,6 +40,7 @@ struct PillGroup<Element: Displayable>: ContentGroup {
         self.id = id
         self.elements = elements
         self.presentation = presentation
+        self.focusIDPrefix = focusIDPrefix
     }
 
     func body(with viewModel: Empty) -> Body {
@@ -45,7 +48,8 @@ struct PillGroup<Element: Displayable>: ContentGroup {
             action: action,
             displayTitle: displayTitle,
             elements: elements,
-            presentation: presentation
+            presentation: presentation,
+            focusIDPrefix: focusIDPrefix
         )
     }
 
@@ -58,6 +62,7 @@ struct PillGroup<Element: Displayable>: ContentGroup {
         let displayTitle: String
         let elements: [Element]
         let presentation: Presentation
+        let focusIDPrefix: String?
 
         var body: some View {
             ContentGroupSection {
@@ -74,6 +79,9 @@ struct PillGroup<Element: Displayable>: ContentGroup {
                                 }
                             }
                             .foregroundStyle(.primary, .secondary)
+                            .if(focusIDPrefix != nil) { view in
+                                view.coordinatedFocus("\(focusIDPrefix ?? "").\(element.displayTitle)")
+                            }
                         }
                     }
                     .labelStyle(.leadingIcon)

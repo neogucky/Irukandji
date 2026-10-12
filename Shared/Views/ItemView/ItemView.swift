@@ -20,6 +20,9 @@ struct ItemView: View {
         static let menu = "itemView-menu"
         static let play = "itemView-play"
         static let nextEpisode = "itemView-next-episode"
+        static let description = "itemView-description"
+        static let parent = "itemView-parent"
+        static let seasons = "itemView-seasons"
     }
 
     @Default(.Customization.itemViewType)
@@ -150,7 +153,11 @@ struct ItemView: View {
             #if os(tvOS)
             // Panorama owns the full viewport even when an episode inherits its
             // series backdrop instead of having its own backdrop image tags.
-            contentGroupScrollView(isEnhanced: provider.item.type != .person && provider.item.type != .season)
+            if provider.item.type == .person || provider.item.type == .season {
+                contentGroupScrollView()
+            } else {
+                TVDetailPage(provider: provider, groups: viewModel.groups, preferredPlaybackFocus: preferredPlaybackFocus)
+            }
             #else
             switch (isEnhanced, isCompact) {
             case (true, true):

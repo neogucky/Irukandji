@@ -15,6 +15,16 @@ extension ItemView {
         let id = "item-metadata"
         let item: BaseItemDto
 
+        static func preferredFocusID(for item: BaseItemDto) -> String? {
+            if let genre = item.itemGenres?.first {
+                return "item-info.genres.\(genre.displayTitle)"
+            }
+            if let studio = item.studios?.first {
+                return "item-info.studios.\(studio.displayTitle)"
+            }
+            return nil
+        }
+
         var _shouldBeResolved: Bool {
             item.itemGenres?.isNotEmpty == true || item.studios?.isNotEmpty == true
         }
@@ -26,7 +36,8 @@ extension ItemView {
                         displayTitle: L10n.genres,
                         id: "genres",
                         elements: genres,
-                        presentation: .inline
+                        presentation: .inline,
+                        focusIDPrefix: "item-info.genres"
                     ) { router, genre in
                         router.route(to: .contentGroup(provider: ItemTypeContentGroupProvider(
                             itemTypes: browseItemTypes,
@@ -42,7 +53,8 @@ extension ItemView {
                         displayTitle: L10n.studios,
                         id: "studios",
                         elements: studios,
-                        presentation: .inline
+                        presentation: .inline,
+                        focusIDPrefix: "item-info.studios"
                     ) { router, studio in
                         router.route(to: .contentGroup(provider: ItemTypeContentGroupProvider(
                             itemTypes: browseItemTypes,

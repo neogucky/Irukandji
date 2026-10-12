@@ -694,7 +694,7 @@ extension VideoPlayer {
             #if os(tvOS)
             let playbackControlsBottomAnchor = playbackControlsView.bottomAnchor.constraint(
                 equalTo: view.bottomAnchor,
-                constant: -EdgeInsets.edgePadding
+                constant: -36
             )
             #else
             let playbackControlsBottomAnchor = playbackControlsView.bottomAnchor.constraint(
@@ -710,7 +710,7 @@ extension VideoPlayer {
                 playbackControlsBottomAnchor,
                 playbackControlsView.bottomAnchor.constraint(
                     lessThanOrEqualTo: overlayActionsView.topAnchor,
-                    constant: UIDevice.isTV ? -24 : -EdgeInsets.edgePadding
+                    constant: UIDevice.isTV ? -12 : -EdgeInsets.edgePadding
                 ),
             ])
 
@@ -718,7 +718,7 @@ extension VideoPlayer {
             NSLayoutConstraint.activate([
                 overlayActionsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: EdgeInsets.edgePadding),
                 overlayActionsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -EdgeInsets.edgePadding),
-                overlayActionsView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -EdgeInsets.edgePadding),
+                overlayActionsView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -36),
             ])
             #else
             NSLayoutConstraint.activate([
