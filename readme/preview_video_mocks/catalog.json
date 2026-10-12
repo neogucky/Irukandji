@@ -1,0 +1,347 @@
+{
+  "description": "Fictional climbing and bouldering media approved for Alphane README mockups. Years, stories, people, and productions are invented.",
+  "featuredSeries": "chalk-up",
+  "items": [
+    {
+      "id": "granite-summer",
+      "title": "Granite Summer",
+      "year": 1991,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Drama"
+      ],
+      "overview": "Three friends spend a summer learning the granite walls beyond their hometown.",
+      "art": "Warm 35mm film grain, a faded cream camper van, sunlit granite and friends wearing early-1990s climbing clothes. Nostalgic adventure-drama cover with understated cream serif lettering.",
+      "runtimeSeconds": 5700,
+      "resumeSeconds": 1980
+    },
+    {
+      "id": "static-on-the-ridge",
+      "title": "Static on the Ridge",
+      "year": 1993,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Thriller"
+      ],
+      "overview": "When a storm cuts off radio contact, a climbing team must find its own way home.",
+      "art": "Storm clouds over a jagged mountain ridge, a small roped climbing team and an unbranded handheld radio in the foreground. Early-1990s adventure thriller, deep blue shadows and bold red condensed title lettering."
+    },
+    {
+      "id": "pocket-full-of-granite",
+      "title": "Pocket Full of Granite",
+      "year": 1994,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Comedy"
+      ],
+      "overview": "A borrowed van and a bag of chalk turn a weekend away into an unlikely bouldering road trip.",
+      "art": "A cheerful bouldering road trip, rounded granite boulders, a battered turquoise van, climbers in bright 1994 windbreakers. Playful 1990s hand-lettered title, sunny amber and turquoise, film grain."
+    },
+    {
+      "id": "camp-at-mile-nine",
+      "title": "Camp at Mile Nine",
+      "year": 1996,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Family"
+      ],
+      "overview": "At a mountain campsite, a group of newcomers discovers that every climb begins with trust.",
+      "art": "Hand-painted 1990s family adventure cover, an inviting mountain campsite, orange tents beneath pines, low climbing rocks and a mountain lake. Rich forest green and sunset orange, warm storybook realism, painted cream title lettering."
+    },
+    {
+      "id": "crux-at-midnight",
+      "title": "Crux at Midnight",
+      "year": 1997,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Thriller"
+      ],
+      "overview": "A night rescue forces two climbers to face the wall that once divided them.",
+      "art": "1997 cinematic adventure-thriller cover, two properly roped climbers on an exposed granite wall at night, piercing headlamp beams, distant storm glow. Dramatic silhouettes, midnight blue, silver metallic condensed title."
+    },
+    {
+      "id": "the-last-chalkbag",
+      "title": "The Last Chalkbag",
+      "year": 1999,
+      "type": "movie",
+      "genres": [
+        "Adventure",
+        "Drama"
+      ],
+      "overview": "Old climbing partners return to the valley where they first learned to climb together.",
+      "art": "1999 independent adventure-drama cover, weathered chalk bag and old climbing rope in the foreground, two friends at the foot of a hazy granite valley. Muted earth tones, textured analogue photography, elegant ivory title lettering."
+    },
+    {
+      "id": "beneath-the-chalk",
+      "title": "Beneath the Chalk",
+      "year": 2025,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "One difficult boulder problem reveals the patience behind every small improvement.",
+      "art": "Contemporary intimate bouldering documentary cover, anatomically natural chalked hands gripping a small rough granite edge, floating chalk dust in side light. Crisp macro texture, slate and ivory, quiet modern documentary title typography.",
+      "runtimeSeconds": 4920,
+      "resumeSeconds": 3060
+    },
+    {
+      "id": "basalt-days",
+      "title": "Basalt Days",
+      "year": 2024,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "A coastal climbing community follows the tides along a forgotten stretch of basalt.",
+      "art": "Contemporary climbing documentary cover, dark basalt sea-cliff columns and sea spray, a tiny properly roped climber wearing an orange jacket. Monumental wide coastal composition, steel blue and orange, clean modern white title lettering.",
+      "runtimeSeconds": 5340,
+      "resumeSeconds": 1200
+    },
+    {
+      "id": "between-two-holds",
+      "title": "Between Two Holds",
+      "year": 2023,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "A climber works through the moves, doubts, and friendships beneath a limestone roof.",
+      "art": "Contemporary climbing documentary cover, a properly roped climber silhouetted below a broad pale limestone overhang, bright sky behind the natural rock arch. Ochre limestone and cyan sky, a striking diagonal composition, minimalist white title typography."
+    },
+    {
+      "id": "small-stone-big-world",
+      "title": "Small Stone, Big World",
+      "year": 2025,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "A woodland boulder brings together a community with very different reasons to climb.",
+      "art": "Contemporary bouldering community documentary cover, mossy woodland granite boulder, friends carrying crash pads along a forest path, dappled green light. Intimate natural photography, lush greens, thoughtful ivory title lettering."
+    },
+    {
+      "id": "blue-hour-on-granite",
+      "title": "Blue Hour on Granite",
+      "year": 2022,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "Long alpine days end in the brief blue light between the final pitch and the walk home.",
+      "art": "Contemporary alpine climbing documentary cover, indigo mountain silhouettes at blue hour, a vast granite wall with tiny roped climbers and a warm headlamp glow. Expansive contemplative photography, cobalt and lavender, refined pale title lettering."
+    },
+    {
+      "id": "the-quiet-approach",
+      "title": "The Quiet Approach",
+      "year": 2024,
+      "type": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "Through misty trails and early starts, climbers reflect on the journeys before the first hold.",
+      "art": "Contemporary contemplative climbing documentary cover, two climbers carrying unbranded crash pads walking a misty pine trail toward distant rocks, expansive soft landscape. Sage green and fog white, elegant understated title lettering."
+    },
+    {
+      "id": "chalk-up",
+      "title": "Chalk up!",
+      "year": 2024,
+      "type": "series",
+      "genres": [
+        "Documentary",
+        "Adventure"
+      ],
+      "overview": "A group of friends explores woodland boulders, shared projects, and small victories through a season of bouldering.",
+      "art": "Daylight bouldering season cover with four fictional friends carrying crash pads, chalked hands, and low bouldering with a spotter. No sport-climbing imagery. Energetic ivory Chalk up! lettering.",
+      "backdrop": "backdrops/chalk-up-season-01.png"
+    },
+    {
+      "id": "after-the-gym-closes",
+      "title": "After the Gym Closes",
+      "year": 2023,
+      "type": "series",
+      "genres": [
+        "Comedy"
+      ],
+      "overview": "The staff and regulars of a small bouldering gym find that the hardest problems are off the wall.",
+      "art": "Contemporary ensemble comedy series cover, three fictional adult gym staff chatting beneath colorful bouldering holds after closing, warm welcoming gym interior, coral and mustard tones. Playful bold cream title typography."
+    },
+    {
+      "id": "routes-we-havent-taken",
+      "title": "Routes We Haven’t Taken",
+      "year": 2025,
+      "type": "series",
+      "genres": [
+        "Documentary",
+        "Adventure"
+      ],
+      "overview": "Two climbing partners travel through unfamiliar valleys in search of routes and unexpected friendships.",
+      "art": "Contemporary climbing travel documentary series cover, two climbers beside an unbranded van overlooking a vast fictional sandstone valley at dawn, broad landscape with winding road. Terracotta and pale blue, modern cinematic white title typography."
+    },
+    {
+      "id": "brushwork",
+      "title": "Brushwork",
+      "year": 2022,
+      "type": "series",
+      "genres": [
+        "Documentary"
+      ],
+      "overview": "An intimate look at the craft, care, and quiet routines of bouldering.",
+      "art": "Contemporary craft-focused bouldering documentary series cover, close-up of a climber carefully brushing chalk from a rough rock hold with an unbranded wooden brush. Natural tactile rock texture, ochre and chalk white, precise minimalist title typography."
+    },
+    {
+      "id": "belay-station",
+      "title": "Belay Station",
+      "year": 2021,
+      "type": "series",
+      "genres": [
+        "Drama"
+      ],
+      "overview": "In a mountain town, a climbing community navigates ambition, friendship, and the pull of home.",
+      "art": "Contemporary prestige drama series cover, portraits of three entirely fictional adult climbers against a misty fictional mountain town, restrained cinematic composition. Charcoal, forest green and muted warm skin tones, elegant serif white title typography."
+    },
+    {
+      "id": "crag-kids",
+      "title": "Crag Kids",
+      "year": 2024,
+      "type": "series",
+      "genres": [
+        "Family",
+        "Animation"
+      ],
+      "overview": "Curious young adventurers learn to climb, solve problems, and look after their mountain playground.",
+      "art": "Original cheerful illustrated animated family climbing series cover, three original child adventurers with helmets and harnesses on a low colorful climbing rock, a friendly woodland setting. Rounded expressive original character design, pastel orange and leafy green, playful large title lettering. Do not imitate any existing animation franchise."
+    }
+  ],
+  "episodes": [
+    {
+      "id": "chalk-up-s01e03",
+      "seriesID": "chalk-up",
+      "title": "Last Light",
+      "season": 1,
+      "episode": 3,
+      "year": 2024,
+      "runtimeSeconds": 2520,
+      "resumeSeconds": 1514,
+      "overview": "With daylight fading, the crew returns to a granite boulder for one last attempt—and discovers that a shared project can mean more than the send.",
+      "frame": "chalk-up-last-light-frame.png",
+      "videoWidth": 1920,
+      "videoHeight": 1080,
+      "audioLanguage": "English",
+      "subtitleLanguage": "English"
+    },
+    {
+      "id": "chalk-up-s01e04",
+      "seriesID": "chalk-up",
+      "title": "New Lines",
+      "season": 1,
+      "episode": 4,
+      "year": 2024,
+      "runtimeSeconds": 2640,
+      "overview": "A new valley brings unfamiliar rock, fresh possibilities, and a chance for everyone to find their own line.",
+      "frame": "chalk-up-new-lines-frame.png",
+      "videoWidth": 1920,
+      "videoHeight": 1080,
+      "audioLanguage": "English",
+      "subtitleLanguage": "English"
+    },
+    {
+      "id": "after-the-gym-closes-s01e02",
+      "seriesID": "after-the-gym-closes",
+      "title": "Closing Time",
+      "season": 1,
+      "episode": 2,
+      "year": 2023,
+      "runtimeSeconds": 1800,
+      "resumeSeconds": 720,
+      "overview": "An unexpectedly late customer interrupts the crew’s plans for a quiet evening.",
+      "videoWidth": 1920,
+      "videoHeight": 1080,
+      "audioLanguage": "English",
+      "subtitleLanguage": "English"
+    },
+    {
+      "id": "belay-station-s02e05",
+      "seriesID": "belay-station",
+      "title": "A Way Back",
+      "season": 2,
+      "episode": 5,
+      "year": 2021,
+      "runtimeSeconds": 3060,
+      "resumeSeconds": 1680,
+      "overview": "A familiar route brings two old friends back to a conversation they left unfinished.",
+      "videoWidth": 1920,
+      "videoHeight": 1080,
+      "audioLanguage": "English",
+      "subtitleLanguage": "English"
+    }
+  ],
+  "screens": {
+    "home": {
+      "featuredEpisode": "chalk-up-s01e03",
+      "continue": [
+        "chalk-up-s01e03",
+        "granite-summer",
+        "beneath-the-chalk",
+        "after-the-gym-closes-s01e02",
+        "basalt-days",
+        "belay-station-s02e05"
+      ],
+      "backdrop": "backdrops/chalk-up-season-01.png"
+    },
+    "discovery": {
+      "rows": [
+        {
+          "title": "Movies from the 1990s",
+          "ids": [
+            "granite-summer",
+            "static-on-the-ridge",
+            "pocket-full-of-granite",
+            "camp-at-mile-nine",
+            "crux-at-midnight",
+            "the-last-chalkbag"
+          ]
+        },
+        {
+          "title": "Documentaries",
+          "ids": [
+            "beneath-the-chalk",
+            "basalt-days",
+            "between-two-holds",
+            "small-stone-big-world",
+            "blue-hour-on-granite",
+            "the-quiet-approach"
+          ]
+        },
+        {
+          "title": "Series from the 2020s",
+          "ids": [
+            "chalk-up",
+            "after-the-gym-closes",
+            "routes-we-havent-taken",
+            "brushwork",
+            "belay-station",
+            "crag-kids"
+          ]
+        }
+      ]
+    },
+    "video-finished": {
+      "episode": "chalk-up-s01e03",
+      "isPlayed": true,
+      "nextEpisode": "chalk-up-s01e04",
+      "focused": "Next",
+      "backdrop": "backdrops/chalk-up-season-01.png"
+    },
+    "video-ui": {
+      "episode": "chalk-up-s01e03",
+      "seconds": 1514,
+      "paused": true,
+      "focused": "Audio"
+    }
+  }
+}

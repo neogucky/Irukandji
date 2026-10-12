@@ -1,0 +1,236 @@
+{
+  "artworkGeneratedOn" : "2026-10-12",
+  "catalog" : "catalog.json",
+  "initialLayoutReferenceCommit" : "197123acb757a6643b0bcb672fff1fd3916da847",
+  "media" : [
+    {
+      "bytes" : 2762156,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "chalk-up-last-light-frame",
+      "path" : "frames/chalk-up-last-light-frame.png",
+      "sha256" : "ed2e1de4a271e5ff9de1b70ee94b969b08d8b7a8b3dcf2a3f1e26224c92dc0ef",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2650452,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "granite-summer",
+      "path" : "covers/granite-summer.png",
+      "sha256" : "8eff6e9995c4d38754408783342c7fee17f4ce87fb6ab1b71ae6ac28714f00f8",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2586656,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "static-on-the-ridge",
+      "path" : "covers/static-on-the-ridge.png",
+      "sha256" : "3361e072f5a941a85f5acd726a74c6715b5508cd11c04f0802ec8d583738c448",
+      "width" : 1672
+    },
+    {
+      "bytes" : 3096213,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "pocket-full-of-granite",
+      "path" : "covers/pocket-full-of-granite.png",
+      "sha256" : "cca168bdcbbd1043199fdb2f0ba400b058cef1ff9a2fd43a610794edabec7c67",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2972420,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "camp-at-mile-nine",
+      "path" : "covers/camp-at-mile-nine.png",
+      "sha256" : "ae5924c653c88f24c3a0b22985adb83525113580b3ae55c404d79de7d479cd4d",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2230557,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "crux-at-midnight",
+      "path" : "covers/crux-at-midnight.png",
+      "sha256" : "373aa2d52d7b469dc3730008c4f8520d81e0457eb228114d4e7b2c26bbe5b02a",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2579604,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "the-last-chalkbag",
+      "path" : "covers/the-last-chalkbag.png",
+      "sha256" : "47da71b053bac180067ed294f1c55f39bff277cc2cb20c965fd1de9cd7d3302a",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2640704,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "beneath-the-chalk",
+      "path" : "covers/beneath-the-chalk.png",
+      "sha256" : "414140c3be4b254c133e4d7a8242e84612037c8c7d010878c0a6ef011d7e1e80",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2916035,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "basalt-days",
+      "path" : "covers/basalt-days.png",
+      "sha256" : "1a490b9c4c3395dbbabc807e6b984b690a8cd1c566c95bcb58e58652e0f0d469",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2644668,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "between-two-holds",
+      "path" : "covers/between-two-holds.png",
+      "sha256" : "171cf05cf86ca7ce2a301e607f716b9ce1787013359276260af8e7c4af7c7e83",
+      "width" : 1672
+    },
+    {
+      "bytes" : 3084809,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "small-stone-big-world",
+      "path" : "covers/small-stone-big-world.png",
+      "sha256" : "8efe34b27cffe75fbe1a6ec3584b3f9612ea2bb7c9e8e3ca80d830f57c9f7544",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2324819,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "blue-hour-on-granite",
+      "path" : "covers/blue-hour-on-granite.png",
+      "sha256" : "8c1f9b4f8a3212651106ec5908ecf746d34cabb059ed7ff016d98660556950a4",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2638373,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "the-quiet-approach",
+      "path" : "covers/the-quiet-approach.png",
+      "sha256" : "e3258778a769c0851aa8378d7ae255b1c7ed5b97eef3c090b6cab68ded93d8da",
+      "width" : 1672
+    },
+    {
+      "bytes" : 3243824,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "chalk-up",
+      "path" : "covers/chalk-up.png",
+      "sha256" : "5f49c4d19c0fbe644663c055fe538fc9b89cb66956141a63fbe86f344ce39d56",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2174926,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "after-the-gym-closes",
+      "path" : "covers/after-the-gym-closes.png",
+      "sha256" : "8c9c8a70ec0017cda5030f91bf65a733f932f483eadcc5b0ef72be09500f962d",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2629439,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "routes-we-havent-taken",
+      "path" : "covers/routes-we-havent-taken.png",
+      "sha256" : "1f6ff2fc93884d7e68e8c29eb43aa70b3653e9db0162978e7d230741e5d55718",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2689791,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "brushwork",
+      "path" : "covers/brushwork.png",
+      "sha256" : "ea0c59ded7a29abaca66742cdbf47af004a0d74b3691e46e9edb61696684f59a",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2378258,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "belay-station",
+      "path" : "covers/belay-station.png",
+      "sha256" : "afaab78cb93a1576f3cb67a2b6fdb8c472a0c27377d123081c0a2e150d935d4d",
+      "width" : 1672
+    },
+    {
+      "bytes" : 2392622,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "crag-kids",
+      "path" : "covers/crag-kids.png",
+      "sha256" : "238ba9f269b6b25694ec18e1a27d788b91667c9ac8d1158642baf14cabdc30cc",
+      "width" : 1672
+    },
+    {
+      "bytes" : 3322100,
+      "generator" : "built-in image_gen",
+      "height" : 941,
+      "id" : "chalk-up-new-lines-frame",
+      "path" : "frames/chalk-up-new-lines-frame.png",
+      "sha256" : "11823820e11880b814ea27c1195b4527831dc0b9137644e4f498622a3cc686f4",
+      "width" : 1672
+    },
+    {
+      "bytes" : 3606863,
+      "generator" : "built-in image_gen",
+      "height" : 940,
+      "id" : "chalk-up-season-01-backdrop",
+      "path" : "backdrops/chalk-up-season-01.png",
+      "sha256" : "62b16322174778b16ef459c488d0ee938abdec591f072c5ee473d9cfcba2aee2",
+      "width" : 1672
+    }
+  ],
+  "pathsRelativeTo" : "readme/preview_video_mocks",
+  "previews" : [
+    {
+      "bytes" : 3334928,
+      "generator" : "render_previews.swift / SwiftUI ImageRenderer",
+      "height" : 1080,
+      "id" : "home",
+      "path" : "../home.png",
+      "sha256" : "7f207823c2911e56e8c1b1bff9b69f96dc35a0e915b4b8825f06752b1bfa4744",
+      "width" : 1920
+    },
+    {
+      "bytes" : 2094637,
+      "generator" : "render_previews.swift / SwiftUI ImageRenderer",
+      "height" : 1080,
+      "id" : "dynamic-sections",
+      "path" : "../dynamic-sections.png",
+      "sha256" : "57dc82e4deb0d4579b040817533aaec6ee2f7aa26d96b27098d40a770f6f1300",
+      "width" : 1920
+    },
+    {
+      "bytes" : 3334748,
+      "generator" : "render_previews.swift / SwiftUI ImageRenderer",
+      "height" : 1080,
+      "id" : "video-finished",
+      "path" : "../video-finished.png",
+      "sha256" : "a493ede1d93d9220805f0988ec37f0c929a680c5d1a4ec515ef8d3ea1ad4ede4",
+      "width" : 1920
+    },
+    {
+      "bytes" : 2986992,
+      "generator" : "render_previews.swift / SwiftUI ImageRenderer",
+      "height" : 1080,
+      "id" : "video-ui",
+      "path" : "../video-ui.png",
+      "sha256" : "f78ccc575fa5fb72a9a170b8f6bf4f409c20e1ae895bcc64bbf076134b9d8124",
+      "width" : 1920
+    }
+  ],
+  "promptSet" : "prompts.json"
+}

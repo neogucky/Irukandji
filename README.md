@@ -14,6 +14,30 @@ Compared with Swiftfin, Alphane focuses on:
 - **Playback:** minimal cinema controls with quick access to audio and subtitles.
 - **Apple TV Home Screen:** Continue and Next Up artwork through Top Shelf.
 
+## Preview
+
+These UI mockups use fictional climbing and bouldering films and series to avoid any copyright issues.
+
+**Home** — cinematic artwork and progress for the selected Continue item.
+
+![Home with Chalk up! in Continue](./readme/home.png)
+
+**Dynamic sections** — discovery rows based on release decade, genre, and media type allow endless scrolling in the home screen.
+
+![Discovery rows for Movies from the 1990s, Documentaries, and Series from the 2020s](./readme/dynamic-sections.png)
+
+**Episode finished** — the completed episode's detail page, with the next episode ready to play.
+
+![Last Light after playback, with the Next card focused on New Lines](./readme/video-finished.png)
+
+**Video UI** — cinema controls with quick access to episodes, audio, and subtitles.
+
+![Chalk up! paused with the Audio control focused](./readme/video-ui.png)
+
+The [fictional media catalog, artwork, prompts, and preview renderer](./readme/preview_video_mocks/README.md) are included in the repository.
+
+## Build
+
 To build, open `Alphane.xcodeproj` in Xcode and select the `Alphane tvOS` scheme. Local signing overrides belong in the ignored `XcodeConfig/DevelopmentTeam.xcconfig` file.
 
 Report issues and follow development in [this repository](https://github.com/neogucky/alphane).
