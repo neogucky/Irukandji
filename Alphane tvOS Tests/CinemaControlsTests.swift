@@ -6,14 +6,14 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import SwiftUI
 @testable import Alphane
+import SwiftUI
 import XCTest
 
 @MainActor
 final class CinemaControlsTests: XCTestCase {
 
-    func testControlsShowTransportWithoutTheOldSupplementTabRow() {
+    func testControlsShowActionsAndProgressWithoutTheOldSupplementTabRow() {
         let state = VideoPlayer.ViewState()
         state.presentGuestSupplement(TestSupplement())
         state.selectedSupplementID = nil
@@ -40,7 +40,7 @@ final class CinemaControlsTests: XCTestCase {
         XCTAssertFalse(state.visibleElements.contains(.supplements))
     }
 
-    func testScrubbingShowsOnlyProgressAndRestoresTheTransportAfterward() {
+    func testScrubbingShowsOnlyProgressAndRestoresTheActionsAfterward() {
         let state = VideoPlayer.ViewState()
         state.showControls()
         state.isScrubbing = true

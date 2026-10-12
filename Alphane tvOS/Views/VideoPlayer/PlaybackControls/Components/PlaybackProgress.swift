@@ -98,16 +98,23 @@ extension VideoPlayer.PlaybackControls {
 
         @ViewBuilder
         private var liveIndicator: some View {
-            Text(L10n.live)
-                .font(UIDevice.isTV ? .caption : .subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 4)
-                .background {
-                    Capsule()
-                        .fill(Color.gray)
+            Button {
+                manager.togglePlayPause()
+                viewState.refreshAutoDismiss()
+            } label: {
+                HStack(spacing: 10) {
+                    Text(L10n.live)
+                    if manager.playbackRequestStatus == .paused {
+                        Image(systemName: "pause.circle")
+                    }
                 }
+                .font(.system(size: 22, weight: .medium))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(CinemaButtonStyle())
+            .accessibilityLabel(manager.playbackRequestStatus == .paused ? L10n.resume : L10n.pause)
+            .coordinatedFocus(ViewState.Focus.action("playPause"))
         }
 
         @ViewBuilder
@@ -152,6 +159,7 @@ extension VideoPlayer.PlaybackControls {
             .frame(height: sliderHeight)
             .trackingSize($sliderSize)
             .foregroundStyle(manager.state == .loadingItem ? .gray : .primary)
+            .accessibilityHint(Text(manager.playbackRequestStatus == .paused ? L10n.resume : L10n.pause))
         }
 
         @ViewBuilder
@@ -168,15 +176,14 @@ extension VideoPlayer.PlaybackControls {
         }
 
         var body: some View {
-            VStack(spacing: 10) {
+            VStack(spacing: 4) {
                 if manager.item.isLiveStream {
                     liveIndicator
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     videoPlayerSlider
 
-                    SplitTimeStamp()
-                        .foregroundStyle(viewState.isProgressBarFocused ? Color.white : AlphaneTheme.secondaryText)
+                    CinemaTimestamp()
                 }
             }
             .coordinatedFocus(ViewState.Focus.progress)
