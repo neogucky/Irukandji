@@ -177,10 +177,9 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
     func settlePlaybackState(for item: BaseItemDto, stoppedAt positionTicks: Int?) async {
         guard PlaybackCompletion.reachedEnd(of: item, at: positionTicks), let userSession else { return }
         do {
-            let updated = try await PlaybackCompletion.refreshedItem(stoppedAt: positionTicks) {
-                try await item.getFullItem(userSession: userSession)
+            _ = try await PlaybackCompletion.refreshedItem(stoppedAt: positionTicks) {
+                try await userSession.getFullItem(item).snapshot
             }
-            Notifications[.itemMetadataDidChange].post(updated)
         } catch {
             logger.debug("Unable to read final playback state: \(error.localizedDescription)")
         }

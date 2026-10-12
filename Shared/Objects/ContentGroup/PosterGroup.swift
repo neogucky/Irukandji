@@ -37,11 +37,12 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
     init(
         id: String = UUID().uuidString,
         library: Library,
+        displayTitle: String? = nil,
         posterDisplayType: PosterDisplayType = .portrait,
         posterSize: PosterDisplayType.Size = .small,
         environment: Environment
     ) {
-        self.displayTitle = library.parent.displayTitle
+        self.displayTitle = displayTitle ?? library.parent.displayTitle
         self.environment = environment
         self.id = id
         self.library = library
@@ -53,6 +54,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
     init(
         id: String = UUID().uuidString,
         library: Library,
+        displayTitle: String? = nil,
         posterDisplayType: PosterDisplayType = .portrait,
         posterSize: PosterDisplayType.Size = .small,
         _viewContext: ViewContext? = nil
@@ -60,6 +62,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
         self.init(
             id: id,
             library: library,
+            displayTitle: displayTitle,
             posterDisplayType: posterDisplayType,
             posterSize: posterSize,
             environment: .init(viewContext: _viewContext ?? .init())

@@ -26,6 +26,7 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
     #endif
 
     private enum Focus: String {
+
         case content = "contentGroup-content"
     }
 

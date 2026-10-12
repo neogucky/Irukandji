@@ -13,7 +13,8 @@ struct AboutItemGroup: ContentGroup {
 
     let displayTitle: String
     let id: String
-    let item: BaseItemDto
+    @SharedBaseItem
+    var item: BaseItemDto
 
     #if os(tvOS)
     var _shouldBeResolved: Bool {
@@ -30,7 +31,8 @@ struct AboutItemGroup: ContentGroup {
         @Router
         private var router
 
-        let item: BaseItemDto
+        @SharedBaseItem
+        var item: BaseItemDto
 
         private struct AboutCard<Content: View>: View {
 

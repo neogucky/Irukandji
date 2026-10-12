@@ -41,7 +41,7 @@ struct DeepLink: Equatable {
         case let .item(id):
             return .item(id: id)
         case let .play(id):
-            let item = try await BaseItemDto(id: id).getFullItem(userSession: userSession)
+            let item = try await userSession.getFullItem(BaseItemDto(id: id)).snapshot
             guard let provider = item.getPlaybackItemProvider(userSession: userSession) else {
                 throw DeepLinkError.unplayableItem(id)
             }

@@ -23,7 +23,7 @@ final class HomeDiscoveryTests: XCTestCase {
         XCTAssertEqual(Array(groups.prefix(4)).map(\.id), TVHomeRows.fixedIDs)
         XCTAssertTrue(groups.last is HomeDiscoveryContentGroup)
         let nextUp = try XCTUnwrap(groups[1] as? HomePrefetchRow<NextUpLibrary>).group
-        nextUp.viewModel.elements.append(BaseItemDto(id: "episode", name: "Episode", type: .episode))
+        nextUp.viewModel.elements.append(SharedBaseItem(wrappedValue: BaseItemDto(id: "episode", name: "Episode", type: .episode)).entry)
         XCTAssertTrue(nextUp._shouldBeResolved)
         let newMovies = try XCTUnwrap(groups[2] as? HomePrefetchRow<HomeRowLibrary>).group
         newMovies.viewModel.elements.append(contentsOf: items(count: 5))

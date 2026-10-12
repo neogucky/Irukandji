@@ -42,7 +42,8 @@ struct PosterButton<Item: Poster>: View {
     @State
     private var posterSize: CGSize = .zero
 
-    let item: Item
+    @SharedPoster
+    var item: Item
     let displayType: PosterDisplayType
     let size: PosterDisplayType.Size
     let onFocus: ((Item) -> Void)?

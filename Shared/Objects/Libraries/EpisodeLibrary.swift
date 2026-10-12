@@ -13,7 +13,8 @@ struct EpisodeLibrary: BaseItemKindLibrary {
 
     let hasNextPage = false
     let libraryItemTypes: [BaseItemKind] = [.episode]
-    let parent: BaseItemDto
+    @SharedBaseItem
+    var parent: BaseItemDto
 
     init(season: BaseItemDto) {
         self.parent = season
@@ -22,7 +23,7 @@ struct EpisodeLibrary: BaseItemKindLibrary {
     func retrievePage(
         environment: Empty,
         pageState: LibraryPageState
-    ) async throws -> [BaseItemDto] {
+    ) async throws -> [ItemPatch] {
         guard let seasonID = parent.id else {
             throw ErrorMessage(L10n.unknownError)
         }
@@ -40,6 +41,8 @@ struct EpisodeLibrary: BaseItemKindLibrary {
         )
         let response = try await pageState.userSession.client.send(request)
 
-        return EpisodeContinuation.orderedEpisodes(response.value.items ?? [])
+        let patches = try pageState.items(from: response)
+        let ordered = EpisodeContinuation.orderedEpisodes(patches.map(\.value))
+        return ordered.compactMap { item in patches.first { $0.value.id == item.id } }
     }
 }

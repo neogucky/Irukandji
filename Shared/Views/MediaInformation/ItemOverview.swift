@@ -14,7 +14,8 @@ struct ItemOverviewView: View {
     @Router
     private var router
 
-    let item: BaseItemDto
+    @SharedBaseItem
+    var item: BaseItemDto
 
     #if os(tvOS)
     @StateObject

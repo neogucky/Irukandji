@@ -37,7 +37,7 @@ final class TopShelfService: UserSessionService {
     func didStart(userSession: UserSession) {
         Publishers.Merge3(
             Notifications[.didSendStopReport].publisher.map { _ in () },
-            Notifications[.itemUserDataDidChange].publisher.map { _ in () },
+            userSession.items.changes.map { _ in () },
             Notifications[.didRequestGlobalRefresh].publisher
         )
         .merge(with: Notifications[.didChangeServerConnection].publisher.map { _ in () })
@@ -66,8 +66,10 @@ final class TopShelfService: UserSessionService {
             for item in items {
                 guard let id = item.id, !id.isEmpty, !item.isMissing, !item.isUnaired,
                       [.movie, .episode, .video].contains(item.type), item.userData?.isPlayed != true else { continue }
+
                 let key = item.type == .episode ? item.seriesID ?? id : id
                 guard seen.insert(key).inserted else { continue }
+
                 let contextTitle = item.type == .episode && item.seriesName != nil
                     ? "\(context) · \(item.seriesName!)" : context
                 result.append(Candidate(item: item, contextTitle: contextTitle))
@@ -78,19 +80,25 @@ final class TopShelfService: UserSessionService {
 
     private func refresh() async {
         guard let session, let storage = TopShelfStorage.shared else { return }
+
         do {
-            let page = LibraryPageState(pageOffset: 0, pageSize: 16, userSession: session)
+            let page = try LibraryPageState(pageOffset: 0, pageSize: 16, userSession: session)
             async let resume = ResumeItemsLibrary().retrievePage(environment: .default, pageState: page)
             async let next = NextUpLibrary().retrievePage(environment: .default, pageState: page)
             async let latest = latestItems(session: session)
-            let candidates = try await Self.candidates(resume: resume, nextUp: next, latest: latest)
+            let (resumePatches, nextPatches, newItems) = try await (resume, next, latest)
+            let candidates = Self.candidates(resume: resumePatches.map(\.value), nextUp: nextPatches.map(\.value), latest: newItems)
             try Task.checkCancellation()
 
             var entries: [TopShelfEntry] = []
             for candidate in candidates {
                 try Task.checkCancellation()
-                if let entry = await cachedEntry(candidate, session: session, storage: storage) { entries.append(entry) }
-                if entries.count == 8 { break }
+                if let entry = await cachedEntry(candidate, session: session, storage: storage) {
+                    entries.append(entry)
+                }
+                if entries.count == 8 {
+                    break
+                }
             }
             try Task.checkCancellation()
             try storage.write(TopShelfSnapshot(
@@ -123,14 +131,23 @@ final class TopShelfService: UserSessionService {
     private func cachedEntry(_ candidate: Candidate, session: UserSession, storage: TopShelfStorage) async -> TopShelfEntry? {
         let item = candidate.item
         guard let id = item.id else { return nil }
+
         let sources = item.imageSources(for: .landscape, environment: .init(
             maxWidth: 1920, quality: 85, useParent: true, viewContext: [.isBackdrop]
         ))
         for source in sources {
             guard let sourceURL = source.url else { continue }
-            let digest = SHA256.hash(data: Data("v2|\(session.server.id)|\(session.user.id)|\(sourceURL.absoluteString)|\(item.displayTitle)|\(candidate.contextTitle)".utf8))
+
+            let digest = SHA256
+                .hash(
+                    data: Data(
+                        "v2|\(session.server.id)|\(session.user.id)|\(sourceURL.absoluteString)|\(item.displayTitle)|\(candidate.contextTitle)"
+                            .utf8
+                    )
+                )
             let fileName = digest.map { String(format: "%02x", $0) }.joined() + ".jpg"
             guard let file = storage.artworkURL(fileName: fileName) else { continue }
+
             if !FileManager.default.fileExists(atPath: file.path) {
                 do {
                     var request = URLRequest(url: sourceURL, timeoutInterval: 8)
@@ -138,7 +155,9 @@ final class TopShelfService: UserSessionService {
                     let (data, response) = try await URLSession.shared.data(for: request)
                     try Task.checkCancellation()
                     guard (response as? HTTPURLResponse)?.statusCode == 200, let image = UIImage(data: data),
-                          let jpeg = Self.backdropJPEG(image, title: item.displayTitle, contextTitle: candidate.contextTitle) else { continue }
+                          let jpeg = Self.backdropJPEG(image, title: item.displayTitle, contextTitle: candidate.contextTitle)
+                    else { continue }
+
                     try jpeg.write(to: file, options: .atomic)
                 } catch is CancellationError { return nil }
                 catch { continue }
@@ -153,6 +172,7 @@ final class TopShelfService: UserSessionService {
 
     private static func backdropJPEG(_ image: UIImage, title: String, contextTitle: String) -> Data? {
         guard image.size.width > 0, image.size.height > 0 else { return nil }
+
         let canvas = CGSize(width: 1920, height: 1080)
         let scale = max(canvas.width / image.size.width, canvas.height / image.size.height)
         let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
@@ -160,7 +180,12 @@ final class TopShelfService: UserSessionService {
         format.scale = 1
         format.opaque = true
         let rendered = UIGraphicsImageRenderer(size: canvas, format: format).image { context in
-            image.draw(in: CGRect(x: (canvas.width - size.width) / 2, y: (canvas.height - size.height) / 2, width: size.width, height: size.height))
+            image.draw(in: CGRect(
+                x: (canvas.width - size.width) / 2,
+                y: (canvas.height - size.height) / 2,
+                width: size.width,
+                height: size.height
+            ))
 
             // Keep titles visible above the system's Play / More Info controls.
             // Some tvOS versions only display the summary and duration metadata.

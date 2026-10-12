@@ -44,7 +44,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     let group: PosterGroup<Library>
 
     private func routeToLibrary() {
-        router.route(to: .library(library: viewModel.library))
+        router.route(to: .library(library: viewModel.library, displayTitle: group.displayTitle))
     }
 
     private var isHeaderFocused: Bool {
@@ -52,7 +52,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     }
 
     private var headerTitle: some View {
-        Text(viewModel.library.parent.displayTitle)
+        Text(group.displayTitle)
             .font(.title3)
             .fontWeight(.semibold)
             .lineLimit(1)
@@ -148,7 +148,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                 priority: .automatic
             )
             .accessibilityElement(children: .contain)
-            .accessibilityLabel(viewModel.library.parent.displayTitle)
+            .accessibilityLabel(group.displayTitle)
         }
     }
 }
