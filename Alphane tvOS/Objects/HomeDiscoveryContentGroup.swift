@@ -53,14 +53,19 @@ struct HomeDiscoveryContentGroup: ContentGroup {
     }
 
     private struct DiscoveryView: View {
+        @Environment(\.scenePhase)
+        private var scenePhase
+
         @ObservedObject
         var viewModel: HomeDiscoveryViewModel
 
         @State
         private var visibleRows = Set<String>()
+        @State
+        private var isVisible = false
 
         private func prefetchIfNeeded() {
-            guard !viewModel.hasLoadError,
+            guard isVisible, scenePhase == .active, viewModel.hasMore, !viewModel.isWaitingToLoad,
                   visibleRows.contains(where: { viewModel.shouldPrefetch(after: $0) })
             else { return }
 
@@ -85,27 +90,33 @@ struct HomeDiscoveryContentGroup: ContentGroup {
                             prefetchIfNeeded()
                         }
                 }
-                if viewModel.hasLoadError {
-                    HStack(spacing: 20) {
-                        Text("Couldn't load more suggestions")
-                            .foregroundStyle(AlphaneTheme.secondaryText)
-                        Button(L10n.retry) {
-                            Task { await viewModel.loadMore() }
-                        }
-                        .buttonStyle(.capsule)
-                        .controlSize(.regular)
-                        .coordinatedFocus("home-discovery-retry")
-                    }
-                    .edgePadding(.horizontal)
-                    .frame(height: 100)
-                } else if viewModel.hasMore {
+                if viewModel.hasMore {
                     ProgressView()
+                        .opacity(viewModel.isLoading ? 1 : 0)
                         .frame(maxWidth: .infinity)
                         .frame(height: 100)
                         .task { await viewModel.loadMore() }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .onAppear {
+                isVisible = true
+                viewModel.setActive(scenePhase == .active)
+                prefetchIfNeeded()
+            }
+            .onDisappear {
+                isVisible = false
+                viewModel.setActive(false)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                viewModel.setActive(isVisible && phase == .active)
+                if phase == .active {
+                    prefetchIfNeeded()
+                }
+            }
+            .onNotification(.didChangeServerConnection) { _ in
+                viewModel.resumePendingLoad()
+            }
             .onChange(of: viewModel.isLoading) { _, loading in
                 if !loading {
                     prefetchIfNeeded()

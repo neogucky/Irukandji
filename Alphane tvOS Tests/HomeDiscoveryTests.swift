@@ -7,6 +7,7 @@
 //
 
 @testable import Alphane
+import Combine
 import Foundation
 import JellyfinAPI
 import XCTest
@@ -90,22 +91,207 @@ final class HomeDiscoveryTests: XCTestCase {
         XCTAssertEqual(model.rows.count, 3)
     }
 
-    func testOutageCanRetrySameCandidatesAndIndividualFailureDoesNotHideGoodRows() async {
+    func testOutageRecoversAutomaticallyWithoutLosingCandidates() async {
         var offline = true
-        let model = HomeDiscoveryViewModel(catalog: recipes(count: 3), shuffle: false) { row in
-            if offline || row.id == "row-1" {
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 3), shuffle: false, loader: { _ in
+            if offline {
                 throw URLError(.notConnectedToInternet)
+            }
+            return self.items(count: 6)
+        }, retryDelay: { _ in .milliseconds(20) })
+        defer { model.setActive(false) }
+        await model.loadMore()
+        XCTAssertTrue(model.isWaitingToLoad)
+        XCTAssertTrue(model.rows.isEmpty)
+        XCTAssertTrue(model.hasMore)
+
+        let recovered = expectation(description: "Suggestions recover without a user action")
+        let observation = model.$isLoading.dropFirst().sink { loading in
+            if !loading, model.rows.count == 3 {
+                recovered.fulfill()
+            }
+        }
+        defer { observation.cancel() }
+        offline = false
+        await fulfillment(of: [recovered], timeout: 2)
+        XCTAssertFalse(model.isWaitingToLoad)
+        XCTAssertEqual(model.rows.map(\.id), ["row-0", "row-1", "row-2"])
+        XCTAssertFalse(model.hasMore)
+    }
+
+    func testOneFailedCategoryIsDeferredWithoutLosingItOrHidingGoodRows() async {
+        var unavailable = true
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 3), shuffle: false) { row in
+            if unavailable, row.id == "row-1" {
+                throw URLError(.timedOut)
             }
             return self.items(count: 6)
         }
         await model.loadMore()
-        XCTAssertTrue(model.hasLoadError)
-        XCTAssertTrue(model.rows.isEmpty)
-        XCTAssertTrue(model.hasMore)
-        offline = false
-        await model.loadMore()
-        XCTAssertFalse(model.hasLoadError)
         XCTAssertEqual(model.rows.map(\.id), ["row-0", "row-2"])
+        XCTAssertTrue(model.hasMore)
+        unavailable = false
+        await model.loadMore()
+        XCTAssertEqual(model.rows.map(\.id), ["row-0", "row-2", "row-1"])
+        XCTAssertFalse(model.hasMore)
+    }
+
+    func testPrefetchRequestedBeforeWakeStartsWhenHomeBecomesActive() async {
+        var requests = 0
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 30), shuffle: false) { _ in
+            requests += 1
+            return self.items(count: 6)
+        }
+        defer { model.setActive(false) }
+        model.setActive(false)
+        await model.loadMore()
+        XCTAssertEqual(requests, 0)
+
+        let loaded = expectation(description: "Deferred visibility request resumes on wake")
+        let observation = model.$isLoading.dropFirst().sink { loading in
+            if !loading, model.rows.count == 3 {
+                loaded.fulfill()
+            }
+        }
+        defer { observation.cancel() }
+        model.setActive(true)
+        await fulfillment(of: [loaded], timeout: 2)
+        XCTAssertEqual(requests, 3)
+        XCTAssertTrue(model.hasMore)
+    }
+
+    func testSleepCancelsPendingBatchAndWakeResumesItWithoutReplacingCachedRows() async {
+        var sleepingRequest = false
+        var requests: [String] = []
+        let started = expectation(description: "Second batch is in flight before sleep")
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 9), shuffle: false) { row in
+            requests.append(row.id)
+            if sleepingRequest {
+                if row.id == "row-3" {
+                    started.fulfill()
+                }
+                try await Task.sleep(for: .seconds(60))
+            }
+            return self.items(count: 6)
+        }
+        defer { model.setActive(false) }
+        await model.loadMore()
+        let cachedGroups = model.rows.map(\.group.viewModel)
+        let cachedItems = model.rows.map { $0.group.viewModel.elements.map(\.id) }
+
+        sleepingRequest = true
+        let pending = Task { await model.loadMore() }
+        await fulfillment(of: [started], timeout: 2)
+        model.setActive(false)
+        XCTAssertFalse(model.isLoading)
+        XCTAssertFalse(model.isWaitingToLoad)
+        XCTAssertEqual(model.rows.map(\.id), ["row-0", "row-1", "row-2"])
+        let requestCount = requests.count
+        await model.loadMore()
+        XCTAssertEqual(requests.count, requestCount)
+
+        let recovered = expectation(description: "Wake resumes the interrupted batch")
+        let observation = model.$isLoading.dropFirst().sink { loading in
+            if !loading, model.rows.count == 6 {
+                recovered.fulfill()
+            }
+        }
+        defer { observation.cancel() }
+        sleepingRequest = false
+        model.setActive(true)
+        await pending.value
+        await fulfillment(of: [recovered], timeout: 2)
+        XCTAssertEqual(model.rows.map(\.id), (0 ..< 6).map { "row-\($0)" })
+        for index in cachedGroups.indices {
+            XCTAssertTrue(model.rows[index].group.viewModel === cachedGroups[index])
+            XCTAssertEqual(model.rows[index].group.viewModel.elements.map(\.id), cachedItems[index])
+        }
+        XCTAssertFalse(requests.contains("row-6"))
+        XCTAssertTrue(model.hasMore)
+    }
+
+    func testCancelledURLRequestsRecoverWithoutAVisibleErrorOrExhaustingRecipes() async {
+        for cancellation in [CancellationError() as any Error, URLError(.cancelled)] {
+            var interrupted = true
+            let model = HomeDiscoveryViewModel(catalog: recipes(count: 3), shuffle: false, loader: { _ in
+                if interrupted {
+                    throw cancellation
+                }
+                return self.items(count: 6)
+            }, retryDelay: { _ in .milliseconds(20) })
+            await model.loadMore()
+            XCTAssertTrue(model.hasMore)
+            XCTAssertTrue(model.rows.isEmpty)
+            let recovered = expectation(description: "Cancelled requests are pending rather than terminal")
+            let observation = model.$isLoading.dropFirst().sink { loading in
+                if !loading, model.rows.count == 3 {
+                    recovered.fulfill()
+                }
+            }
+            interrupted = false
+            await fulfillment(of: [recovered], timeout: 2)
+            observation.cancel()
+            model.setActive(false)
+            XCTAssertEqual(model.rows.map(\.id), ["row-0", "row-1", "row-2"])
+            XCTAssertFalse(model.hasMore)
+        }
+    }
+
+    func testRepeatedVisibilityCallbacksCannotBypassBackoffAndSleepCancelsRecovery() async {
+        var requests = 0
+        var offline = true
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 30), shuffle: false, loader: { _ in
+            requests += 1
+            if offline {
+                throw URLError(.networkConnectionLost)
+            }
+            return self.items(count: 6)
+        }, retryDelay: { _ in .milliseconds(30) })
+        defer { model.setActive(false) }
+        await model.loadMore()
+        for _ in 0 ..< 20 {
+            await model.loadMore()
+        }
+        XCTAssertEqual(requests, 3)
+        model.setActive(false)
+        try? await Task.sleep(for: .milliseconds(60))
+        XCTAssertEqual(requests, 3)
+
+        let recovered = expectation(description: "Active Home recovers one bounded batch")
+        let observation = model.$isLoading.dropFirst().sink { loading in
+            if !loading, model.rows.count == 3 {
+                recovered.fulfill()
+            }
+        }
+        defer { observation.cancel() }
+        offline = false
+        model.setActive(true)
+        await fulfillment(of: [recovered], timeout: 2)
+        XCTAssertEqual(requests, 6)
+        XCTAssertEqual(model.rows.count, 3)
+    }
+
+    func testFailedHistoryRemainsPendingWhileCatalogCanStillLoad() async {
+        var historyUnavailable = true
+        var historyCalls = 0
+        var watched = BaseItemDto(id: "watched", name: "Watched", type: .movie)
+        watched.userData = UserItemDataDto(isPlayed: true, key: "watched")
+        let model = HomeDiscoveryViewModel(catalog: recipes(count: 3), shuffle: false, loader: { _ in
+            self.items(count: 6)
+        }, historyLoader: {
+            historyCalls += 1
+            if historyUnavailable {
+                throw URLError(.timedOut)
+            }
+            return [watched]
+        })
+        await model.loadMore()
+        XCTAssertEqual(model.rows.count, 3)
+        XCTAssertTrue(model.hasMore)
+        historyUnavailable = false
+        await model.loadMore()
+        XCTAssertEqual(historyCalls, 2)
+        XCTAssertEqual(model.rows.last?.id, "similar-watched")
         XCTAssertFalse(model.hasMore)
     }
 

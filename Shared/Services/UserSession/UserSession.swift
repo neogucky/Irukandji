@@ -56,6 +56,21 @@ final class UserSession {
         self.user = user
     }
 
+    /// Waking with the same authentication must not end the live session: its
+    /// store and the collections retained by Home still belong to that session.
+    @MainActor
+    static func sessionForForeground(current: UserSession?, stored: UserSession?) -> UserSession? {
+        guard let current, let stored,
+              current.server.id == stored.server.id,
+              current.user.id == stored.user.id,
+              current.user.serverID == stored.user.serverID,
+              current.client.configuration.url == stored.client.configuration.url,
+              current.client.accessToken == stored.client.accessToken
+        else { return stored }
+
+        return current
+    }
+
     @MainActor
     func willStart() async {
         observeItemChanges()

@@ -107,7 +107,10 @@ final class UserSessionManager: ObservableObject {
     @MainActor
     private func refreshCurrentSession() async {
         do {
-            try await updateCurrentSession(with: resolveStoredSession())
+            let session = try UserSession.sessionForForeground(current: currentSession, stored: resolveStoredSession())
+            guard session !== currentSession else { return }
+
+            await updateCurrentSession(with: session)
         } catch {
             logger.error(
                 "Unable to refresh current user session",

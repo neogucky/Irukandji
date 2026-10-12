@@ -16,6 +16,7 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
     typealias HistoryLoader = @MainActor () async throws -> [BaseItemDto]
     typealias RefreshLoader = @MainActor (HomeDiscoveryRow, [BaseItemDto]) async throws -> [BaseItemDto]
     typealias ItemOrder = ([BaseItemDto]) -> [BaseItemDto]
+    typealias RetryDelay = (Int) -> Duration
     typealias Background = HomeDiscoveryViewModel
 
     struct LoadedRow: Identifiable {
@@ -45,7 +46,7 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
     @Published
     private(set) var hasMore = true
     @Published
-    private(set) var hasLoadError = false
+    private(set) var isWaitingToLoad = false
     @Published
     private(set) var refreshRevision = 0
 
@@ -53,12 +54,18 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
     private let historyLoader: HistoryLoader
     private let refreshLoader: RefreshLoader
     private let itemOrder: ItemOrder
+    private let retryDelay: RetryDelay
     private var candidates: [HomeDiscoveryRow]
     private var cursor = 0
     private var needsHistory = true
     private var staleRowIDs = Set<String>()
     private var refreshingRowIDs = Set<String>()
-    private var loadTask: Task<Void, Never>?
+    private var loadTask: Task<Bool, Never>?
+    private var retryTask: Task<Void, Never>?
+    private var loadGeneration = UUID()
+    private var consecutiveFailures = 0
+    private var isActive = true
+    private var loadRequested = false
 
     var background: HomeDiscoveryViewModel {
         get { self }
@@ -71,15 +78,50 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
         loader: @escaping Loader,
         historyLoader: @escaping HistoryLoader = { [] },
         refreshLoader: RefreshLoader? = nil,
-        itemOrder: @escaping ItemOrder = { $0.shuffled() }
+        itemOrder: @escaping ItemOrder = { $0.shuffled() },
+        retryDelay: @escaping RetryDelay = { .seconds([3, 6, 12, 24, 30][min($0 - 1, 4)]) }
     ) {
         self.candidates = shuffle ? catalog.shuffled() : catalog
         self.itemOrder = itemOrder
+        self.retryDelay = retryDelay
         self.loader = loader
         self.historyLoader = historyLoader
         self.refreshLoader = refreshLoader ?? { row, _ in try await loader(row) }
         self.hasMore = !catalog.isEmpty
         super.init()
+    }
+
+    deinit {
+        loadTask?.cancel()
+        retryTask?.cancel()
+    }
+
+    /// Suspend optional requests while Home is hidden or the TV is asleep.
+    /// Keep the pending batch and cached rows so waking never needs a restart.
+    func setActive(_ active: Bool) {
+        guard isActive != active else { return }
+
+        isActive = active
+        if active {
+            resumePendingLoad()
+        } else {
+            loadGeneration = UUID()
+            loadTask?.cancel()
+            loadTask = nil
+            retryTask?.cancel()
+            retryTask = nil
+            isWaitingToLoad = false
+            isLoading = false
+        }
+    }
+
+    func resumePendingLoad() {
+        guard isActive, loadRequested, loadTask == nil else { return }
+
+        retryTask?.cancel()
+        retryTask = nil
+        isWaitingToLoad = false
+        Task { [weak self] in await self?.loadMore() }
     }
 
     func refresh() {
@@ -105,26 +147,62 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
 
     /// One in-flight batch even when several visible rows request prefetch.
     func loadMore() async {
-        if let loadTask {
-            await loadTask.value
-            return
-        }
         guard hasMore || needsHistory else { return }
 
+        // A visibility callback can arrive before the scene becomes active.
+        // Remember its demand so wake can resume it without another scroll.
+        loadRequested = true
+        guard isActive else { return }
+
+        if let loadTask {
+            _ = await loadTask.value
+            return
+        }
+        guard retryTask == nil else { return }
+
         isLoading = true
-        hasLoadError = false
+        let generation = loadGeneration
         let task = Task { await self.loadBatch() }
         loadTask = task
-        await task.value
+        let needsRecovery = await task.value
+        // A cancelled pre-sleep batch must not clear the task or state of a
+        // newer batch that started after wake.
+        guard generation == loadGeneration else { return }
+
         loadTask = nil
+        if needsRecovery {
+            scheduleRecovery()
+        } else {
+            loadRequested = false
+            consecutiveFailures = 0
+        }
         isLoading = false
+    }
+
+    private func scheduleRecovery() {
+        guard isActive else { return }
+
+        consecutiveFailures += 1
+        isWaitingToLoad = true
+        let delay = retryDelay(consecutiveFailures)
+        retryTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: delay)
+            } catch { return }
+            guard !Task.isCancelled, let self, self.isActive else { return }
+
+            self.retryTask = nil
+            self.isWaitingToLoad = false
+            await self.loadMore()
+        }
     }
 
     private func addHistoryCandidates() async {
         guard needsHistory else { return }
+        guard let history = try? await historyLoader() else { return }
+        guard !Task.isCancelled else { return }
 
         needsHistory = false
-        guard let history = try? await historyLoader() else { return }
 
         let existingIDs = Set(candidates.map(\.id)).union(rows.map(\.id))
         for row in HomeDiscoveryRow.similarRows(recentlyPlayed: history) where !existingIDs.contains(row.id) {
@@ -134,14 +212,24 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
         hasMore = cursor < candidates.count
     }
 
-    private func loadBatch() async {
+    /// Returns whether unavailable suggestions are still pending. Failures are
+    /// local to these optional rows; they never become a Home error state.
+    private func loadBatch() async -> Bool {
+        guard !Task.isCancelled else { return true }
+
         await addHistoryCandidates()
+        guard !Task.isCancelled else { return true }
+
         while cursor < candidates.count {
+            guard !Task.isCancelled else { return true }
+
             let batch = Array(candidates[cursor ..< min(cursor + 3, candidates.count)])
             let results = await withTaskGroup(of: (Int, [BaseItemDto]?).self) { group in
                 for (index, definition) in batch.enumerated() {
                     group.addTask { [loader] in
-                        await (index, try? loader(definition))
+                        guard !Task.isCancelled else { return (index, nil) }
+
+                        return await (index, try? loader(definition))
                     }
                 }
                 var results: [(Int, [BaseItemDto]?)] = []
@@ -150,14 +238,18 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
                 }
                 return results.sorted { $0.0 < $1.0 }
             }
-            // A disconnected server leaves the cursor in place for an explicit
-            // retry rather than silently exhausting every recipe.
+            guard !Task.isCancelled else { return true }
+
+            // Preserve the batch across cancellation or a temporary outage.
+            // Recovery runs silently, with backoff, while Home is active.
             guard results.contains(where: { $0.1 != nil }) else {
-                hasLoadError = true
-                return
+                return true
             }
 
             cursor += batch.count
+            // One failed recipe must not be lost just because its neighbours
+            // succeeded. Defer it behind the other unseen categories.
+            candidates += results.compactMap { index, items in items == nil ? batch[index] : nil }
             let validRows = results.compactMap { index, items -> LoadedRow? in
                 guard let items else { return nil }
 
@@ -170,14 +262,15 @@ final class HomeDiscoveryViewModel: ViewModel, WithRefresh {
                 return LoadedRow(definition: definition, items: normalized)
             }
             rows += validRows
-            hasMore = cursor < candidates.count
+            hasMore = cursor < candidates.count || needsHistory
             if !validRows.isEmpty {
-                return
+                return false
             }
             // Empty/sparse rows consume no vertical space; continue looking for
             // a usable batch without exposing their headings or placeholders.
         }
-        hasMore = false
+        hasMore = needsHistory
+        return needsHistory
     }
 
     func refreshRow(_ id: String) async {

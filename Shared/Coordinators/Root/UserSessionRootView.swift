@@ -33,7 +33,9 @@ struct UserSessionRootView: View {
                 PosterPreferencesEnvironment {
                     MainTabView()
                 }
-                .id(userSessionManager.currentSession?.user.id)
+                // A real session replacement invalidates its collections, even
+                // when the user ID is unchanged (for example after re-login).
+                .id(userSessionManager.currentSession.map { ObjectIdentifier($0) })
             }
         }
         .animation(.linear(duration: 0.1), value: userSessionManager.state)

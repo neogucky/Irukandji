@@ -30,7 +30,7 @@ where Library.Element: LibraryElement, Library.Element: Poster {
     func body(with viewModel: PagingLibraryViewModel<Library>) -> some View {
         group.body(with: viewModel)
             .onScrollVisibilityChange(threshold: 0.01) { visible in
-                if visible, discovery.rows.isEmpty, !discovery.hasLoadError {
+                if visible, discovery.rows.isEmpty {
                     Task { await discovery.loadMore() }
                 }
             }
