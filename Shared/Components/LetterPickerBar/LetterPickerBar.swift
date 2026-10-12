@@ -177,13 +177,10 @@ struct LetterPickerBar: PlatformView {
         letterBar
             .scrollIfLargerThanContainer()
             .frame(width: dimension)
-            .focusSection()
-            .defaultFocus(
+            .activeSelectionFocus(
                 $focusedLetter,
-                selectedLetter ?? letters.first ?? "#",
-                priority: focusedLetter == nil ? .userInitiated : .automatic
+                selection: selectedLetter ?? letters.first ?? "#"
             )
-            .focusSection()
             .task(id: focusedLetter) {
                 activeLetter = focusedLetter
                 guard focusedLetter != nil else { return }

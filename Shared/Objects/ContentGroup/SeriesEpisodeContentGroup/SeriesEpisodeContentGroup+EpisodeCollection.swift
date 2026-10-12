@@ -205,7 +205,9 @@ extension SeriesEpisodeContentGroup {
             .defaultFocus(
                 $focusedSection,
                 .episodes,
-                priority: .userInitiated
+                // Initial entry can prefer an episode, but directional navigation
+                // must still reach the season bar and its active-selection preference.
+                priority: .automatic
             )
             .accessibilityElement(children: .contain)
             .accessibilityLabel(L10n.seasons)

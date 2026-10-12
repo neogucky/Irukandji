@@ -113,12 +113,7 @@ extension VideoPlayer.UIContainerViewController {
             // Menu dismissal can restore a tab before the content finishes appearing.
             // Keep tabs out of the focus engine until the requested control receives focus.
             .disabled(viewState.isSupplementFocusPending)
-            .defaultFocus(
-                $focusedElement,
-                defaultTabFocus,
-                priority: .userInitiated
-            )
-            .focusSection()
+            .activeSelectionFocus($focusedElement, selection: defaultTabFocus)
             .onMoveCommand { direction in
                 if direction == .up, viewState.isPresentingSupplement {
                     viewState.selectedSupplementID = nil

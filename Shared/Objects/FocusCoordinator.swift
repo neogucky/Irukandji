@@ -272,6 +272,21 @@ private struct CoordinatedFocusModifier: ViewModifier {
 extension View {
 
     #if os(tvOS)
+    /// Enter a group at its active choice before focus changes can activate another item.
+    /// Once inside, directional movement uses the normal focus engine. A nil choice
+    /// leaves the group's entry target to tvOS.
+    func activeSelectionFocus<Value: Hashable>(
+        _ focus: FocusState<Value?>.Binding,
+        selection: Value?
+    ) -> some View {
+        focusSection()
+            .defaultFocus(
+                focus,
+                selection,
+                priority: selection != nil ? .userInitiated : .automatic
+            )
+    }
+
     /// Remembers focus within a container, using the first value when no remembered target remains.
     /// Apply this to the stack or scroll view containing the coordinated controls.
     func coordinatedFocusScope<Value: Hashable>(

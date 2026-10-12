@@ -57,12 +57,7 @@ extension SeriesEpisodeContentGroup {
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
-                .focusSection()
-                .defaultFocus(
-                    $focusedSeason,
-                    preferredSelection,
-                    priority: .userInitiated
-                )
+                .activeSelectionFocus($focusedSeason, selection: selection ?? preferredSelection)
                 .onChange(of: focusedSeason) { _, seasonID in
                     guard let seasonID,
                           seasonID != selection,

@@ -129,8 +129,7 @@ struct MainTabView: View {
         .frame(maxWidth: .infinity)
         .frame(height: MainNavigationScrollController.headerHeight)
         .edgePadding(.horizontal)
-        .focusSection()
-        .defaultFocus($focusedTabID, tabCoordinator.selectedTabID, priority: .automatic)
+        .activeSelectionFocus($focusedTabID, selection: tabCoordinator.selectedTabID)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(L10n.tabBar)
     }

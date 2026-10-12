@@ -51,15 +51,13 @@ struct EPGDateBar: View {
                     .frame(width: size.width, height: size.height)
                 }
             }
-            .focusSection()
             .buttonStyle(EPGButtonStyle())
             .labelStyle(.iconOnly)
-            .defaultFocus(
+            .activeSelectionFocus(
                 $focusedDate,
-                viewModel.availableDates.first {
+                selection: viewModel.availableDates.first {
                     isSelected($0)
-                },
-                priority: focusedDate == nil ? .userInitiated : .automatic
+                }
             )
         }
     }

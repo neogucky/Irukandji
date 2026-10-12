@@ -15,6 +15,20 @@ enum SelectorType {
 
 struct SelectorView<Element: Hashable, Label: View>: View {
 
+    #if os(tvOS)
+    @FocusState
+    private var focusedElement: Element?
+
+    private var activeSelection: Element? {
+        switch type {
+        case .single:
+            sources.first { box.value.contains($0) }
+        case .multi:
+            nil
+        }
+    }
+    #endif
+
     @StateObject
     private var box: PublishedBox<Set<Element>>
 
@@ -83,7 +97,13 @@ struct SelectorView<Element: Hashable, Label: View>: View {
                 }
             }
             .foregroundStyle(.primary, .secondary)
+            #if os(tvOS)
+                .focused($focusedElement, equals: element)
+            #endif
         }
+        #if os(tvOS)
+        .activeSelectionFocus($focusedElement, selection: activeSelection)
+        #endif
     }
 }
 
