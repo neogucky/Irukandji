@@ -183,19 +183,24 @@ extension SeriesEpisodeContentGroup {
         @ViewBuilder
         private var artworkButton: some View {
             let button = Button(action: artworkAction) {
-                if let contextMenuItem {
-                    artwork
-                        .posterAccessibility(for: contextMenuItem)
-                        .accessibilityHint(L10n.posterAccessibilityPlayHint)
-                } else {
-                    artwork
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(PosterAccessibility.joined([header, subHeader]))
+                Group {
+                    if let contextMenuItem {
+                        artwork
+                            .posterAccessibility(for: contextMenuItem)
+                            .accessibilityHint(L10n.posterAccessibilityPlayHint)
+                    } else {
+                        artwork
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(PosterAccessibility.joined([header, subHeader]))
+                    }
                 }
+                #if os(tvOS)
+                // Clip the artwork before the button style draws its outside focus border.
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                #endif
             }
             .foregroundStyle(.primary, .secondary)
             #if os(tvOS)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
                 .buttonStyle(.focusBorder)
             #else
                 .buttonStyle(.card)
