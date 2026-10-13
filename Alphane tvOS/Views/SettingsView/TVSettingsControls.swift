@@ -79,7 +79,6 @@ struct TVSettingsRow: View {
 struct TVSettingsColumn<Content: View>: View {
 
     let title: String
-    let symbol: String
     var showsTitle = true
     @ViewBuilder
     var content: Content
@@ -87,12 +86,21 @@ struct TVSettingsColumn<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             if showsTitle {
-                Label(title, systemImage: symbol)
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(AlphaneTheme.secondaryText)
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 12)
-                    .accessibilityAddTraits(.isHeader)
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(title.localizedUppercase)
+                        .font(.system(size: 18, weight: .semibold))
+                        .tracking(2.5)
+                        .foregroundStyle(AlphaneTheme.secondaryText)
+                        .accessibilityLabel(title)
+                        .accessibilityAddTraits(.isHeader)
+
+                    Rectangle()
+                        .fill(.white.opacity(0.12))
+                        .frame(height: 1)
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, 22)
+                .padding(.bottom, 6)
             }
             content
             Spacer(minLength: 0)

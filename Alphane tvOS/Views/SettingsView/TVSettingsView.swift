@@ -139,7 +139,7 @@ struct TVSettingsView: View {
     }
 
     private var playbackColumn: some View {
-        TVSettingsColumn(title: L10n.playback, symbol: "play") {
+        TVSettingsColumn(title: L10n.playback) {
             Menu {
                 Picker(L10n.player, selection: $player) {
                     ForEach(VideoPlayerType.supportedCases, id: \.self) { player in
@@ -204,7 +204,7 @@ struct TVSettingsView: View {
 
     private var toolsColumn: some View {
         // swiftlint:disable:next hard_coded_display_string
-        TVSettingsColumn(title: "Tools", symbol: "gearshape") {
+        TVSettingsColumn(title: "Tools") {
             if ExperimentalSettingsView.isEnabled {
                 Button {
                     open(.experimentalSettings, from: "experimental")
@@ -226,14 +226,15 @@ struct TVSettingsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 32) {
-            Text(L10n.settings)
-                .font(.system(size: 32, weight: .medium))
-                .foregroundStyle(.white)
-                .padding(.leading, 22)
-                .accessibilityAddTraits(.isHeader)
-
+        VStack(alignment: .leading, spacing: 0) {
             profileActions
+
+            Rectangle()
+                .fill(.white.opacity(0.12))
+                .frame(height: 1)
+                .padding(.top, 30)
+                .padding(.bottom, 42)
+                .accessibilityHidden(true)
 
             HStack(alignment: .top, spacing: 32) {
                 playbackColumn
@@ -242,15 +243,7 @@ struct TVSettingsView: View {
                 columnDivider
                 toolsColumn
             }
-            .padding(.top, 10)
             .frame(maxHeight: .infinity)
-
-            Divider().overlay(.white.opacity(0.08))
-            Text("ALPHANE")
-                .font(.system(size: 14, weight: .medium))
-                .tracking(4)
-                .foregroundStyle(AlphaneTheme.secondaryText)
-                .padding(.leading, 22)
         }
         .padding(.horizontal, 60)
         .padding(.vertical, 32)
@@ -297,7 +290,7 @@ struct TVSettingsAppearanceColumn: View {
     private var posterConfiguration
 
     var body: some View {
-        TVSettingsColumn(title: L10n.appearance, symbol: "slider.horizontal.3", showsTitle: showsTitle) {
+        TVSettingsColumn(title: L10n.appearance, showsTitle: showsTitle) {
             ColorPicker(L10n.accentColor, selection: $accentColor, supportsOpacity: false)
                 .focused(focus, equals: "accent")
                 .accessibilityIdentifier("settings-accent")
