@@ -6,21 +6,12 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import SwiftUI
 
 struct SearchView: View {
 
-    @Default(.Customization.Search.enabledDrawerFilters)
-    private var enabledDrawerFilters
-
     @FocusState
     private var isSearchFocused: Bool
-
-    #if os(tvOS)
-    @FocusState
-    private var focusedFilter: FilterTrack.FocusTarget?
-    #endif
 
     @State
     private var searchQuery = ""
@@ -33,60 +24,33 @@ struct SearchView: View {
     @TabItemSelected
     private var tabItemSelected
 
-    @ViewBuilder
-    private var suggestionsView: some View {
-        VStack(spacing: 20) {
-            ForEach(viewModel.suggestions) { item in
-                Button(item.displayTitle) {
-                    searchQuery = item.displayTitle
-                }
-                #if os(tvOS)
-                .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                #endif
-            }
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                #if os(tvOS)
-                if enabledDrawerFilters.isNotEmpty {
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 20) {
-                            FilterTrack(viewModel: viewModel.filterViewModel, types: enabledDrawerFilters, focus: $focusedFilter)
-                        }
-                    }
-                    .scrollClipDisabled()
-                    .scrollIndicators(.hidden)
-                    .frame(height: 64)
-                    .coordinatedFocusScope(
-                        $focusedFilter,
-                        values: enabledDrawerFilters.map(FilterTrack.FocusTarget.filter) +
-                            (viewModel.filterViewModel.hasActiveFilters ? [.reset] : [])
-                    )
-                    .edgePadding(.horizontal)
-                    .padding(.vertical, EdgeInsets.itemSpacing)
-                }
-                #endif
-
-                ZStack {
+                RetryableContentView(
+                    error: viewModel.canSearch && viewModel.state == .error ? viewModel.error : nil,
+                    retry: { await viewModel.retrySearch() }
+                ) {
                     switch viewModel.state {
                     case .error:
-                        viewModel.error.map { ErrorView(error: $0) }
+                        EmptyView()
 
                     case .initial:
                         if viewModel.canSearch {
                             if viewModel.isEmpty {
                                 Text(L10n.noResults)
+                                    .font(.system(size: 22, weight: .medium))
+                                #if os(tvOS)
+                                    .foregroundStyle(AlphaneTheme.secondaryText)
+                                #else
+                                    .foregroundStyle(.secondary)
+                                #endif
+                                    .padding(.top, 36)
                             } else {
                                 ContentGroupVStack(
                                     groups: viewModel.itemContentGroupViewModel.groups
                                 )
                             }
-                        } else {
-                            suggestionsView
                         }
 
                     case .searching:
@@ -110,9 +74,6 @@ struct SearchView: View {
                 isSearchFocused = true
             }
         }
-        .onFirstAppear {
-            viewModel.getSuggestions()
-        }
         .onChange(of: searchQuery) {
             viewModel.search(query: searchQuery)
         }
@@ -122,16 +83,7 @@ struct SearchView: View {
         )
         .environmentObject(focusCoordinator)
         #if os(tvOS)
-        .modifier(SearchSafeAreaModifier())
-        .onReceive(viewModel.filterViewModel.$currentFilters) { filters in
-            searchQuery = filters.query ?? ""
-        }
-        #endif
-        #if os(iOS)
-        .navigationBarFilterDrawer(
-            viewModel: viewModel.filterViewModel,
-            types: enabledDrawerFilters
-        )
+            .modifier(SearchSafeAreaModifier())
         #endif
     }
 }

@@ -6,7 +6,6 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import SwiftUI
 
 struct CustomizeSettingsView: View {
@@ -15,9 +14,6 @@ struct CustomizeSettingsView: View {
     @FocusState
     private var focusedControl: String?
     #endif
-
-    @Default(.Customization.Search.enabledDrawerFilters)
-    private var searchEnabledDrawerFilters
 
     @Router
     private var router
@@ -31,15 +27,6 @@ struct CustomizeSettingsView: View {
         }
         #else
         Form(systemImage: "gear") {
-
-            Section {
-                ChevronButton(L10n.search) {
-                    router.route(to: .itemFilterDrawerSelector(selection: $searchEnabledDrawerFilters))
-                }
-
-            } header: {
-                Text(L10n.filters)
-            }
 
             ChevronButton(L10n.items) {
                 router.route(to: .itemSettings)

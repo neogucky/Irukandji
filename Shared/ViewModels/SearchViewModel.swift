@@ -8,7 +8,6 @@
 
 import Combine
 import Foundation
-import JellyfinAPI
 import SwiftUI
 
 @MainActor
@@ -18,16 +17,13 @@ final class SearchViewModel: ViewModel {
     @CasePathable
     enum Action {
 
-        case getSuggestions
         case search(query: String)
         case _actuallySearch
 
         var transition: Transition {
             switch self {
-            case .getSuggestions:
-                .none
             case let .search(query):
-                query.isEmpty ? .to(.initial) : .to(.searching)
+                query.nilIfBlank == nil ? .to(.initial) : .to(.searching)
             case ._actuallySearch:
                 .to(.searching, then: .initial)
                     .onRepeat(.cancel)
@@ -41,9 +37,6 @@ final class SearchViewModel: ViewModel {
         case initial
         case searching
     }
-
-    @SharedBaseItems
-    private(set) var suggestions: [BaseItemDto] = []
 
     let itemContentGroupViewModel: ContentGroupViewModel<SearchContentGroupProvider>
 
@@ -60,7 +53,7 @@ final class SearchViewModel: ViewModel {
     }
 
     var canSearch: Bool {
-        filterViewModel.currentFilters.hasQueryableFilters
+        filterViewModel.currentFilters.query?.nilIfBlank != nil
     }
 
     override init() {
@@ -84,9 +77,15 @@ final class SearchViewModel: ViewModel {
             .store(in: &cancellables)
     }
 
+    func retrySearch() async -> Error? {
+        error = nil
+        await _actuallySearch()
+        return state == .error ? error ?? ErrorMessage(L10n.unknownError) : nil
+    }
+
     @Function(\Action.Cases.search)
     private func _search(_ query: String) async throws {
-        filterViewModel.currentFilters.query = query.nilIfBlank
+        filterViewModel.currentFilters = .init(query: query.nilIfBlank)
 
         await cancel()
     }
@@ -101,23 +100,9 @@ final class SearchViewModel: ViewModel {
         itemContentGroupViewModel.provider.environment.filters = filters
 
         await itemContentGroupViewModel.refresh()
-    }
-
-    @Function(\Action.Cases.getSuggestions)
-    private func _getSuggestions() async throws {
-
-        await filterViewModel.getQueryFilters()
-
-        var parameters = Paths.GetItemsParameters()
-        parameters.fields = PosterSubtitleField.itemFields
-        parameters.includeItemTypes = [.movie, .series]
-        parameters.isRecursive = true
-        parameters.limit = 10
-        parameters.sortBy = [ItemSortBy.random]
-
-        let request = Paths.getItems(parameters: parameters)
-        let response = try await send(request)
-
-        self.suggestions = response.value.items ?? []
+        try Task.checkCancellation()
+        if let failure = itemContentGroupViewModel.provider.resultError {
+            throw failure
+        }
     }
 }

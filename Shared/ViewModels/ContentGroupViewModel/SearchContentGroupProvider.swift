@@ -24,6 +24,27 @@ struct SearchContentGroupProvider: ContentGroupProvider {
     let displayTitle: String = L10n.search
     let filterViewModel: FilterViewModel
     var environment: Environment
+    private let results = Results()
+
+    /// Empty successful rows mean no matches. If every row failed, present the
+    /// request error instead of claiming there are no matching titles.
+    var resultError: Error? {
+        var failures: [Error] = []
+        for group in results.groups {
+            if let group = group as? PosterGroup<ItemLibrary>, group.viewModel.state == .error {
+                failures.append(group.viewModel.error ?? ErrorMessage(L10n.unknownError))
+            } else if let group = group as? PosterGroup<PeopleLibrary>, group.viewModel.state == .error {
+                failures.append(group.viewModel.error ?? ErrorMessage(L10n.unknownError))
+            } else {
+                return nil
+            }
+        }
+        return failures.first
+    }
+
+    private final class Results {
+        var groups: [any ContentGroup] = []
+    }
 
     init() {
         let filterViewModel: FilterViewModel = .init()
@@ -32,9 +53,8 @@ struct SearchContentGroupProvider: ContentGroupProvider {
         self.environment = .init(filters: filterViewModel.currentFilters)
     }
 
-    @ContentGroupBuilder
     func makeGroups(environment: Environment) async throws -> [any ContentGroup] {
-        try await ItemTypeContentGroupProvider(
+        let itemGroups = try await ItemTypeContentGroupProvider(
             itemTypes: [
                 BaseItemKind.movie,
                 .series,
@@ -49,10 +69,12 @@ struct SearchContentGroupProvider: ContentGroupProvider {
         )
         .makeGroups(environment: .init(filters: environment.filters))
 
-        PosterGroup(
+        let people = PosterGroup(
             library: PeopleLibrary(
                 environment: .init(query: environment.filters.query)
             )
         )
+        results.groups = itemGroups + [people]
+        return results.groups
     }
 }

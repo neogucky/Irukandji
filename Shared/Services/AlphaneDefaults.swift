@@ -238,16 +238,6 @@ extension Defaults.Keys {
                 UserKey("showRecentlyPlayed", default: false)
             }
         }
-
-        enum Search {
-
-            static var enabledDrawerFilters: Key<[ItemFilterType]> {
-                UserKey(
-                    "searchEnabledDrawerFilters",
-                    default: ItemFilterType.allCases
-                )
-            }
-        }
     }
 
     enum VideoPlayer {
