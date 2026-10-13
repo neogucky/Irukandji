@@ -86,21 +86,14 @@ struct TVSettingsColumn<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             if showsTitle {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(title.localizedUppercase)
-                        .font(.system(size: 18, weight: .semibold))
-                        .tracking(2.5)
-                        .foregroundStyle(AlphaneTheme.secondaryText)
-                        .accessibilityLabel(title)
-                        .accessibilityAddTraits(.isHeader)
-
-                    Rectangle()
-                        .fill(.white.opacity(0.12))
-                        .frame(height: 1)
-                        .accessibilityHidden(true)
-                }
-                .padding(.horizontal, 22)
-                .padding(.bottom, 6)
+                Text(title.localizedUppercase)
+                    .font(.system(size: 18, weight: .semibold))
+                    .tracking(2.5)
+                    .foregroundStyle(AlphaneTheme.secondaryText)
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 16)
+                    .accessibilityLabel(title)
+                    .accessibilityAddTraits(.isHeader)
             }
             content
             Spacer(minLength: 0)

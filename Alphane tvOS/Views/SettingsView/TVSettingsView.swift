@@ -135,6 +135,9 @@ struct TVSettingsView: View {
             }
             Spacer(minLength: 0)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
+        .background(AlphaneTheme.surface, in: RoundedRectangle(cornerRadius: 24))
         .focusSection()
     }
 
@@ -228,13 +231,7 @@ struct TVSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             profileActions
-
-            Rectangle()
-                .fill(.white.opacity(0.12))
-                .frame(height: 1)
-                .padding(.top, 30)
                 .padding(.bottom, 42)
-                .accessibilityHidden(true)
 
             HStack(alignment: .top, spacing: 32) {
                 playbackColumn
