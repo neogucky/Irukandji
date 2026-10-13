@@ -27,20 +27,27 @@ struct EPGLoadableView<Content: View>: View {
 
     @ViewBuilder
     var body: some View {
+        RetryableContentView(
+            error: viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil,
+            retry: {
+                viewModel.error = nil
+                await viewModel.refresh(startDate: nil)
+                return viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil
+            }
+        ) {
         switch viewModel.state {
         case .initial, .refreshing:
             ProgressView()
 
         case .error:
-            if let error = viewModel.error {
-                ErrorView(error: error)
-            }
+                EmptyView()
 
         case .content:
             if viewModel.channels.isEmpty {
                 ContentUnavailableView(L10n.noPrograms, systemImage: "tv")
             } else {
                 content
+                }
             }
         }
     }

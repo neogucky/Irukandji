@@ -196,7 +196,15 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
 
     var body: some View {
         viewModel.library.makeLibraryBody(viewModel: viewModel) {
-            ZStack {
+            RetryableContentView(
+                error: viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil,
+                retry: {
+                    viewModel.error = nil
+                    await viewModel.refresh()
+                    return viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil
+                },
+                onErrorAppear: focusCoordinator.resolveInitialFocus
+            ) {
                 switch viewModel.state {
                 case .initial, .refreshing:
                     ProgressView()
@@ -221,10 +229,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
                     }
 
                 case .error:
-                    viewModel.error.map(ErrorView.init)
-                        #if os(tvOS)
-                            .coordinatedFocus(.fallback)
-                        #endif
+                    EmptyView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -234,7 +239,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         .animation(.linear(duration: 0.2), value: viewModel.elements)
         .animation(.linear(duration: 0.2), value: viewModel.searchElements)
         .navigationTitle(displayTitle ?? viewModel.library.parent.displayTitle)
-        .errorMessage($viewModel.error)
+        .errorMessage(Binding(
+            get: { viewModel.state == .content ? viewModel.error : nil },
+            set: { viewModel.error = $0 }
+        ))
         .onPreferenceChange(IsSafeAreaBarApplied.self) { newValue in
             isSafeAreaBarApplied = newValue
         }

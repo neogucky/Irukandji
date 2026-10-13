@@ -74,7 +74,7 @@ struct SearchView: View {
                 ZStack {
                     switch viewModel.state {
                     case .error:
-                        viewModel.error.map(ErrorView.init)
+                        viewModel.error.map { ErrorView(error: $0) }
 
                     case .initial:
                         if viewModel.canSearch {

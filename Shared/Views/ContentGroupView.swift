@@ -85,9 +85,11 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
                     // first focus update can otherwise land on an earlier row.
                     await Task.yield()
                     guard !Task.isCancelled else { return }
+
                     proxy.scrollTo(target.scope, anchor: .center)
                     await Task.yield()
                     guard !Task.isCancelled else { return }
+
                     navigationFocusStore?.restore(navigationFocusPageID)
                 }
             #else
@@ -110,7 +112,13 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
     }
 
     var body: some View {
-        ZStack {
+        RetryableContentView(
+            error: viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil,
+            retry: {
+                await viewModel.retryRefresh()
+            },
+            onErrorAppear: focusCoordinator.resolveInitialFocus
+        ) {
             switch viewModel.state {
             case .content:
                 if viewModel.groups.isEmpty {
@@ -127,10 +135,7 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
                 }
 
             case .error:
-                viewModel.error.map(ErrorView.init)
-                    #if os(tvOS)
-                        .coordinatedFocus(.fallback)
-                    #endif
+                EmptyView()
 
             case .initial, .refreshing:
                 ProgressView()
@@ -153,7 +158,7 @@ struct ContentGroupView<Provider: ContentGroupProvider>: View {
             viewModel.refresh()
         }
         .refreshable {
-            viewModel.refresh()
+                await viewModel.refresh()
         }
         .sinceLastDisappear { interval in
             viewModel.refreshIfNeeded(sinceLastDisappear: interval)

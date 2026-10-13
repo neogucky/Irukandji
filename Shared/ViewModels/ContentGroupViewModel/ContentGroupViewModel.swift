@@ -98,6 +98,12 @@ final class ContentGroupViewModel<Provider: ContentGroupProvider>: ViewModel {
         background.refresh()
     }
 
+    func retryRefresh() async -> Error? {
+        error = nil
+        await refresh()
+        return state == .error ? error ?? ErrorMessage(L10n.unknownError) : nil
+    }
+
     @Function(\Action.Cases.refresh)
     private func _refresh() async throws {
         if !StateTask.isBackground {

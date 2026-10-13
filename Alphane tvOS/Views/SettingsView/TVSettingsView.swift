@@ -83,62 +83,63 @@ struct TVSettingsView: View {
     }
 
     private var profileActions: some View {
-        HStack(spacing: 36) {
+        HStack(spacing: 40) {
             if let session = userSessionManager.currentSession {
-                Button(action: signOut) {
-                    HStack(spacing: 18) {
-                        UserProfileImage(
-                            userID: session.user.id,
-                            source: session.user.profileImageSource(client: session.client)
-                        )
-                        .frame(width: 52, height: 52)
-                        .clipShape(Circle())
-                        .accessibilityHidden(true)
+                HStack(spacing: 18) {
+                    UserProfileImage(
+                        userID: session.user.id,
+                        source: session.user.profileImageSource(client: session.client)
+                    )
+                    .frame(width: 52, height: 52)
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(session.user.username)
-                                .font(.system(size: 22, weight: .medium))
-                            Text(session.server.name)
-                                .font(.system(size: 18))
-                        }
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        // swiftlint:disable:next hard_coded_display_string
-                        Label("Log out", systemImage: "rectangle.portrait.and.arrow.right")
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(session.user.username)
+                            .font(.system(size: 22, weight: .medium))
+                        Text(session.server.name)
+                            .font(.system(size: 18))
                     }
-                    .frame(width: 450)
+                    .lineLimit(1)
                 }
-                .buttonStyle(TVSettingsButtonStyle(cutsOutLabel: false))
-                .focused($focusedControl, equals: "logout")
-                .disabled(isSigningOut)
-                .accessibilityIdentifier("settings-logout")
+                .foregroundStyle(AlphaneTheme.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 22)
 
-                Button {
-                    open(.localUserSecurity, from: "pin")
-                } label: {
-                    HStack(spacing: 18) {
-                        Image(systemName: "lock")
-                        VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 24) {
+                    Button {
+                        open(.localUserSecurity, from: "pin")
+                    } label: {
+                        HStack(spacing: 18) {
+                            Image(systemName: "lock")
                             // swiftlint:disable:next hard_coded_display_string
                             Text("Profile PIN")
                             Text(session.user.accessPolicy == .requirePin ? TVSettingsText.on : TVSettingsText.off)
-                                .font(.system(size: 18))
+                                .font(.system(size: 20))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 16))
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 16))
+                        .lineLimit(1)
                     }
-                    .frame(width: 260)
+                    .focused($focusedControl, equals: "pin")
+                    .accessibilityIdentifier("settings-pin")
+
+                    Button(action: signOut) {
+                        // swiftlint:disable:next hard_coded_display_string
+                        Label("Log out", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    .focused($focusedControl, equals: "logout")
+                    .disabled(isSigningOut)
+                    .accessibilityIdentifier("settings-logout")
                 }
-                .focused($focusedControl, equals: "pin")
-                .accessibilityIdentifier("settings-pin")
+                .fixedSize(horizontal: true, vertical: false)
             }
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 14)
         .background(AlphaneTheme.surface, in: RoundedRectangle(cornerRadius: 24))
         .focusSection()
+        .defaultFocus($focusedControl, "logout", priority: .userInitiated)
     }
 
     private var playbackColumn: some View {

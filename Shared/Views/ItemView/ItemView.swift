@@ -181,12 +181,17 @@ struct ItemView: View {
     var body: some View {
         let (_, overflow, menu) = buttonConfiguration.resolvedButtons(for: provider)
 
-        ZStack {
+        RetryableContentView(
+            error: viewModel.state == .error ? viewModel.error ?? ErrorMessage(L10n.unknownError) : nil,
+            retry: {
+                await viewModel.retryRefresh()
+            }
+        ) {
             switch viewModel.state {
             case .content:
                 content
             case .error:
-                viewModel.error.map(ErrorView.init)
+                EmptyView()
             case .initial, .refreshing:
                 ProgressView()
             }
@@ -196,7 +201,7 @@ struct ItemView: View {
         .animation(.linear(duration: 0.2), value: viewModel.background.states)
         .toolbarTitleDisplayMode(.inline)
         .refreshable {
-            viewModel.background.refresh()
+            await viewModel.background.refresh()
         }
         .onFirstAppear {
             viewModel.refresh()
