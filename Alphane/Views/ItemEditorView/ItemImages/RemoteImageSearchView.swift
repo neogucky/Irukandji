@@ -157,7 +157,7 @@ extension RemoteImageSearchView {
                 case .initial, .refreshing:
                     ProgressView()
                 case .error:
-                    viewModel.error.map(ErrorView.init)
+                    viewModel.error.map { ErrorView(error: $0) }
                 }
             }
             .animation(.linear(duration: 0.1), value: viewModel.state)

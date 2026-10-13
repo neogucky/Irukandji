@@ -143,6 +143,14 @@ final class UserSessionManager: ObservableObject {
         )
     }
 
+    /// Return to the existing login screen with profiles from every saved server.
+    /// Signing out of this session preserves stored servers and credentials.
+    @MainActor
+    func switchServer() async {
+        Defaults[.selectUserServerSelection] = .all
+        await signOut(reason: .explicit)
+    }
+
     @MainActor
     private func stopActivePlayback() async {
         await mediaPlayerManager?.stop()

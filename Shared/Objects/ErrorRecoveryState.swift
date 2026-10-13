@@ -19,34 +19,70 @@ final class ErrorRecoveryState: ObservableObject {
     private(set) var error: Error?
     @Published
     private(set) var failedAttempts = 0
+    @Published
+    private(set) var connectionIssue: ConnectionIssue?
+    @Published
+    private(set) var isDiagnosing = false
 
     private let minimumFeedbackDuration: Duration
+    private let diagnostics: @MainActor (Error) async -> ConnectionIssue?
+    private var diagnosticID: UUID?
+    private var diagnosedErrorID: String?
 
-    init(minimumFeedbackDuration: Duration = .milliseconds(600)) {
+    init(
+        minimumFeedbackDuration: Duration = .seconds(2),
+        diagnostics: @escaping @MainActor (Error) async -> ConnectionIssue? = { await ConnectionDiagnostics.diagnose($0) }
+    ) {
         self.minimumFeedbackDuration = minimumFeedbackDuration
+        self.diagnostics = diagnostics
+    }
+
+    func diagnose(error: Error) async {
+        let errorID = ConnectionDiagnostics.failureID(for: error)
+        guard !isRetrying, diagnosedErrorID != errorID else { return }
+
+        let id = UUID()
+        diagnosticID = id
+        connectionIssue = nil
+        isDiagnosing = ConnectionDiagnostics.connectionError(in: error) != nil
+        let issue = await diagnostics(error)
+        guard diagnosticID == id else { return }
+
+        isDiagnosing = false
+        guard !Task.isCancelled else { return }
+
+        diagnosedErrorID = errorID
+        connectionIssue = issue
     }
 
     func retry(error: Error, operation: @MainActor () async -> Error?) async {
         guard !isRetrying else { return }
 
         self.error = error
+        diagnosticID = nil
+        isDiagnosing = false
         isRetrying = true
         defer { isRetrying = false }
 
         let start = ContinuousClock.now
         let failure = await operation()
+        let issue: ConnectionIssue? = if let failure, !Task.isCancelled {
+            await diagnostics(failure)
+        } else {
+            nil
+        }
 
-        // An immediate connection refusal still needs perceptible feedback.
-        // Start the request immediately; only hold the failed presentation.
-        if failure != nil {
-            let elapsed = start.duration(to: .now)
-            if elapsed < minimumFeedbackDuration {
-                try? await Task.sleep(for: minimumFeedbackDuration - elapsed)
-            }
+        // Start the request immediately, then keep its spinner visible for at
+        // least two seconds, including when the retry succeeds quickly.
+        let elapsed = start.duration(to: .now)
+        if elapsed < minimumFeedbackDuration {
+            try? await Task.sleep(for: minimumFeedbackDuration - elapsed)
         }
         guard !Task.isCancelled else { return }
 
         self.error = failure
+        diagnosedErrorID = failure.map(ConnectionDiagnostics.failureID)
+        connectionIssue = issue
         failedAttempts = failure == nil ? 0 : failedAttempts + 1
     }
 }

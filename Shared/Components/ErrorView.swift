@@ -7,6 +7,7 @@
 //
 
 import Defaults
+import FactoryKit
 import Foundation
 import SwiftUI
 
@@ -28,44 +29,54 @@ struct ErrorView<ErrorType: Error>: View {
     @Environment(\.refresh)
     private var refresh
 
-    let error: ErrorType
-    var isRetrying = false
-    var didRetryFail = false
-    var retryAction: (@MainActor () async -> Void)?
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+    @InjectedObject(\.userSessionManager)
+    private var userSessionManager
 
+    let error: ErrorType
+    private let retryAction: (@MainActor () async -> Error?)?
+
+    @StateObject
+    private var recovery: ErrorRecoveryState
     @State
-    private var isRetryingLocally = false
+    private var retryTask: Task<Void, Never>?
     @State
-    private var didRetryLocally = false
+    private var isSwitchingServer = false
     #if os(tvOS)
     @FocusState
-    private var isRetryFocused: Bool
+    private var focusedButton: String?
     #endif
 
+    @MainActor
+    init(
+        error: ErrorType,
+        recovery: ErrorRecoveryState? = nil,
+        retryAction: (@MainActor () async -> Error?)? = nil
+    ) {
+        self.error = error
+        _recovery = StateObject(wrappedValue: recovery ?? ErrorRecoveryState())
+        self.retryAction = retryAction
+    }
+
     private var isBusy: Bool {
-        isRetrying || isRetryingLocally
+        recovery.isRetrying
+    }
+
+    private var isChecking: Bool {
+        isBusy || recovery.isDiagnosing
     }
 
     private var canRetry: Bool {
         retryAction != nil || refresh != nil
     }
 
-    private var feedback: String {
-        if isBusy {
-            String(localized: "Trying again. Please wait…")
-        } else if didRetryFail || didRetryLocally {
-            if (error as NSError).domain == NSURLErrorDomain {
-                String(localized: "Still unable to connect. Check the server or your network, then try again.")
-            } else {
-                String(localized: "The retry didn’t succeed. Please try again.")
-            }
-        } else {
-            (error as? LocalizedError)?.recoverySuggestion ?? ""
-        }
+    private var diagnosticKey: String {
+        ConnectionDiagnostics.failureID(for: error)
     }
 
     static func displayMessage(for error: Error) -> String {
-        let failure = error as NSError
+        let failure = ConnectionDiagnostics.connectionError(in: error) ?? error as NSError
         guard failure.domain == NSURLErrorDomain else { return error.localizedDescription }
 
         switch URLError.Code(rawValue: failure.code) {
@@ -85,24 +96,36 @@ struct ErrorView<ErrorType: Error>: View {
     }
 
     private func retry() {
-        guard !isBusy, canRetry else { return }
+        guard !isBusy, !isSwitchingServer, canRetry else { return }
 
-        isRetryingLocally = true
-        Task { @MainActor in
-            if let retryAction {
-                await retryAction()
-            } else if let refresh {
-                await refresh()
+        retryTask = Task { @MainActor in
+            await recovery.retry(error: error) {
+                if let retryAction {
+                    return await retryAction()
+                }
+                await refresh?()
+                // Legacy consumers replace this view when their reload succeeds.
+                return error
             }
-            isRetryingLocally = false
-            didRetryLocally = true
+        }
+    }
+
+    private func switchServer() {
+        guard !isBusy, !isSwitchingServer else { return }
+
+        isSwitchingServer = true
+        Task { @MainActor in
+            await userSessionManager.switchServer()
+            isSwitchingServer = false
         }
     }
 
     private var systemImage: String {
-        if let error = error as? SystemImageable {
+        if isChecking, ConnectionDiagnostics.connectionError(in: error) != nil {
+            "wifi"
+        } else if let error = error as? SystemImageable {
             error.systemImage
-        } else if (error as NSError).domain == NSURLErrorDomain {
+        } else if ConnectionDiagnostics.connectionError(in: error) != nil {
             "wifi.exclamationmark"
         } else {
             "xmark.circle"
@@ -113,6 +136,12 @@ struct ErrorView<ErrorType: Error>: View {
     private var tvBody: some View {
         VStack(spacing: 24) {
             Image(systemName: systemImage)
+                .symbolEffect(
+                    .variableColor.cumulative.hideInactiveLayers,
+                    options: .repeating,
+                    isActive: isChecking && !reduceMotion
+                )
+                .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(AlphaneTheme.secondaryText)
                 .symbolRenderingMode(.monochrome)
@@ -120,44 +149,55 @@ struct ErrorView<ErrorType: Error>: View {
                 .background(AlphaneTheme.surface, in: RoundedRectangle(cornerRadius: 28))
                 .accessibilityHidden(true)
 
-            Text(Self.displayMessage(for: error))
+            Text(recovery.connectionIssue?.message ?? Self.displayMessage(for: error))
                 .font(.system(size: 30, weight: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(4)
                 .frame(maxWidth: 800)
 
-            if canRetry {
-                Button(action: retry) {
-                    HStack(spacing: 14) {
-                        ZStack {
-                            Image(systemName: "arrow.clockwise")
-                                .opacity(isBusy ? 0 : 1)
-                            if isBusy {
-                                ProgressView()
-                                    .tint(isRetryFocused ? .black : .white)
-                            }
-                        }
-                        .frame(width: 24, height: 24)
-                        Text(isBusy ? String(localized: "Retrying…") : L10n.retry)
-                    }
-                    .frame(width: 180)
-                }
-                .buttonStyle(TVSettingsButtonStyle())
-                .focused($isRetryFocused)
-                .accessibilityIdentifier("error-retry")
-                .accessibilityValue(isBusy ? String(localized: "Retrying") : "")
-                .defaultFocus($isRetryFocused, true)
-                .padding(.top, 6)
-            }
-
-            Text(feedback)
+            Text(recovery.connectionIssue?.suggestion ?? "")
                 .font(.system(size: 20))
                 .foregroundStyle(AlphaneTheme.secondaryText)
                 .multilineTextAlignment(.center)
-                .lineLimit(3)
-                .frame(maxWidth: 800, minHeight: 64, alignment: .top)
-                .accessibilityIdentifier("error-status")
+                .lineLimit(2)
+                .frame(maxWidth: 800, minHeight: 48, alignment: .top)
+
+            HStack(spacing: 24) {
+                if canRetry {
+                    Button(action: retry) {
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Image(systemName: "arrow.clockwise")
+                                    .opacity(isBusy ? 0 : 1)
+                                if isBusy {
+                                    ProgressView()
+                                        .scaleEffect(0.65)
+                                        .tint(focusedButton == "retry" ? .black : .white)
+                                }
+                            }
+                            .frame(width: 24, height: 24)
+                            Text(isBusy ? String(localized: "Retrying…") : L10n.retry)
+                        }
+                        .frame(width: 180)
+                    }
+                    .buttonStyle(TVSettingsButtonStyle())
+                    .focused($focusedButton, equals: "retry")
+                    .accessibilityIdentifier("error-retry")
+                    .accessibilityValue(isBusy ? String(localized: "Retrying") : "")
+                }
+
+                if recovery.connectionIssue == .server, userSessionManager.currentSession != nil {
+                    Button(action: switchServer) {
+                        Label(String(localized: "Switch server"), systemImage: "server.rack")
+                    }
+                    .buttonStyle(TVSettingsButtonStyle())
+                    .focused($focusedButton, equals: "server")
+                    .accessibilityIdentifier("error-switch-server")
+                }
+            }
+            .defaultFocus($focusedButton, "retry")
+            .padding(.top, 6)
         }
         .padding(60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -213,11 +253,21 @@ struct ErrorView<ErrorType: Error>: View {
     }
 
     var body: some View {
+        Group {
+            #if os(tvOS)
+            tvBody
+            #else
+            legacyBody
+            #endif
+        }
         #if os(tvOS)
-        tvBody
-        #else
-        legacyBody
+        .task(id: diagnosticKey) {
+            await recovery.diagnose(error: error)
+        }
         #endif
+        .onDisappear {
+            retryTask?.cancel()
+        }
     }
 }
 
@@ -238,11 +288,8 @@ struct RetryableContentView<Content: View>: View {
             if let presentedError = recovery.isRetrying ? recovery.error : error {
                 ErrorView(
                     error: presentedError,
-                    isRetrying: recovery.isRetrying,
-                    didRetryFail: recovery.failedAttempts > 0,
-                    retryAction: {
-                        await recovery.retry(error: presentedError, operation: retry)
-                    }
+                    recovery: recovery,
+                    retryAction: retry
                 )
                 .onAppear(perform: onErrorAppear)
             } else {
