@@ -27,13 +27,15 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
     let environment: Environment?
     let filterViewModel: FilterViewModel
+    private let additionalItemFields: [ItemFields]
     @SharedBaseItem
     var parent: BaseItemDto
 
     init(
         parent: BaseItemDto,
         filters: ItemFilterCollection? = nil,
-        staticFilters: ItemFilterCollection = .default
+        staticFilters: ItemFilterCollection = .default,
+        additionalItemFields: [ItemFields] = []
     ) {
         var filters = filters ?? .default
 
@@ -54,6 +56,7 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
             staticFilters: staticFilters
         )
         self.parent = parent
+        self.additionalItemFields = additionalItemFields
     }
 
     func makeMenuContent(environment: Binding<Environment>) -> AnyView {
@@ -163,7 +166,7 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
     private func makeBaseItemParameters(environment: Environment) -> Paths.GetItemsParameters {
         var parameters = Paths.GetItemsParameters()
         parameters.enableUserData = true
-        parameters.fields = PosterSubtitleField.itemFields
+        parameters.fields = PosterSubtitleField.itemFields + additionalItemFields
         parameters.includeItemTypes = parent.supportedItemTypes(for: environment.grouping)
         parameters.isRecursive = parent.isRecursiveCollection(for: environment.grouping)
         parameters.sortBy = [.name]

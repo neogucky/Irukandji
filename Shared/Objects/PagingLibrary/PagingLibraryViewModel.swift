@@ -141,6 +141,29 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
         searchableLibrary != nil
     }
 
+    /// Uses server page counts, rather than the number of visible/deduplicated cards.
+    var hasLoadedAllPages: Bool {
+        state == .content && !hasNextPage && !isInvalidated
+    }
+
+    func cancelPendingLoads() async {
+        generation &+= 1
+        searchGeneration &+= 1
+        storeRefreshTask?.cancel()
+        storeRefreshTask = nil
+        hasPendingStoreRefresh = false
+        await cancel()
+    }
+
+    /// Initializes a new, presentation-only collection with already loaded records.
+    func installCompleteResults(_ items: [Element]) {
+        precondition(state == .initial && !library.hasNextPage)
+        elements = IdentifiedArray(items, uniquingIDsWith: { existing, _ in existing })
+        nextOffset = items.count
+        hasNextPage = false
+        state = .content
+    }
+
     var displayedElements: IdentifiedArrayOf<Element> {
         isSearchActive ? searchElements : elements
     }

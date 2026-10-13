@@ -40,7 +40,8 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
         displayTitle: String? = nil,
         posterDisplayType: PosterDisplayType = .portrait,
         posterSize: PosterDisplayType.Size = .small,
-        environment: Environment
+        environment: Environment,
+        viewModel: PagingLibraryViewModel<Library>? = nil
     ) {
         self.displayTitle = displayTitle ?? library.parent.displayTitle
         self.environment = environment
@@ -48,7 +49,7 @@ struct PosterGroup<Library: PagingLibrary>: ContentGroup where Library.Element: 
         self.library = library
         self.posterDisplayType = posterDisplayType
         self.posterSize = posterSize
-        self.viewModel = .init(library: library, pageSize: 20)
+        self.viewModel = viewModel ?? .init(library: library, pageSize: 20)
     }
 
     init(

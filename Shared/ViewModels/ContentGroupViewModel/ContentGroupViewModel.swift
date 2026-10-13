@@ -104,6 +104,24 @@ final class ContentGroupViewModel<Provider: ContentGroupProvider>: ViewModel {
         return state == .error ? error ?? ErrorMessage(L10n.unknownError) : nil
     }
 
+    /// Cancel a request before replacing its results with local data.
+    func cancelPendingRefresh() async {
+        await cancel()
+    }
+
+    /// Presents locally refined, fully loaded groups without refreshing their libraries.
+    func presentCachedGroups(_ newGroups: [any ContentGroup]) async {
+        await cancel()
+        candidateGroups = newGroups
+        observeGroups()
+        // Stable IDs preserve focus, but these groups own different loaded models.
+        groups = newGroups.filter(\._shouldBeResolved)
+        hasLoadedGroups = true
+        needsGroupRebuild = true
+        error = nil
+        state = .content
+    }
+
     @Function(\Action.Cases.refresh)
     private func _refresh() async throws {
         if !StateTask.isBackground {

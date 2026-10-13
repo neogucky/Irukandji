@@ -32,6 +32,7 @@ struct PeopleLibrary: BaseItemKindLibrary {
         pageState: LibraryPageState
     ) async throws -> [ItemPatch] {
         var parameters = Paths.GetPersonsParameters()
+        parameters.fields = [.originalTitle, .sortName]
         parameters.limit = pageState.pageSize
         parameters.startIndex = pageState.pageOffset
         parameters.searchTerm = environment.query
