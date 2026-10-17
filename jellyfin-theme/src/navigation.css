@@ -1,0 +1,62 @@
+.MuiAppBar-root {
+  background: #181a1df5 !important;
+  color: var(--alphane-text);
+  border-bottom: 1px solid var(--alphane-line);
+  box-shadow: none !important;
+}
+.MuiAppBar-root .MuiToolbar-root { min-height: 64px; gap: 10px; }
+/* 12.1's modern app bar wraps legacy views, whose old tab margin is still
+   present. Scope this correction to that hybrid, leaving legacy tabs alone. */
+body:has(header.MuiAppBar-root) .homePage { box-sizing: border-box; margin-top: 0 !important; height: 100% !important; }
+.MuiAppBar-root .MuiButton-root {
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 550;
+  text-transform: none;
+  letter-spacing: -.015em;
+  min-height: 40px;
+}
+.MuiAppBar-root .MuiButton-root:hover { background: #ffffff0c; }
+.MuiAppBar-root a[href="#/"] { font-size: 1.1rem; font-weight: 700; letter-spacing: -.045em; margin-inline-end: 16px; }
+.MuiAppBar-root a[href="#/"] .MuiButton-startIcon {
+  background: var(--alphane-text);
+  mask: var(--alphane-symbol) center / contain no-repeat;
+  -webkit-mask: var(--alphane-symbol) center / contain no-repeat;
+}
+.MuiAppBar-root a[href="#/"] img { opacity: 0; }
+.MuiAppBar-root .MuiIconButton-root { color: #c4cbd5; }
+.MuiAppBar-root .MuiIconButton-root:hover { color: #fff; background: #ffffff0c; }
+.skinHeader { box-shadow: none; color: var(--alphane-text); }
+.skinHeader-withBackground { background: #181a1df5; border-bottom: 1px solid var(--alphane-line); }
+.headerTop { min-height: 68px; }
+.headerTabs { padding-block: 5px 10px; }
+.emby-tab-button {
+  border-radius: 999px;
+  color: var(--alphane-secondary);
+  min-height: 38px;
+  padding: 8px 19px;
+  margin-inline: 3px;
+  font-size: .9rem;
+  font-weight: 550;
+}
+.emby-tab-button-active, .emby-tab-button-active:hover {
+  background: var(--alphane-text); color: #181a1d !important;
+}
+.mainDrawer { background: #1e2228; border-inline-end: 1px solid var(--alphane-line); }
+.navMenuOption { margin: 3px 12px; width: auto; border-radius: 9px; }
+.navMenuOption-selected { background: #ffffff12; color: #fff; }
+.pageTitleWithDefaultLogo {
+  background-image: none !important;
+  width: 140px;
+  min-width: 140px;
+  align-items: center;
+  gap: 8px;
+}
+.pageTitleWithDefaultLogo::before {
+  content: ""; display: inline-block; vertical-align: middle;
+  width: 27px; height: 29px; margin-inline-end: 7px;
+  background: var(--alphane-text);
+  mask: var(--alphane-symbol) center / contain no-repeat;
+  -webkit-mask: var(--alphane-symbol) center / contain no-repeat;
+}
+.pageTitleWithDefaultLogo::after { content: "Alphane"; color: var(--alphane-text); font-size: 1.1rem; font-weight: 700; letter-spacing: -.04em; }

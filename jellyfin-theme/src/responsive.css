@@ -1,0 +1,34 @@
+/* Respect native layout breakpoints; constrain decorations rather than controls. */
+@media (min-width: 1000px) {
+  .layout-desktop .padded-left { padding-left: var(--alphane-gutter); }
+  .layout-desktop .padded-right { padding-right: var(--alphane-gutter); }
+  .detailPagePrimaryContainer { padding-top: 36px; padding-bottom: 36px; }
+}
+@media (max-width: 999px) {
+  .MuiAppBar-root .MuiToolbar-root { min-height: 64px; }
+  .MuiAppBar-root a[href="#/"] { margin-inline-end: 2px; }
+  .cardBox { margin-inline-end: 9px; }
+  .homePage .MyMedia .overflowBackdropCard { width: 26%; }
+  .homePage :is(.ContinueWatching, .NextUp) .overflowBackdropCard { width: 32%; }
+  .detailPagePrimaryContainer .overview { line-height: 1.55; }
+}
+@media (max-width: 599px) {
+  .MuiAppBar-root .MuiToolbar-root { gap: 3px; }
+  .headerTop { min-height: 58px; }
+  .emby-tab-button { font-size: .85rem; padding: 8px 16px; }
+  .verticalSection { margin-block-end: 14px; }
+  .sectionTitleContainer { margin-block-end: 9px; }
+  .homePage .MyMedia .overflowBackdropCard { width: 43%; }
+  .homePage :is(.ContinueWatching, .NextUp) .overflowBackdropCard { width: 72%; }
+  .card .cardText { font-size: .92rem; }
+  .card .cardText-secondary { font-size: .8rem; }
+  .MuiDialog-paper, .dialog { border-radius: 12px; }
+  .videoOsdBottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cardScalable, .cardImageContainer, .emby-tab-button, .MuiButton-root { transition: none !important; }
+}
+@media (prefers-contrast: more) {
+  :root { --alphane-secondary: #dde2e9; --alphane-line: #ffffff50; }
+  .cardText-secondary { color: #dde2e9; }
+}

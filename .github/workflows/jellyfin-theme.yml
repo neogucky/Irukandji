@@ -1,0 +1,34 @@
+name: Jellyfin theme
+on:
+  push:
+    paths:
+      - 'jellyfin-theme/**'
+      - 'Resources/Branding/Alphane-symbol.png'
+      - 'Alphane tvOS/Objects/AlphaneTheme.swift'
+      - '.github/workflows/jellyfin-theme.yml'
+  pull_request:
+    paths:
+      - 'jellyfin-theme/**'
+      - 'Resources/Branding/Alphane-symbol.png'
+      - 'Alphane tvOS/Objects/AlphaneTheme.swift'
+      - '.github/workflows/jellyfin-theme.yml'
+permissions:
+  contents: read
+jobs:
+  theme:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jellyfin-theme
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: jellyfin-theme/package-lock.json
+      - run: npm ci
+      - run: npm run build && git diff --exit-code -- dist/alphane.css
+      - run: npm test
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:browser

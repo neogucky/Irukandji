@@ -1,0 +1,30 @@
+html, body, .MuiTypography-root, .MuiButton-root, .MuiInputBase-root,
+.emby-button, .emby-input, .emby-select, .emby-textarea {
+  font-family: var(--alphane-font) !important;
+}
+html { color-scheme: dark; background: var(--alphane-background); }
+body { color: var(--alphane-text); background: var(--alphane-background); }
+.backgroundContainer, .dialog, .nowPlayingPlaylist {
+  background-color: var(--alphane-background);
+}
+.backgroundContainer { background-image: none; }
+/* Browser default focus remains a fallback; never remove it globally. */
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #fff !important;
+  outline-offset: 4px;
+}
+button, a, input, select, textarea { -webkit-tap-highlight-color: #ffffff14; }
+.sectionTitle, .sectionTitleTextButton, .MuiTypography-h5, .MuiTypography-h6 {
+  color: var(--alphane-text);
+  font-weight: 650;
+  letter-spacing: -.035em;
+}
+.sectionTitle, .sectionTitleTextButton { font-size: clamp(1.1rem, 1.8vw, 1.4rem); }
+.secondary, .secondaryText, .fieldDescription { color: var(--alphane-secondary); }
+/* Aqua is reserved for progress and small status marks, as on Apple TV. */
+.itemProgressBar, .playedIndicator { background: var(--alphane-accent); color: #132724; }
+.countIndicator { background: #20252ee6; color: var(--alphane-text); border: 1px solid #ffffff28; }
+* { scrollbar-color: #59616e transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-track-piece { background: transparent; box-shadow: none; }
+::-webkit-scrollbar-thumb { border-radius: 8px; background: #59616e; }

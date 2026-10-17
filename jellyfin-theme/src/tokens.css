@@ -1,0 +1,40 @@
+/* Shared visual language: AlphaneTheme.swift. Keep artwork in charge. */
+:root {
+  --alphane-background: #181a1d;
+  --alphane-surface: #22262c;
+  --alphane-raised: #282b30;
+  --alphane-text: #f3f4f6;
+  --alphane-secondary: #b2b8c1;
+  --alphane-accent: #6ad6ca;
+  --alphane-line: #ffffff14;
+  --alphane-radius: 12px;
+  --alphane-gutter: clamp(20px, 4vw, 64px);
+  --alphane-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --alphane-symbol: url("__ALPHANE_SYMBOL__");
+  /* Public Jellyfin 12 palette variables cover React and legacy components. */
+  --jf-palette-background-default: var(--alphane-background) !important;
+  --jf-palette-background-paper: var(--alphane-surface) !important;
+  --jf-palette-background-defaultImage: none !important;
+  --jf-palette-text-primary: var(--alphane-text) !important;
+  --jf-palette-text-secondary: var(--alphane-secondary) !important;
+  --jf-palette-text-disabled: #79818e !important;
+  --jf-palette-divider: var(--alphane-line) !important;
+  --jf-palette-primary-main: #f3f4f6 !important;
+  --jf-palette-primary-mainChannel: 243 244 246 !important;
+  --jf-palette-primary-light: #ffffff !important;
+  --jf-palette-primary-dark: #d8dde5 !important;
+  --jf-palette-primary-contrastText: #181a1d !important;
+  --jf-palette-secondary-main: #f3f4f6 !important;
+  --jf-palette-secondary-mainChannel: 243 244 246 !important;
+  --jf-palette-secondary-contrastText: #181a1d !important;
+  --jf-palette-AppBar-defaultBg: #181a1df5 !important;
+  --jf-palette-AppBar-darkBg: #181a1df5 !important;
+  --jf-palette-AppBar-transparentBg: #181a1de6 !important;
+  --jf-palette-AppBar-gradient: none !important;
+  --jf-palette-Button-inheritContainedBg: var(--alphane-raised) !important;
+  --jf-palette-action-hover: #ffffff0a !important;
+  --jf-palette-action-selected: #ffffff12 !important;
+  --jf-palette-action-focus: #ffffff20 !important;
+  --jf-card-borderRadius: var(--alphane-radius) !important;
+  --jf-palette-Tooltip-bg: #30353c !important;
+}

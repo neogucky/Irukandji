@@ -1,0 +1,16 @@
+{
+  "name": "alphane-jellyfin-theme",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "preview": "node scripts/preview.mjs",
+    "deploy": "node scripts/deploy.mjs apply",
+    "rollback": "node scripts/deploy.mjs rollback"
+  },
+  "devDependencies": { "@playwright/test": "1.64.1" }
+}

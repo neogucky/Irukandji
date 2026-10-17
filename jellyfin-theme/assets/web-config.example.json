@@ -1,0 +1,5 @@
+{
+  "menuLinks": [
+    { "name": "Alphane home", "url": "https://your-server.example/", "icon": "home" }
+  ]
+}

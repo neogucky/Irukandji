@@ -1,0 +1,17 @@
+/* Style controls only. Do not alter the video, subtitles, timing or hit targets. */
+.videoOsdBottom {
+  background: linear-gradient(transparent, #101215e6);
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+.videoOsdBottom .nowPlayingBarMainText { font-weight: 650; letter-spacing: -.025em; }
+.videoOsdBottom .nowPlayingBarSecondaryText, .videoOsdBottom .osdTextContainer { color: #e5e7eb; }
+.videoOsdBottom .paper-icon-button-light { border-radius: 999px; color: #f3f4f6; }
+.videoOsdBottom .paper-icon-button-light:hover { background: #ffffff18; }
+.videoOsdBottom .sliderContainer { color: var(--alphane-accent); }
+.videoOsdBottom .mdl-slider-background-lower, .videoOsdBottom .sliderBubble,
+.videoOsdBottom .mdl-slider::-webkit-slider-thumb { background: var(--alphane-accent); }
+.videoOsdBottom .mdl-slider::-moz-range-thumb { background: var(--alphane-accent); }
+.videoOsdBottom .mdl-slider-background-upper { background: #ffffff24; }
+.videoOsdBottom .mdl-slider-container { border-radius: 999px; }
+.videoOsdBottom .osdTimeText { font-variant-numeric: tabular-nums; font-size: .85rem; }
+.upNextContainer { background: #22262cf5; border: 1px solid #ffffff20; border-radius: 14px; box-shadow: 0 12px 40px #0005; }

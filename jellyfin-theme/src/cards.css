@@ -1,0 +1,30 @@
+.cardBox { margin: 0 12px 0 0; }
+.cardScalable, .cardImageContainer, .cardOverlayContainer, .cardOverlayButton,
+.visualCardBox, .cardContent-shadow { border-radius: var(--alphane-radius); }
+.cardContent-shadow { box-shadow: 0 3px 12px #00000018; }
+.cardOverlayContainer { background: linear-gradient(180deg, transparent 30%, #101215b8); }
+.cardImageContainer { background-color: var(--alphane-raised); }
+.cardImageContainer::after { border-radius: inherit; }
+.card .cardText { text-align: start !important; padding-inline: 2px; font-size: 1rem; }
+.cardText-first { color: var(--alphane-text); font-weight: 550; padding-top: 8px; }
+.card .cardText-secondary { color: var(--alphane-secondary); font-size: .85rem; padding-top: 3px; }
+.cardTextCentered { text-align: start; }
+.card .itemProgressBar { height: 3px; border-radius: 3px; background: var(--alphane-accent); }
+.card .itemProgressBarBackground { height: 3px; background: #193a37b8; border-radius: 3px; }
+.card .playedIndicator, .card .countIndicator { margin: 7px; box-shadow: none; }
+.card :is(.cardImageContainer, .cardOverlayButton):focus-visible { outline-offset: 3px; }
+.card.show-focus .cardBox:not(.visualCardBox) .cardScalable { border: 2px solid #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .cardScalable { transition: box-shadow .16s ease, filter .16s ease; }
+  .card:hover .cardScalable { box-shadow: 0 0 0 2px #ffffffa6; filter: brightness(1.035); }
+}
+.verticalSection { margin-block-end: 18px; }
+.sectionTitleContainer { margin-block-end: 14px; }
+.itemsContainer { padding-block: 5px 8px; }
+.emby-scroller { scrollbar-color: #59616e transparent; }
+.emby-scroller[data-scroll-mode-x="custom"] { overflow: hidden; }
+.homeSectionsContainer { padding-block: 24px 32px; }
+.homePage .section0 .sectionTitle { color: var(--alphane-secondary); font-size: .85rem; letter-spacing: .015em; }
+/* Keep library shortcuts useful, but give viewing rows more prominence. */
+.homePage .MyMedia .overflowBackdropCard { width: 16%; }
+.homePage :is(.ContinueWatching, .NextUp) .overflowBackdropCard { width: 21%; }

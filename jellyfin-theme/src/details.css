@@ -1,0 +1,23 @@
+.detailPageWrapperContainer { background: transparent; }
+.detailPagePrimaryContainer { background: transparent; }
+.detailPageSecondaryContainer { background: var(--alphane-background); padding-top: 26px; }
+.detailPageWrapperContainer .detailPageContent {
+  background: linear-gradient(180deg, transparent, var(--alphane-background) 430px);
+}
+.detailPagePrimaryContainer .nameContainer h1,
+.detailPagePrimaryContainer .itemName { font-weight: 700; letter-spacing: -.045em; line-height: 1.1; }
+.detailPagePrimaryContainer .overview { color: #d3d7dd; line-height: 1.7; max-width: 65ch; }
+.detailPagePrimaryContainer .itemMiscInfo { color: var(--alphane-secondary); gap: 8px; }
+.detailPagePrimaryContainer .itemTags { opacity: .8; }
+.detailPagePrimaryContainer .detailButton { border-radius: 999px; }
+.detailPagePrimaryContainer .btnPlay {
+  color: #181a1d; background: var(--alphane-text);
+  border-radius: 999px; font-weight: 650;
+}
+.detailPagePrimaryContainer .btnPlay:hover { background: #fff; color: #181a1d; }
+.detailImageContainer .card { border-radius: var(--alphane-radius); }
+.listItem { border-radius: 10px; }
+.listItem:hover { background: #ffffff08; }
+.listItemImage { border-radius: 8px; }
+.listItemBodyText.secondary { color: var(--alphane-secondary); }
+.detailPageSecondaryContainer .sectionTitle { font-size: 1.15rem; }
