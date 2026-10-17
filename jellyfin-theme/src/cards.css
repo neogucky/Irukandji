@@ -12,11 +12,26 @@
 .card .itemProgressBar { height: 3px; border-radius: 3px; background: var(--alphane-accent); }
 .card .itemProgressBarBackground { height: 3px; background: #193a37b8; border-radius: 3px; }
 .card .playedIndicator, .card .countIndicator { margin: 7px; box-shadow: none; }
-.card :is(.cardImageContainer, .cardOverlayButton):focus-visible { outline-offset: 3px; }
-.card.show-focus .cardBox:not(.visualCardBox) .cardScalable { border: 2px solid #fff; }
+.card .cardOverlayButton:focus-visible { outline-offset: 3px; }
+/* Draw selection inside the artwork, above its image and action overlay. An
+   outside shadow/outline is clipped by Jellyfin's horizontal scrollers. */
+.cardScalable { position: relative; isolation: isolate; }
+.cardScalable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px #00000040;
+  pointer-events: none;
+  opacity: 0;
+}
+.card:is(.show-focus, :focus-visible, :has(:focus-visible)) .cardScalable::after { opacity: 1; }
+.card.show-focus .cardBox:not(.visualCardBox) .cardScalable { border: 0; }
+/* The artwork ring replaces these outlines; action buttons keep their own. */
+.card:has(.cardScalable):focus-visible, .card .cardImageContainer:focus-visible { outline: none !important; }
 @media (hover: hover) and (pointer: fine) {
-  .cardScalable { transition: box-shadow .16s ease, filter .16s ease; }
-  .card:hover .cardScalable { box-shadow: 0 0 0 2px #ffffffa6; filter: brightness(1.035); }
+  .card:hover .cardScalable::after { opacity: 1; }
 }
 .verticalSection { margin-block-end: 18px; }
 .sectionTitleContainer { margin-block-end: 14px; }

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectArtworkRing } from './helpers/selection.mjs';
 
 test.beforeEach(async ({ page }) => { await page.goto('/'); });
 test('cards scroll within their rows, not the whole page', async ({ page }) => {
@@ -8,7 +9,28 @@ test('cards scroll within their rows, not the whole page', async ({ page }) => {
   const first = row.locator('.cardImageContainer').first();
   await first.focus();
   await expect(first).toBeFocused();
-  expect(await first.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('solid');
+});
+test('selection frames the full artwork without moving it or blocking actions', async ({ page }, testInfo) => {
+  const card = page.locator('.card').first(), artwork = card.locator('.cardScalable');
+  const before = await artwork.boundingBox();
+  const pointer = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches);
+  if (pointer) {
+    await card.hover();
+    await expectArtworkRing(page, artwork, testInfo, 'hover');
+    expect(await artwork.boundingBox()).toEqual(before);
+  }
+  await page.mouse.move(0, 0); await page.keyboard.press('Tab');
+  await card.locator('.cardImageContainer').focus();
+  await expectArtworkRing(page, artwork, testInfo, 'keyboard');
+  expect(await artwork.boundingBox()).toEqual(before);
+  const action = card.getByRole('button', { name: 'More for Chalk up!' });
+  await action.focus(); await expect(action).toHaveCSS('outline-style', 'solid');
+  // trial checks hit testing without invoking any playback or menu action.
+  await action.click({ trial: true });
+  await action.blur();
+  await card.evaluate(element => element.classList.add('show-focus'));
+  await expectArtworkRing(page, artwork, testInfo, 'remote-control-focus');
+  expect(await artwork.boundingBox()).toEqual(before);
 });
 test('identification and metadata dialogs remain accessible', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Identify', exact: true })).toBeVisible();

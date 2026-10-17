@@ -58,7 +58,7 @@ npx playwright install --with-deps chromium webkit
 npm run test:browser
 ```
 
-The checked-in fixtures cover Chromium desktop, a touch phone viewport and WebKit, including page overflow, keyboard focus, editable dialogs, essential player controls, reduced motion and stylesheet parsing. Local Windows runs can use the installed Edge automatically; `ALPHANE_BROWSER_PATH` overrides the Chromium executable.
+The checked-in fixtures cover Chromium desktop, a touch phone viewport and WebKit, including page overflow, keyboard focus, editable dialogs, essential player controls, reduced motion and stylesheet parsing. Card selection checks inspect rendered pixels along all four artwork edges with layered overlays and clipped carousels, and verify that action buttons remain clickable. Local Windows runs can use the installed Edge automatically; `ALPHANE_BROWSER_PATH` overrides the Chromium executable.
 
 For optional real-server checks, supply `ALPHANE_SERVER`, `ALPHANE_USERNAME` and an ephemeral `ALPHANE_PASSWORD`. Set `ALPHANE_PREVIEW=1` to replace branding responses only in that browser session; this mode does not save server settings. The live checks navigate without playing media, editing metadata, changing watched state, or disconnecting other clients.
 
@@ -66,7 +66,7 @@ For optional real-server checks, supply `ALPHANE_SERVER`, `ALPHANE_USERNAME` and
 npx playwright test tests/live.spec.mjs --project=desktop --project=phone
 ```
 
-Live screenshots can contain private library information and are written only to ignored `test-results/`. Traces are disabled to avoid capturing credentials. Public CI uses only the fictional fixtures and does not need a server or credentials.
+Live screenshots can contain private library information and are written only to ignored `test-results-live/`. Traces are disabled to avoid capturing credentials. Public CI uses only the fictional fixtures and does not need a server or credentials.
 
 ## Compatibility and design boundaries
 

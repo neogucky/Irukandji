@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { root } from '../scripts/build.mjs';
+import { expectArtworkRing } from './helpers/selection.mjs';
 
 const server = process.env.ALPHANE_SERVER;
 test.describe('Jellyfin integration', () => {
@@ -53,6 +54,26 @@ test.describe('Jellyfin integration', () => {
       }
     }
     await page.screenshot({ path: testInfo.outputPath('home.png') });
+  });
+  test('artwork selection stays visible at carousel edges', async ({ page }, testInfo) => {
+    const card = page.locator('.homePage .NextUp .card').first();
+    await card.waitFor(); await card.scrollIntoViewIfNeeded();
+    const artwork = card.locator('.cardScalable'), before = await artwork.boundingBox();
+    const pointer = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches);
+    if (pointer) {
+      await card.hover();
+      await expectArtworkRing(page, artwork, testInfo, 'live-hover');
+      expect(await artwork.boundingBox()).toEqual(before);
+    }
+    await page.mouse.move(0, 0); await page.keyboard.press('Tab');
+    await card.locator('.cardImageContainer').focus();
+    await expectArtworkRing(page, artwork, testInfo, 'live-keyboard');
+    const after = await artwork.boundingBox();
+    expect(after.width).toBe(before.width); expect(after.height).toBe(before.height);
+    const action = card.locator('.cardOverlayButton').last();
+    await action.focus(); await expect(action).toHaveCSS('outline-style', 'solid');
+    await action.click({ trial: true });
+    await page.screenshot({ path: testInfo.outputPath('selection.png') });
   });
   test('series details and metadata/image menus remain available', async ({ page }, testInfo) => {
     const link = page.locator('.homePage .card[data-type="Series"] a.textActionButton').first();
