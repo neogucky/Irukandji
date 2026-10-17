@@ -66,7 +66,7 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: #ffffff14; }
 .sectionTitle, .sectionTitleTextButton { font-size: clamp(1.1rem, 1.8vw, 1.4rem); }
 .secondary, .secondaryText, .fieldDescription { color: var(--alphane-secondary); }
 /* Aqua is reserved for progress and small status marks, as on Apple TV. */
-.itemProgressBar, .playedIndicator { background: var(--alphane-accent); color: #132724; }
+.itemProgressBarForeground, .playedIndicator { background: var(--alphane-accent); color: #132724; }
 .countIndicator { background: #20252ee6; color: var(--alphane-text); border: 1px solid #ffffff28; }
 * { scrollbar-color: #59616e transparent; scrollbar-width: thin; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -149,8 +149,34 @@ body:has(header.MuiAppBar-root) .homePage { box-sizing: border-box; margin-top: 
 .cardText-first { color: var(--alphane-text); font-weight: 550; padding-top: 8px; }
 .card .cardText-secondary { color: var(--alphane-secondary); font-size: .85rem; padding-top: 3px; }
 .cardTextCentered { text-align: start; }
-.card .itemProgressBar { height: 3px; border-radius: 3px; background: var(--alphane-accent); }
-.card .itemProgressBarBackground { height: 3px; background: #193a37b8; border-radius: 3px; }
+/* Jellyfin's bar is the track; its foreground child holds the watched width.
+   Match ProgressIndicator.swift: 6px capsule, inset 5px from the artwork. */
+.card .innerCardFooter:has(> .itemProgressBar) {
+  inset-inline: 5px;
+  bottom: 5px;
+  width: auto;
+  padding: 0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.card .itemProgressBar {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #6ad6ca33;
+  box-shadow: inset 0 0 0 .5px #ffffff2e;
+}
+.card .itemProgressBarForeground { height: 100%; border-radius: inherit; background: var(--alphane-accent); }
+.cardImageContainer:has(.itemProgressBar)::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 0;
+  background: linear-gradient(transparent, #000000a6);
+  pointer-events: none;
+}
+/* The permanent footer gradient supplies contrast; don't dim the bar again
+   when Jellyfin reveals its hover controls. */
+.cardImageContainer:has(.itemProgressBar) ~ .cardOverlayContainer { background: transparent; }
 .card .playedIndicator, .card .countIndicator { margin: 7px; box-shadow: none; }
 .card .cardOverlayButton:focus-visible { outline-offset: 3px; }
 /* Draw selection inside the artwork, above its image and action overlay. An
@@ -182,6 +208,15 @@ body:has(header.MuiAppBar-root) .homePage { box-sizing: border-box; margin-top: 
 .homePage .section0 .sectionTitle { color: var(--alphane-secondary); font-size: .85rem; letter-spacing: .015em; }
 /* Keep library shortcuts useful, but give viewing rows more prominence. */
 .homePage .MyMedia .overflowBackdropCard { width: 16%; }
+/* The installed library images contain a square cream frame. Crop that frame
+   slightly and draw it as a real border so both its inner and outer corners round. */
+.homePage .MyMedia .cardImageContainer.coveredImage {
+  box-sizing: border-box;
+  border: 3px solid #ead8a3 !important;
+  background-size: 106% auto;
+  background-origin: padding-box;
+  background-clip: padding-box !important;
+}
 .homePage :is(.ContinueWatching, .NextUp) .overflowBackdropCard { width: 21%; }
 
 /* details.css */

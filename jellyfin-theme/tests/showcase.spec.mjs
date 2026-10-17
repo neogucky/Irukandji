@@ -43,7 +43,18 @@ test('identification and metadata dialogs remain accessible', async ({ page }) =
   await expect(page.getByRole('dialog')).not.toBeVisible();
 });
 test('progress has the aqua accent and essential player controls remain visible', async ({ page }) => {
-  await expect(page.locator('.itemProgressBar').first()).toHaveCSS('background-color', 'rgb(106, 214, 202)');
+  const track = page.locator('.itemProgressBar').first(), fill = track.locator('.itemProgressBarForeground');
+  await expect(fill).toHaveCSS('background-color', 'rgb(106, 214, 202)');
+  await expect(track).toHaveCSS('background-color', 'rgba(106, 214, 202, 0.2)');
+  await expect(track).toHaveCSS('height', '6px');
+  const image = await page.locator('.cardImageContainer').first().boundingBox(), bar = await track.boundingBox();
+  expect(bar.x - image.x).toBeCloseTo(5, 1); expect(image.y + image.height - bar.y - bar.height).toBeCloseTo(5, 1);
+  // Keep Jellyfin's data-driven widths, including no progress and completion.
+  for (const progress of [0, 60, 100]) {
+    await fill.evaluate((element, progress) => element.style.width = `${progress}%`, progress);
+    expect((await fill.boundingBox()).width / bar.width).toBeCloseTo(progress / 100, 2);
+  }
+  await fill.evaluate(element => element.style.width = '60%');
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Audio', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Subtitles', exact: true })).toBeVisible();

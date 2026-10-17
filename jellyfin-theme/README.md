@@ -72,6 +72,8 @@ Live screenshots can contain private library information and are written only to
 
 The theme uses Jellyfin's public palette variables, stable component classes and MUI utility classes; it avoids generated `css-*` selectors. A scoped 12.1 adjustment removes the obsolete legacy Home tab offset underneath the modern app bar. Custom carousels clip to their own viewport while retaining Jellyfin's transform-based scrolling. Native hidden/disabled states and admin actions remain intact.
 
+Watch-progress cards use the TV app's 6px aqua capsule, 5px artwork inset and subdued track. Jellyfin's foreground retains its actual watched percentage. The installed library artwork has square cream frames embedded in the images; the scoped `MyMedia .coveredImage` rule crops those frames slightly and replaces them with rounded CSS borders. Adapt that rule if replacing the library artwork with a different style.
+
 This is intentionally a dark theme. Check desktop, phone, login, details, search, metadata/image dialogs and player controls after Jellyfin updates. CSS selectors are not a versioned extension API, so updates may need small compatibility changes. If there is a regression, restore the previous CSS before investigating.
 
 Optional navigation back to an external landing page can use Jellyfin Web's supported `menuLinks` configuration. An example is in `assets/web-config.example.json`; merge it into your existing web configuration and retain other settings. CSS does not create fake interactive links or hide administration controls.

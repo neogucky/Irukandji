@@ -22,7 +22,7 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: #ffffff14; }
 .sectionTitle, .sectionTitleTextButton { font-size: clamp(1.1rem, 1.8vw, 1.4rem); }
 .secondary, .secondaryText, .fieldDescription { color: var(--alphane-secondary); }
 /* Aqua is reserved for progress and small status marks, as on Apple TV. */
-.itemProgressBar, .playedIndicator { background: var(--alphane-accent); color: #132724; }
+.itemProgressBarForeground, .playedIndicator { background: var(--alphane-accent); color: #132724; }
 .countIndicator { background: #20252ee6; color: var(--alphane-text); border: 1px solid #ffffff28; }
 * { scrollbar-color: #59616e transparent; scrollbar-width: thin; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }

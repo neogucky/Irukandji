@@ -93,6 +93,35 @@ test.describe('Jellyfin integration', () => {
     // Close without saving any metadata.
     await page.keyboard.press('Escape');
   });
+  test('library frames round inward and watch progress matches the TV cards', async ({ page }, testInfo) => {
+    const library = page.locator('.homePage .MyMedia .cardImageContainer.coveredImage').first();
+    await expect(library).toHaveCSS('border-top-width', '3px');
+    await expect(library).toHaveCSS('border-top-left-radius', '12px');
+    await expect(library).toHaveCSS('background-clip', 'padding-box');
+    await page.keyboard.press('Tab'); await library.focus();
+    await expectArtworkRing(page, library.locator('..'), testInfo, 'library-focus');
+    await page.screenshot({ path: testInfo.outputPath('library-frames.png') });
+
+    const card = page.locator('.homePage .ContinueWatching .card:has(.itemProgressBarForeground)').first();
+    const fill = card.locator('.itemProgressBarForeground');
+    await fill.scrollIntoViewIfNeeded();
+    const track = fill.locator('..');
+    const artwork = card.locator('.cardImageContainer');
+    await expect(fill).toHaveCSS('background-color', 'rgb(106, 214, 202)');
+    await expect(track).toHaveCSS('background-color', 'rgba(106, 214, 202, 0.2)');
+    const image = await artwork.boundingBox(), bar = await track.boundingBox();
+    expect(bar.height).toBe(6);
+    expect(bar.x - image.x).toBeCloseTo(5, 1);
+    expect(image.x + image.width - bar.x - bar.width).toBeCloseTo(5, 1);
+    expect(image.y + image.height - bar.y - bar.height).toBeCloseTo(5, 1);
+    const percentage = await fill.evaluate(element => parseFloat(element.style.width));
+    expect((await fill.boundingBox()).width / bar.width).toBeCloseTo(percentage / 100, 2);
+    if (await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)) {
+      await card.hover();
+      await expect(card.locator('.cardOverlayContainer')).toHaveCSS('background-image', 'none');
+    }
+    await page.screenshot({ path: testInfo.outputPath('watch-progress.png') });
+  });
   test('library navigation and the admin dashboard remain reachable', async ({ page }) => {
     const movies = page.locator('header a[href*="/movies?"]').first();
     if (await movies.isVisible()) await movies.click();
