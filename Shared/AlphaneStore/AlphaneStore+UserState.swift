@@ -12,6 +12,7 @@ import Foundation
 import JellyfinAPI
 import KeychainSwift
 import Pulse
+import Security
 import UIKit
 
 extension AlphaneStore.State {
@@ -29,15 +30,23 @@ extension UserState {
 
     var accessToken: String {
         get {
-            guard let accessToken = Container.shared.keychainService().get("\(id)-accessToken") else {
-                assertionFailure("access token missing in keychain")
-                return ""
-            }
-
-            return accessToken
+            Container.shared.keychainService().get("\(id)-accessToken") ?? ""
         }
         nonmutating set {
             Container.shared.keychainService().set(newValue, forKey: "\(id)-accessToken")
+        }
+    }
+
+    /// A retained profile can intentionally have no credentials after signing
+    /// out of a rejected session. Preferences and the local PIN are kept.
+    var requiresServerSignIn: Bool {
+        accessToken.isEmpty
+    }
+
+    func forgetAccessToken() throws {
+        let keychain = Container.shared.keychainService()
+        guard keychain.delete("\(id)-accessToken") || keychain.lastResultCode == errSecItemNotFound else {
+            throw ErrorMessage(String(localized: "Could not clear the saved sign-in. Please try again."))
         }
     }
 

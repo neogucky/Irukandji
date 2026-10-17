@@ -42,7 +42,11 @@ struct ErrorView<ErrorType: Error>: View {
     @State
     private var retryTask: Task<Void, Never>?
     @State
-    private var isSwitchingServer = false
+    private var isEndingSession = false
+    @State
+    private var signOutError: Error?
+    @State
+    private var failedSession: UserSession?
     #if os(tvOS)
     @FocusState
     private var focusedButton: String?
@@ -52,11 +56,13 @@ struct ErrorView<ErrorType: Error>: View {
     init(
         error: ErrorType,
         recovery: ErrorRecoveryState? = nil,
-        retryAction: (@MainActor () async -> Error?)? = nil
+        retryAction: (@MainActor () async -> Error?)? = nil,
+        session: UserSession? = Container.shared.currentUserSession()
     ) {
         self.error = error
         _recovery = StateObject(wrappedValue: recovery ?? ErrorRecoveryState())
         self.retryAction = retryAction
+        _failedSession = State(initialValue: session)
     }
 
     private var isBusy: Bool {
@@ -73,6 +79,18 @@ struct ErrorView<ErrorType: Error>: View {
 
     private var diagnosticKey: String {
         ConnectionDiagnostics.failureID(for: error)
+    }
+
+    private var requiresSignIn: Bool {
+        failedSession != nil && AuthenticationFailure.isUnauthorized(error)
+    }
+
+    private var message: String {
+        requiresSignIn ? AuthenticationFailure.message : (recovery.connectionIssue?.message ?? Self.displayMessage(for: error))
+    }
+
+    private var suggestion: String {
+        requiresSignIn ? AuthenticationFailure.suggestion : (recovery.connectionIssue?.suggestion ?? "")
     }
 
     static func displayMessage(for error: Error) -> String {
@@ -96,7 +114,7 @@ struct ErrorView<ErrorType: Error>: View {
     }
 
     private func retry() {
-        guard !isBusy, !isSwitchingServer, canRetry else { return }
+        guard !isBusy, !isEndingSession, canRetry else { return }
 
         retryTask = Task { @MainActor in
             await recovery.retry(error: error) {
@@ -111,17 +129,33 @@ struct ErrorView<ErrorType: Error>: View {
     }
 
     private func switchServer() {
-        guard !isBusy, !isSwitchingServer else { return }
+        guard !isBusy, !isEndingSession else { return }
 
-        isSwitchingServer = true
+        isEndingSession = true
         Task { @MainActor in
             await userSessionManager.switchServer()
-            isSwitchingServer = false
+            isEndingSession = false
+        }
+    }
+
+    private func signOut() {
+        guard !isBusy, !isEndingSession, requiresSignIn, let failedSession else { return }
+
+        isEndingSession = true
+        Task { @MainActor in
+            defer { isEndingSession = false }
+            do {
+                try await userSessionManager.signOutRequiringAuthentication(for: failedSession)
+            } catch {
+                signOutError = error
+            }
         }
     }
 
     private var systemImage: String {
-        if isChecking, ConnectionDiagnostics.connectionError(in: error) != nil {
+        if requiresSignIn {
+            "person.crop.circle.badge.exclamationmark"
+        } else if isChecking, ConnectionDiagnostics.connectionError(in: error) != nil {
             "wifi"
         } else if let error = error as? SystemImageable {
             error.systemImage
@@ -149,14 +183,14 @@ struct ErrorView<ErrorType: Error>: View {
                 .background(AlphaneTheme.surface, in: RoundedRectangle(cornerRadius: 28))
                 .accessibilityHidden(true)
 
-            Text(recovery.connectionIssue?.message ?? Self.displayMessage(for: error))
+            Text(message)
                 .font(.system(size: 30, weight: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(4)
                 .frame(maxWidth: 800)
 
-            Text(recovery.connectionIssue?.suggestion ?? "")
+            Text(suggestion)
                 .font(.system(size: 20))
                 .foregroundStyle(AlphaneTheme.secondaryText)
                 .multilineTextAlignment(.center)
@@ -185,15 +219,26 @@ struct ErrorView<ErrorType: Error>: View {
                     .focused($focusedButton, equals: "retry")
                     .accessibilityIdentifier("error-retry")
                     .accessibilityValue(isBusy ? String(localized: "Retrying") : "")
+                    .disabled(isEndingSession)
                 }
 
-                if recovery.connectionIssue == .server, userSessionManager.currentSession != nil {
+                if requiresSignIn {
+                    Button(action: signOut) {
+                        Label(String(localized: "Sign out"), systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    .buttonStyle(TVSettingsButtonStyle())
+                    .focused($focusedButton, equals: "sign-out")
+                    .accessibilityIdentifier("error-sign-out")
+                    .accessibilityHint(AuthenticationFailure.suggestion)
+                    .disabled(isBusy || isEndingSession)
+                } else if recovery.connectionIssue == .server, userSessionManager.currentSession != nil {
                     Button(action: switchServer) {
                         Label(String(localized: "Switch server"), systemImage: "server.rack")
                     }
                     .buttonStyle(TVSettingsButtonStyle())
                     .focused($focusedButton, equals: "server")
                     .accessibilityIdentifier("error-switch-server")
+                    .disabled(isBusy || isEndingSession)
                 }
             }
             .defaultFocus($focusedButton, "retry")
@@ -213,7 +258,7 @@ struct ErrorView<ErrorType: Error>: View {
                 .foregroundStyle(Color.red)
                 .symbolRenderingMode(.monochrome)
 
-            Text(error.localizedDescription)
+            Text(message)
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
@@ -234,6 +279,15 @@ struct ErrorView<ErrorType: Error>: View {
                 #endif
                     .frame(height: buttonHeight)
                     .frame(maxWidth: buttonMaxSize)
+            }
+
+            if requiresSignIn {
+                Button(String(localized: "Sign out"), action: signOut)
+                    .disabled(isBusy || isEndingSession)
+                Text(suggestion)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
 
             if let localizedError = error as? LocalizedError,
@@ -268,6 +322,7 @@ struct ErrorView<ErrorType: Error>: View {
         .onDisappear {
             retryTask?.cancel()
         }
+        .errorMessage($signOutError)
     }
 }
 

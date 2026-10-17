@@ -122,8 +122,9 @@ final class UserSessionManager: ObservableObject {
 
     @MainActor
     func signIn(userID: String) async throws {
+        let session = try storedSession(userID: userID)
         Defaults[.lastSignedInUserID] = .signedIn(userID: userID)
-        try await updateCurrentSession(with: resolveStoredSession())
+        await updateCurrentSession(with: session)
 
         Task {
             await refreshServerInformationIfNeeded(reason: .explicitSignIn)
@@ -148,6 +149,16 @@ final class UserSessionManager: ObservableObject {
     @MainActor
     func switchServer() async {
         Defaults[.selectUserServerSelection] = .all
+        await signOut(reason: .explicit)
+    }
+
+    /// Unlike ordinary profile switching, discard this session's saved token.
+    /// An error from an older session must never sign a different user out.
+    @MainActor
+    func signOutRequiringAuthentication(for session: UserSession) async throws {
+        guard currentSession === session else { return }
+
+        try session.user.forgetAccessToken()
         await signOut(reason: .explicit)
     }
 
@@ -363,13 +374,24 @@ final class UserSessionManager: ObservableObject {
 
     private func resolveStoredSession() throws -> UserSession? {
         guard case let .signedIn(userId) = Defaults[.lastSignedInUserID] else { return nil }
-        guard let user = StoredValues[.User.users].first(where: { $0.id == userId }) else {
+
+        do {
+            return try storedSession(userID: userId)
+        } catch {
             Defaults[.lastSignedInUserID] = .signedOut
-            throw UserSessionError.invalidStoredSession(userID: userId)
+            throw error
+        }
+    }
+
+    private func storedSession(userID: String) throws -> UserSession {
+        guard let user = StoredValues[.User.users].first(where: { $0.id == userID }) else {
+            throw UserSessionError.invalidStoredSession(userID: userID)
         }
         guard let server = StoredValues[.Server.servers].first(where: { $0.id == user.serverID }) else {
-            Defaults[.lastSignedInUserID] = .signedOut
-            throw UserSessionError.invalidStoredSession(userID: userId)
+            throw UserSessionError.invalidStoredSession(userID: userID)
+        }
+        guard !user.requiresServerSignIn else {
+            throw UserSessionError.serverAuthenticationRequired(userID: userID)
         }
 
         return .init(

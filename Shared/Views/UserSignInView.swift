@@ -70,6 +70,16 @@ struct UserSignInView: View {
             )
 
         case let .existingUser(existingUser):
+            if existingUser.state.state.requiresServerSignIn, let authenticationAction {
+                let user = existingUser.state.state
+                viewModel.saveExisting(
+                    user: existingUser,
+                    replaceForAccessToken: true,
+                    authenticationAction: (authenticationAction, user.accessPolicy, user.accessPolicy.authenticateReason(user: user)),
+                    evaluatedPolicyMap: .init(action: processEvaluatedPolicy)
+                )
+                return
+            }
             self.existingUser = existingUser
             self.isPresentingExistingUser = true
 

@@ -181,7 +181,7 @@ final class UserSignInViewModel: ObservableObject {
 
     private func existingUser(id: String) -> UserState? {
         StoredValues[.User.users]
-            .first { $0.id == id }
+            .first { $0.id == id && $0.serverID == server.id }
     }
 
     @Function(\Action.Cases.save)
@@ -262,8 +262,9 @@ final class UserSignInViewModel: ObservableObject {
             }
         }
 
-        if replaceForAccessToken {
+        if replaceForAccessToken || user.state.state.requiresServerSignIn {
             user.state.state.accessToken = user.state.accessToken
+            user.state.state.data = user.data
         }
 
         events.send(.saved(user.state.state))

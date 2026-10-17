@@ -129,6 +129,12 @@ struct SelectUserView: View {
     }
 
     private func select(user: UserState) {
+        if user.requiresServerSignIn {
+            guard let server = viewModel.servers.keys.first(where: { $0.id == user.serverID }) else { return }
+
+            router.route(to: .userSignIn(server: server, username: user.username))
+            return
+        }
         Task { @MainActor in
 
             do {

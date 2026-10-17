@@ -136,13 +136,14 @@ extension SelectUserView {
                     userID: item.user.id,
                     source: item.user.profileImageSource(client: item.server.client),
                     name: item.user.username,
-                    subtitle: visibleServers.count > 1 ? item.server.name : nil,
+                    subtitle: item.user.requiresServerSignIn ? L10n.signIn : (visibleServers.count > 1 ? item.server.name : nil),
                     id: id,
                     saved: true
                 )
             }
             .buttonStyle(ArtworkButtonStyle())
             .focused($focusedProfileID, equals: id)
+            .accessibilityHint(item.user.requiresServerSignIn ? String(localized: "Enter your server password to sign in again.") : "")
             .contextMenu {
                 Button(L10n.delete, role: .destructive) { onDelete(item.user) }
             }
